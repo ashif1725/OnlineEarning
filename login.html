@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - SkillEarn Hub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
+<header class="header">
+    <a href="index.html" class="logo">SkillEarn <span>Hub</span></a>
+    <a href="index.html" class="back-home">← Home</a>
+</header>
+
+<section class="auth-section">
+
+    <div class="auth-box">
+
+        <div class="auth-logo">🚀</div>
+
+        <h1>Welcome Back</h1>
+        <p>Login to your SkillEarn Hub account.</p>
+
+        <form onsubmit="loginUser(event)">
+
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email" required>
+
+            <label>Password</label>
+            <input type="password" id="password" placeholder="Enter password" required>
+
+            <button type="submit" class="btn full">
+                Login
+            </button>
+
+        </form>
+
+        <div class="divider">OR</div>
+
+        <button class="google-btn" onclick="demoLogin()">
+            Continue with Google
+        </button>
+
+        <p class="auth-bottom">
+            Don't have an account?
+            <a href="#" onclick="registerUser()">Create Account</a>
+        </p>
+
+    </div>
+
+</section>
+
+<script src="js/script.js"></script>
+</body>
+</html>

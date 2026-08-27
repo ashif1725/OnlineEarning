@@ -1,1 +1,141 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - SkillEarn Hub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="index.html" class="logo">SkillEarn <span>Hub</span></a>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+        <button class="logout-btn" onclick="logoutUser()">Logout</button>
+    </nav>
+</header>
+
+<section class="dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <span class="section-label">MY ACCOUNT</span>
+            <h1>Welcome to your Dashboard 👋</h1>
+            <p>Track your learning and online business activity.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+        <div class="dash-stat">
+            <span>💰</span>
+            <p>Total Earnings</p>
+            <h2>₹12,850</h2>
+        </div>
+
+        <div class="dash-stat">
+            <span>🎓</span>
+            <p>Courses Completed</p>
+            <h2>8</h2>
+        </div>
+
+        <div class="dash-stat">
+            <span>🛒</span>
+            <p>Products Purchased</p>
+            <h2>5</h2>
+        </div>
+
+        <div class="dash-stat">
+            <span>🤝</span>
+            <p>Affiliate Sales</p>
+            <h2>12</h2>
+        </div>
+
+    </div>
+
+    <div class="dashboard-content">
+
+        <div class="panel">
+
+            <div class="panel-title">
+                <h2>My Courses</h2>
+                <a href="courses.html">View All</a>
+            </div>
+
+            <div class="course-progress">
+
+                <div>
+                    <strong>AI for Beginners</strong>
+                    <span>72%</span>
+                </div>
+
+                <div class="progress">
+                    <div style="width:72%"></div>
+                </div>
+
+            </div>
+
+            <div class="course-progress">
+
+                <div>
+                    <strong>Digital Marketing</strong>
+                    <span>45%</span>
+                </div>
+
+                <div class="progress">
+                    <div style="width:45%"></div>
+                </div>
+
+            </div>
+
+            <div class="course-progress">
+
+                <div>
+                    <strong>Freelancing Mastery</strong>
+                    <span>25%</span>
+                </div>
+
+                <div class="progress">
+                    <div style="width:25%"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+                <h2>Wallet</h2>
+            </div>
+
+            <div class="wallet">
+
+                <p>Available Balance</p>
+                <h1>₹2,850</h1>
+
+                <button class="btn full" onclick="withdrawDemo()">
+                    Request Withdrawal
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    <div class="footer-logo">SkillEarn <span>Hub</span></div>
+    <p>© 2026 SkillEarn Hub. All Rights Reserved.</p>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

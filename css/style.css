@@ -932,3 +932,215 @@ footer > p {
         padding: 28px 20px;
     }
 }
+/* =====================================
+   AUTHENTICATION DESIGN
+===================================== */
+
+.auth-page {
+    background: #f4f7fc;
+}
+
+.auth-wrapper {
+    min-height: calc(100vh - 76px);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 70px;
+    padding: 70px 8%;
+    max-width: 1300px;
+    margin: auto;
+}
+
+.auth-promo h1 {
+    font-size: clamp(45px,5vw,70px);
+    line-height: 1.05;
+    margin: 20px 0;
+}
+
+.auth-promo h1 span {
+    color: #1769ff;
+}
+
+.auth-promo > p {
+    color: #667085;
+    font-size: 18px;
+    max-width: 550px;
+}
+
+.promo-badge {
+    display: inline-block;
+    background: #eaf1ff;
+    color: #1769ff;
+    padding: 9px 15px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.promo-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 35px;
+}
+
+.promo-features div {
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e4e7ec;
+    font-weight: 600;
+}
+
+.auth-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid #e4e7ec;
+    box-shadow: 0 20px 60px rgba(16,24,40,.08);
+}
+
+.auth-icon {
+    width: 60px;
+    height: 60px;
+    margin: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #edf3ff;
+    border-radius: 15px;
+    font-size: 30px;
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 30px;
+}
+
+.auth-subtitle {
+    text-align: center;
+    color: #667085;
+    margin-bottom: 25px;
+}
+
+.auth-box label {
+    display: block;
+    font-weight: 600;
+    margin: 15px 0 7px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+}
+
+.auth-box input:focus {
+    border-color: #1769ff;
+}
+
+.forgot-row {
+    text-align: right;
+    margin: 10px 0 20px;
+}
+
+.forgot-row a {
+    color: #1769ff;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.divider {
+    text-align: center;
+    margin: 25px 0;
+    color: #98a2b3;
+}
+
+.google-btn {
+    width: 100%;
+    padding: 14px;
+    background: #fff;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.google-btn:hover {
+    background: #f9fafb;
+}
+
+.auth-bottom {
+    text-align: center;
+    margin-top: 25px;
+    color: #667085;
+}
+
+.auth-bottom a {
+    color: #1769ff;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.auth-message {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.auth-message.error {
+    color: #d92d20;
+}
+
+.auth-message.success {
+    color: #039855;
+}
+
+
+/* REFERRAL */
+
+.referral-panel {
+    margin-top: 25px;
+}
+
+.referral-panel p {
+    color: #667085;
+}
+
+.referral-code {
+    background: #f6f8fc;
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 8px;
+}
+
+
+/* MOBILE AUTH */
+
+@media(max-width:800px) {
+
+    .auth-wrapper {
+        grid-template-columns: 1fr;
+        padding: 45px 6%;
+    }
+
+    .auth-promo {
+        text-align: center;
+    }
+
+    .promo-features {
+        text-align: left;
+    }
+
+    .auth-box {
+        padding: 30px 22px;
+    }
+
+}

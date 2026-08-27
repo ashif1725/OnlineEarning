@@ -1,1 +1,88 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Store - SkillEarn Hub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="index.html" class="logo">SkillEarn <span>Hub</span></a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+
+    <nav id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+        <a href="earn.html">Earn Online</a>
+        <a href="store.html">Store</a>
+        <a href="affiliate.html">Affiliate</a>
+        <a href="login.html" class="nav-login">Login</a>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <span class="section-label">DIGITAL STORE</span>
+    <h1>Digital Products</h1>
+    <p>Useful resources to help you learn and build online.</p>
+</section>
+
+<section class="section">
+
+    <div class="product-grid">
+
+        <div class="product-card">
+            <div class="product-icon">📘</div>
+            <h3>Online Business Guide</h3>
+            <p>Beginner-friendly guide to starting an online business.</p>
+            <div class="price">₹199</div>
+            <button class="btn full" onclick="buyProduct('Online Business Guide',199)">
+                Buy Now
+            </button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-icon">📊</div>
+            <h3>Business Planner</h3>
+            <p>Plan your goals, products, marketing and business activities.</p>
+            <div class="price">₹149</div>
+            <button class="btn full" onclick="buyProduct('Business Planner',149)">
+                Buy Now
+            </button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-icon">🎨</div>
+            <h3>Social Media Templates</h3>
+            <p>Ready-to-customize templates for your digital marketing.</p>
+            <div class="price">₹299</div>
+            <button class="btn full" onclick="buyProduct('Social Media Templates',299)">
+                Buy Now
+            </button>
+        </div>
+
+        <div class="product-card">
+            <div class="product-icon">🤖</div>
+            <h3>AI Prompt Pack</h3>
+            <p>Useful prompts for content, marketing and productivity.</p>
+            <div class="price">₹249</div>
+            <button class="btn full" onclick="buyProduct('AI Prompt Pack',249)">
+                Buy Now
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    <div class="footer-logo">SkillEarn <span>Hub</span></div>
+    <p>Learn Skills. Build Income. Grow Online.</p>
+    <p class="copyright">© 2026 SkillEarn Hub. All Rights Reserved.</p>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

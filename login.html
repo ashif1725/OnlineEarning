@@ -3,54 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - SkillEarn Hub</title>
+
+<title>Login | SkillEarn Hub</title>
+
 <link rel="stylesheet" href="css/style.css">
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+
 </head>
-<body>
+
+<body class="auth-page">
 
 <header class="header">
-    <a href="index.html" class="logo">SkillEarn <span>Hub</span></a>
-    <a href="index.html" class="back-home">← Home</a>
+
+<a href="index.html" class="logo">
+SkillEarn <span>Hub</span>
+</a>
+
+<a href="index.html" class="back-home">
+← Home
+</a>
+
 </header>
 
-<section class="auth-section">
 
-    <div class="auth-box">
+<main class="auth-wrapper">
 
-        <div class="auth-logo">🚀</div>
+<div class="auth-promo">
 
-        <h1>Welcome Back</h1>
-        <p>Login to your SkillEarn Hub account.</p>
+<span class="promo-badge">
+🚀 SKILLEARN HUB
+</span>
 
-        <form onsubmit="loginUser(event)">
+<h1>
+Learn Skills.<br>
+<span>Build Income.</span><br>
+Grow Online.
+</h1>
 
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="Enter your email" required>
+<p>
+Learn digital skills and discover legitimate online
+business opportunities.
+</p>
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Enter password" required>
+<div class="promo-features">
 
-            <button type="submit" class="btn full">
-                Login
-            </button>
+<div>🎓 Learn Digital Skills</div>
+<div>💼 Build Online Business</div>
+<div>🛒 Sell Digital Products</div>
+<div>🤝 Affiliate Opportunities</div>
 
-        </form>
+</div>
 
-        <div class="divider">OR</div>
+</div>
 
-        <button class="google-btn" onclick="demoLogin()">
-            Continue with Google
-        </button>
 
-        <p class="auth-bottom">
-            Don't have an account?
-            <a href="#" onclick="registerUser()">Create Account</a>
-        </p>
+<div class="auth-box">
 
-    </div>
+<div class="auth-icon">
+🔐
+</div>
 
-</section>
+<h2>Welcome Back</h2>
 
-<script src="js/script.js"></script>
+<p class="auth-subtitle">
+Login to your SkillEarn Hub account
+</p>
+
+
+<form id="loginForm">
+
+<label>Email Address</label>
+
+<input
+type="email"
+id="loginEmail"
+placeholder="Enter your email"
+required
+>
+
+
+<label>Password</label>
+
+<input
+type="password"
+id="loginPassword"
+placeholder="Enter your password"
+required
+>
+
+
+<div class="forgot-row">
+
+<a href="#" onclick="forgotPassword()">
+Forgot Password?
+</a>
+
+</div>
+
+
+<button type="submit" class="btn full">
+Login to Account
+</button>
+
+</form>
+
+
+<div class="divider">
+<span>OR</span>
+</div>
+
+
+<button class="google-btn" onclick="googleLogin()">
+🔵 Continue with Google
+</button>
+
+
+<p class="auth-bottom">
+
+Don't have an account?
+
+<a href="register.html">
+Create Free Account
+</a>
+
+</p>
+
+<p id="authMessage" class="auth-message"></p>
+
+</div>
+
+</main>
+
+
+<footer>
+
+<div class="footer-logo">
+SkillEarn <span>Hub</span>
+</div>
+
+<p>
+Learn Skills. Build Income. Grow Online.
+</p>
+
+<p class="copyright">
+© 2026 SkillEarn Hub. All Rights Reserved.
+</p>
+
+</footer>
+
 </body>
 </html>

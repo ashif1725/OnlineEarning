@@ -1,1 +1,129 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Courses - SkillEarn Hub</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="index.html" class="logo">SkillEarn <span>Hub</span></a>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+
+    <nav id="navMenu">
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+        <a href="earn.html">Earn Online</a>
+        <a href="store.html">Store</a>
+        <a href="affiliate.html">Affiliate</a>
+        <a href="login.html" class="nav-login">Login</a>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <span class="section-label">LEARN & GROW</span>
+    <h1>Build Skills That Matter</h1>
+    <p>Practical courses designed for the digital economy.</p>
+</section>
+
+<section class="section">
+
+    <div class="search-bar">
+        <input type="text" id="courseSearch" placeholder="Search courses..." onkeyup="searchCourses()">
+    </div>
+
+    <div class="course-grid" id="courseGrid">
+
+        <div class="course-card">
+            <div class="course-image ai">🤖</div>
+            <div class="course-content">
+                <span class="tag">POPULAR</span>
+                <h3>AI for Beginners</h3>
+                <p>Learn how to use modern AI tools for productivity and business.</p>
+                <div class="course-bottom">
+                    <strong>₹499</strong>
+                    <button onclick="enrollCourse('AI for Beginners')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-card">
+            <div class="course-image marketing">📱</div>
+            <div class="course-content">
+                <span class="tag">BUSINESS</span>
+                <h3>Digital Marketing</h3>
+                <p>Learn social media, content marketing and customer acquisition.</p>
+                <div class="course-bottom">
+                    <strong>₹799</strong>
+                    <button onclick="enrollCourse('Digital Marketing')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-card">
+            <div class="course-image freelance">💻</div>
+            <div class="course-content">
+                <span class="tag">SKILL</span>
+                <h3>Freelancing Mastery</h3>
+                <p>Learn how to create services and find genuine freelance clients.</p>
+                <div class="course-bottom">
+                    <strong>₹699</strong>
+                    <button onclick="enrollCourse('Freelancing Mastery')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-card">
+            <div class="course-image ecommerce">🛒</div>
+            <div class="course-content">
+                <span class="tag">SELLING</span>
+                <h3>Online Selling</h3>
+                <p>Learn the basics of selling physical and digital products online.</p>
+                <div class="course-bottom">
+                    <strong>₹599</strong>
+                    <button onclick="enrollCourse('Online Selling')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-card">
+            <div class="course-image content">🎥</div>
+            <div class="course-content">
+                <span class="tag">CREATOR</span>
+                <h3>Content Creation</h3>
+                <p>Create engaging videos and social media content.</p>
+                <div class="course-bottom">
+                    <strong>₹399</strong>
+                    <button onclick="enrollCourse('Content Creation')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="course-card">
+            <div class="course-image website">🌐</div>
+            <div class="course-content">
+                <span class="tag">TECH</span>
+                <h3>Website Building</h3>
+                <p>Learn HTML, CSS and JavaScript to build modern websites.</p>
+                <div class="course-bottom">
+                    <strong>₹899</strong>
+                    <button onclick="enrollCourse('Website Building')">Enroll</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer>
+    <div class="footer-logo">SkillEarn <span>Hub</span></div>
+    <p>Learn Skills. Build Income. Grow Online.</p>
+    <p class="copyright">© 2026 SkillEarn Hub. All Rights Reserved.</p>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

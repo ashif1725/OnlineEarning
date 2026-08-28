@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Dashboard | SkillEarn Hub</title>
 
@@ -14,13 +17,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
     <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
 </head>
+
 
 <body class="dashboard-page">
 
-<!-- =========================
-     HEADER
-========================= -->
+
+<!-- ============================= -->
+<!-- HEADER -->
+<!-- ============================= -->
 
 <header class="header dashboard-header">
 
@@ -28,365 +34,470 @@
         SkillEarn <span>Hub</span>
     </a>
 
-    <div class="header-actions">
+    <nav class="dashboard-nav">
 
-        <span id="userNameTop" class="top-user-name">
-            User
-        </span>
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="courses.html">
+            Courses
+        </a>
+
+        <a href="earn.html">
+            Earn
+        </a>
+
+        <a href="referral.html">
+            Referral
+        </a>
+
+        <a href="profile.html">
+            Profile
+        </a>
 
         <button
             type="button"
             class="logout-btn"
-            id="logoutBtn">
+            onclick="logoutUser()">
             Logout
         </button>
 
-    </div>
+    </nav>
 
 </header>
 
 
-<!-- =========================
-     MAIN
-========================= -->
+
+<!-- ============================= -->
+<!-- MAIN -->
+<!-- ============================= -->
 
 <main class="dashboard-container">
 
 
-    <!-- =========================
-         WELCOME
-    ========================= -->
+<!-- ============================= -->
+<!-- WELCOME -->
+<!-- ============================= -->
 
-    <section class="welcome-section">
+<section class="dashboard-welcome">
+
+    <div>
+
+        <span class="dashboard-label">
+            MEMBER DASHBOARD
+        </span>
+
+        <h1>
+            Welcome,
+            <span id="userName">
+                Member
+            </span> 👋
+        </h1>
+
+        <p>
+            Continue learning, track your progress
+            and explore new opportunities.
+        </p>
+
+    </div>
+
+    <div class="welcome-actions">
+
+        <a href="courses.html" class="btn">
+            Browse Courses
+        </a>
+
+        <a href="profile.html"
+           class="btn secondary-btn">
+            My Profile
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- ============================= -->
+<!-- USER STATS -->
+<!-- ============================= -->
+
+<section class="dashboard-stats">
+
+
+    <div class="dashboard-stat-card">
+
+        <div class="stat-icon">
+            🎓
+        </div>
 
         <div>
 
-            <p class="welcome-small">
-                Welcome back 👋
-            </p>
+            <span>
+                Enrolled Courses
+            </span>
 
-            <h1 id="welcomeName">
-                Welcome!
-            </h1>
+            <strong id="enrolledCount">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="dashboard-stat-card">
+
+        <div class="stat-icon">
+            📈
+        </div>
+
+        <div>
+
+            <span>
+                Learning Progress
+            </span>
+
+            <strong id="learningProgress">
+                0%
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="dashboard-stat-card">
+
+        <div class="stat-icon">
+            💰
+        </div>
+
+        <div>
+
+            <span>
+                Available Earnings
+            </span>
+
+            <strong id="availableEarnings">
+                ₹0.00
+            </strong>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="dashboard-stat-card">
+
+        <div class="stat-icon">
+            👥
+        </div>
+
+        <div>
+
+            <span>
+                Referrals
+            </span>
+
+            <strong id="referralCount">
+                0
+            </strong>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ============================= -->
+<!-- MY COURSES -->
+<!-- ============================= -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <span class="section-label">
+                LEARNING
+            </span>
+
+            <h2>
+                My Courses
+            </h2>
 
             <p>
-                Continue learning, explore new skills
-                and grow your online journey.
+                Continue where you left off.
             </p>
 
         </div>
 
-        <div class="welcome-icon">
-            🚀
+        <a href="courses.html"
+           class="section-link">
+            Browse Courses →
+        </a>
+
+    </div>
+
+
+    <div id="myCourses"
+         class="course-grid">
+
+        <div class="loading-card">
+
+            <div class="loading-icon">
+                ⏳
+            </div>
+
+            <h3>
+                Loading your courses...
+            </h3>
+
+            <p>
+                Please wait a moment.
+            </p>
+
         </div>
 
-    </section>
+    </div>
+
+</section>
 
 
 
-    <!-- =========================
-         QUICK STATS
-    ========================= -->
+<!-- ============================= -->
+<!-- ALL COURSES -->
+<!-- ============================= -->
 
-    <section class="stats-grid">
+<section class="dashboard-section">
 
-        <div class="dashboard-card">
+    <div class="section-heading">
 
-            <div class="stat-icon">
-                📚
+        <div>
+
+            <span class="section-label">
+                EXPLORE
+            </span>
+
+            <h2>
+                All Courses
+            </h2>
+
+            <p>
+                Explore all available courses on SkillEarn Hub.
+            </p>
+
+        </div>
+
+        <a href="courses.html"
+           class="section-link">
+            View All →
+        </a>
+
+    </div>
+
+
+    <div id="allCourses"
+         class="course-grid">
+
+        <!-- Courses will be inserted here -->
+
+    </div>
+
+</section>
+
+
+
+<!-- ============================= -->
+<!-- QUICK ACTIONS -->
+<!-- ============================= -->
+
+<section class="dashboard-section">
+
+    <div class="section-heading">
+
+        <div>
+
+            <span class="section-label">
+                QUICK ACCESS
+            </span>
+
+            <h2>
+                Quick Actions
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+
+        <a href="courses.html"
+           class="quick-card">
+
+            <div class="quick-icon">
+                🎓
             </div>
 
             <div>
 
-                <span class="stat-title">
-                    Enrolled Courses
-                </span>
+                <h3>
+                    Browse Courses
+                </h3>
 
-                <strong id="enrolledCount">
-                    0
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div class="dashboard-card">
-
-            <div class="stat-icon">
-                📈
-            </div>
-
-            <div>
-
-                <span class="stat-title">
-                    Learning Progress
-                </span>
-
-                <strong id="progressValue">
-                    0%
-                </strong>
+                <p>
+                    Discover new skills.
+                </p>
 
             </div>
 
-        </div>
+            <span>
+                →
+            </span>
+
+        </a>
 
 
-        <div class="dashboard-card">
 
-            <div class="stat-icon">
+        <a href="earn.html"
+           class="quick-card">
+
+            <div class="quick-icon">
                 💰
             </div>
 
             <div>
 
-                <span class="stat-title">
-                    Available Earnings
-                </span>
+                <h3>
+                    Earning
+                </h3>
 
-                <strong id="earningsValue">
-                    ₹0.00
-                </strong>
+                <p>
+                    Explore earning opportunities.
+                </p>
 
             </div>
 
-        </div>
+            <span>
+                →
+            </span>
+
+        </a>
 
 
-        <div class="dashboard-card">
 
-            <div class="stat-icon">
+        <a href="referral.html"
+           class="quick-card">
+
+            <div class="quick-icon">
                 🤝
             </div>
 
             <div>
 
-                <span class="stat-title">
-                    Referrals
-                </span>
-
-                <strong id="referralCount">
-                    0
-                </strong>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         MY COURSES
-    ========================= -->
-
-    <section class="dashboard-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <h2>
-                    My Courses
-                </h2>
+                <h3>
+                    Referral Program
+                </h3>
 
                 <p>
-                    Continue where you left off.
+                    Invite friends and earn rewards.
                 </p>
 
             </div>
 
-            <a
-                href="courses.html"
-                class="section-link">
-                Browse Courses →
-            </a>
-
-        </div>
-
-
-        <div
-            id="myCourses"
-            class="course-grid">
-
-            <!-- Courses loaded here -->
-
-            <div class="loading-box">
-                <div class="loading-spinner"></div>
-
-                <p>
-                    Loading your courses...
-                </p>
-            </div>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         ALL COURSES
-    ========================= -->
-
-    <section class="dashboard-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <h2>
-                    Explore Courses
-                </h2>
-
-                <p>
-                    Learn practical digital skills.
-                </p>
-
-            </div>
-
-            <a
-                href="courses.html"
-                class="section-link">
-                View All →
-            </a>
-
-        </div>
-
-
-        <div
-            id="allCourses"
-            class="course-grid">
-
-            <!-- All courses -->
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         QUICK ACTIONS
-    ========================= -->
-
-    <section class="dashboard-section">
-
-        <div class="section-heading">
-
-            <div>
-
-                <h2>
-                    Quick Actions
-                </h2>
-
-                <p>
-                    Manage your SkillEarn Hub account.
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="quick-actions">
-
-            <a href="courses.html" class="action-card">
-
-                <span>📚</span>
-
-                <div>
-                    <strong>Browse Courses</strong>
-                    <small>Explore available courses</small>
-                </div>
-
-            </a>
-
-
-            <a href="earn.html" class="action-card">
-
-                <span>💰</span>
-
-                <div>
-                    <strong>Earn Money</strong>
-                    <small>Explore earning opportunities</small>
-                </div>
-
-            </a>
-
-
-            <a href="referral.html" class="action-card">
-
-                <span>🤝</span>
-
-                <div>
-                    <strong>Referral Program</strong>
-                    <small>Invite friends and earn</small>
-                </div>
-
-            </a>
-
-
-            <a href="profile.html" class="action-card">
-
-                <span>👤</span>
-
-                <div>
-                    <strong>My Profile</strong>
-                    <small>Update your account</small>
-                </div>
-
-            </a>
-
-        </div>
-
-    </section>
-
-
-
-    <!-- =========================
-         PROFILE
-    ========================= -->
-
-    <section class="profile-summary">
-
-        <div class="profile-avatar" id="profileAvatar">
-            U
-        </div>
-
-        <div class="profile-info">
-
-            <h2 id="profileName">
-                User
-            </h2>
-
-            <p id="profileEmail">
-                Loading email...
-            </p>
-
-            <span class="verified-badge">
-                ✓ Account Active
+            <span>
+                →
             </span>
 
-        </div>
-
-        <a
-            href="profile.html"
-            class="profile-edit">
-            Edit Profile
         </a>
 
-    </section>
+
+
+        <a href="store.html"
+           class="quick-card">
+
+            <div class="quick-icon">
+                🛒
+            </div>
+
+            <div>
+
+                <h3>
+                    Digital Store
+                </h3>
+
+                <p>
+                    Explore digital products.
+                </p>
+
+            </div>
+
+            <span>
+                →
+            </span>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+
+<!-- ============================= -->
+<!-- PROFILE SUMMARY -->
+<!-- ============================= -->
+
+<section class="profile-summary">
+
+    <div class="profile-avatar"
+         id="profileAvatar">
+        👤
+    </div>
+
+
+    <div class="profile-info">
+
+        <span>
+            YOUR ACCOUNT
+        </span>
+
+        <h2 id="profileName">
+            Member
+        </h2>
+
+        <p id="profileEmail">
+            Loading...
+        </p>
+
+    </div>
+
+
+    <a href="profile.html"
+       class="btn secondary-btn">
+        Edit Profile
+    </a>
+
+</section>
 
 
 </main>
 
 
 
-<!-- =========================
-     FOOTER
-========================= -->
+<!-- ============================= -->
+<!-- FOOTER -->
+<!-- ============================= -->
 
 <footer>
 
@@ -406,83 +517,46 @@
 
 
 
-<!-- =========================
-     DASHBOARD JAVASCRIPT
-========================= -->
+<!-- ============================= -->
+<!-- DASHBOARD SCRIPT -->
+<!-- ============================= -->
 
 <script>
 
-"use strict";
-
-
-// =====================================
-// FIREBASE INITIALIZATION
-// =====================================
-
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-
-const auth = firebase.auth();
 const db = firebase.firestore();
+const dashboardAuth = firebase.auth();
 
 
-// =====================================
-// COURSE DATABASE
-// =====================================
+// ========================================
+// COURSE CATALOG
+// ========================================
 
-const COURSES = [
+const defaultCourses = [
 
     {
         id: "digital-marketing",
         title: "Digital Marketing",
         category: "Marketing",
         description:
-            "Learn the fundamentals of digital marketing, content and online promotion.",
+            "Learn the fundamentals of digital marketing, content creation and online promotion.",
+        price: 499,
         lessons: 20,
         duration: "4 Weeks",
         level: "Beginner",
-        price: 499,
         icon: "📣"
     },
 
     {
-        id: "graphic-design",
-        title: "Graphic Design",
-        category: "Design",
-        description:
-            "Learn graphic design fundamentals and create professional digital designs.",
-        lessons: 18,
-        duration: "4 Weeks",
-        level: "Beginner",
-        price: 399,
-        icon: "🎨"
-    },
-
-    {
-        id: "freelancing",
-        title: "Freelancing",
+        id: "online-business",
+        title: "Online Business",
         category: "Business",
         description:
-            "Learn how to start freelancing and build a professional online career.",
-        lessons: 16,
-        duration: "3 Weeks",
+            "Learn how to build and manage a digital business from the ground up.",
+        price: 699,
+        lessons: 25,
+        duration: "5 Weeks",
         level: "Beginner",
-        price: 449,
         icon: "💼"
-    },
-
-    {
-        id: "web-development",
-        title: "Web Development",
-        category: "Technology",
-        description:
-            "Learn HTML, CSS and JavaScript to build modern websites.",
-        lessons: 30,
-        duration: "6 Weeks",
-        level: "Beginner",
-        price: 799,
-        icon: "💻"
     },
 
     {
@@ -490,61 +564,61 @@ const COURSES = [
         title: "Affiliate Marketing",
         category: "Marketing",
         description:
-            "Learn affiliate marketing fundamentals, content strategy and promotion.",
+            "Understand affiliate marketing, content promotion and commission-based models.",
+        price: 599,
         lessons: 22,
         duration: "4 Weeks",
+        level: "Intermediate",
+        icon: "🤝"
+    },
+
+    {
+        id: "freelancing",
+        title: "Freelancing",
+        category: "Career",
+        description:
+            "Learn essential freelancing skills and how to build a professional online profile.",
+        price: 799,
+        lessons: 30,
+        duration: "6 Weeks",
         level: "Beginner",
-        price: 599,
-        icon: "🔗"
+        icon: "💻"
     },
 
     {
         id: "content-creation",
         title: "Content Creation",
-        category: "Creator",
+        category: "Creative",
         description:
-            "Learn how to create useful content for websites and social platforms.",
-        lessons: 15,
-        duration: "3 Weeks",
-        level: "Beginner",
-        price: 349,
-        icon: "🎬"
-    },
-
-    {
-        id: "social-media-marketing",
-        title: "Social Media Marketing",
-        category: "Marketing",
-        description:
-            "Learn social media strategy, content planning and audience growth.",
-        lessons: 24,
-        duration: "5 Weeks",
-        level: "Intermediate",
-        price: 649,
-        icon: "📱"
-    },
-
-    {
-        id: "ai-tools",
-        title: "AI Tools & Productivity",
-        category: "Technology",
-        description:
-            "Learn practical ways to use modern AI tools for productivity and content.",
-        lessons: 20,
+            "Learn content planning, social media strategy and digital content creation.",
+        price: 499,
+        lessons: 18,
         duration: "4 Weeks",
         level: "Beginner",
+        icon: "🎥"
+    },
+
+    {
+        id: "graphic-design",
+        title: "Graphic Design",
+        category: "Design",
+        description:
+            "Learn the fundamentals of graphic design and create professional digital designs.",
         price: 699,
-        icon: "🤖"
+        lessons: 24,
+        duration: "5 Weeks",
+        level: "Beginner",
+        icon: "🎨"
     }
 
 ];
 
 
-// =====================================
+// ========================================
 // AUTH STATE
-// =====================================
+// ========================================
 
-auth.onAuthStateChanged(async function(user) {
+dashboardAuth.onAuthStateChanged(async function(user) {
 
     if (!user) {
 
@@ -554,50 +628,42 @@ auth.onAuthStateChanged(async function(user) {
     }
 
 
-    console.log("Logged in:", user.uid);
+    console.log("Logged in user:", user.uid);
 
 
-    // User information
-    const name =
+    // User basic information
+
+    const displayName =
         user.displayName ||
         user.email?.split("@")[0] ||
-        "User";
+        "Member";
 
-    const email =
+
+    document.getElementById("userName").textContent =
+        displayName;
+
+
+    document.getElementById("profileName").textContent =
+        displayName;
+
+
+    document.getElementById("profileEmail").textContent =
         user.email || "";
 
 
-    document.getElementById("welcomeName")
-        .textContent = "Hello, " + name + "!";
+    // Load dashboard data
 
-    document.getElementById("userNameTop")
-        .textContent = name;
-
-    document.getElementById("profileName")
-        .textContent = name;
-
-    document.getElementById("profileEmail")
-        .textContent = email;
-
-
-    document.getElementById("profileAvatar")
-        .textContent =
-        name.charAt(0).toUpperCase();
-
-
-    // Load user data
     await loadUserData(user);
 
-
-    // Show all courses
-    renderAllCourses();
+    loadAllCourses();
 
 });
 
 
-// =====================================
+
+// ========================================
 // LOAD USER DATA
-// =====================================
+// ========================================
 
 async function loadUserData(user) {
 
@@ -606,55 +672,95 @@ async function loadUserData(user) {
         const userRef =
             db.collection("users").doc(user.uid);
 
-        const snapshot =
+
+        const userSnap =
             await userRef.get();
 
 
-        if (snapshot.exists) {
+        if (userSnap.exists) {
 
-            const data = snapshot.data();
-
-
-            document.getElementById("earningsValue")
-                .textContent =
-                "₹" +
-                Number(data.earnings || 0)
-                .toFixed(2);
+            const data = userSnap.data();
 
 
-            document.getElementById("referralCount")
-                .textContent =
-                data.referralCount || 0;
+            const earnings =
+                Number(data.earnings || 0);
 
 
-            document.getElementById("progressValue")
-                .textContent =
-                (data.progress || 0) + "%";
+            const referrals =
+                Number(data.referralCount || 0);
+
+
+            const progress =
+                Number(data.learningProgress || 0);
+
+
+            document.getElementById(
+                "availableEarnings"
+            ).textContent =
+                "₹" + earnings.toFixed(2);
+
+
+            document.getElementById(
+                "referralCount"
+            ).textContent =
+                referrals;
+
+
+            document.getElementById(
+                "learningProgress"
+            ).textContent =
+                progress + "%";
+
 
         }
 
 
+        // Load enrolled courses
+
+        await loadMyCourses(user.uid);
+
+
     } catch (error) {
 
-        console.warn(
-            "User data could not be loaded:",
+        console.error(
+            "User data error:",
             error
         );
 
+
+        /*
+         * If Firestore permission is not configured yet,
+         * don't break the complete dashboard.
+         */
+
+        document.getElementById(
+            "availableEarnings"
+        ).textContent = "₹0.00";
+
+
+        document.getElementById(
+            "referralCount"
+        ).textContent = "0";
+
+
+        document.getElementById(
+            "learningProgress"
+        ).textContent = "0%";
+
+
+        showEmptyMyCourses();
+
     }
-
-
-    // Load enrolled courses
-    await loadEnrolledCourses(user.uid);
 
 }
 
 
-// =====================================
-// LOAD ENROLLED COURSES
-// =====================================
 
-async function loadEnrolledCourses(uid) {
+// ========================================
+// LOAD MY COURSES
+// ========================================
+
+async function loadMyCourses(uid) {
 
     const container =
         document.getElementById("myCourses");
@@ -664,56 +770,19 @@ async function loadEnrolledCourses(uid) {
 
         const snapshot =
             await db
-            .collection("users")
-            .doc(uid)
-            .collection("enrollments")
-            .get();
+                .collection("users")
+                .doc(uid)
+                .collection("enrollments")
+                .get();
 
 
         if (snapshot.empty) {
 
-            showNoCourses(container);
+            showEmptyMyCourses();
 
-            document.getElementById("enrolledCount")
-                .textContent = "0";
-
-            return;
-        }
-
-
-        const enrolledCourses = [];
-
-
-        snapshot.forEach(function(doc) {
-
-            const data = doc.data();
-
-            const course =
-                COURSES.find(
-                    item => item.id === data.courseId
-                );
-
-
-            if (course) {
-
-                enrolledCourses.push({
-                    ...course,
-                    progress: data.progress || 0
-                });
-
-            }
-
-        });
-
-
-        document.getElementById("enrolledCount")
-            .textContent =
-            enrolledCourses.length;
-
-
-        if (!enrolledCourses.length) {
-
-            showNoCourses(container);
+            document.getElementById(
+                "enrolledCount"
+            ).textContent = "0";
 
             return;
         }
@@ -722,63 +791,115 @@ async function loadEnrolledCourses(uid) {
         container.innerHTML = "";
 
 
-        enrolledCourses.forEach(function(course) {
+        let enrolledCount = 0;
+        let totalProgress = 0;
 
-            container.appendChild(
-                createCourseCard(course, true)
-            );
+
+        snapshot.forEach(function(doc) {
+
+            const enrollment =
+                doc.data();
+
+
+            const course =
+                defaultCourses.find(
+                    c => c.id === enrollment.courseId
+                );
+
+
+            if (!course) return;
+
+
+            enrolledCount++;
+
+
+            const progress =
+                Number(
+                    enrollment.progress || 0
+                );
+
+
+            totalProgress += progress;
+
+
+            container.innerHTML +=
+                createCourseCard(
+                    course,
+                    progress,
+                    true
+                );
 
         });
 
 
+        document.getElementById(
+            "enrolledCount"
+        ).textContent =
+            enrolledCount;
+
+
+        if (enrolledCount > 0) {
+
+            const average =
+                Math.round(
+                    totalProgress /
+                    enrolledCount
+                );
+
+
+            document.getElementById(
+                "learningProgress"
+            ).textContent =
+                average + "%";
+        }
+
+
     } catch (error) {
 
-        console.warn(
+        console.error(
             "Enrollment loading error:",
             error
         );
 
 
-        /*
-         * IMPORTANT:
-         * Firestore permission error होने पर
-         * पूरा dashboard खराब नहीं होगा।
-         */
-
-        showNoCourses(container);
+        showEmptyMyCourses();
 
     }
 
 }
 
 
-// =====================================
-// SHOW NO COURSES
-// =====================================
 
-function showNoCourses(container) {
+// ========================================
+// EMPTY MY COURSES
+// ========================================
+
+function showEmptyMyCourses() {
+
+    const container =
+        document.getElementById("myCourses");
+
 
     container.innerHTML = `
 
-        <div class="empty-course-box">
+        <div class="loading-card">
 
-            <div class="empty-icon">
-                📚
+            <div class="loading-icon">
+                🎓
             </div>
 
             <h3>
-                No Courses Yet
+                No Courses Enrolled Yet
             </h3>
 
             <p>
-                You haven't enrolled in any course yet.
-                Explore our courses and start learning.
+                Purchase a course to start learning.
             </p>
 
             <a
                 href="courses.html"
                 class="btn">
-                Browse Courses
+                Explore Courses
             </a>
 
         </div>
@@ -788,11 +909,12 @@ function showNoCourses(container) {
 }
 
 
-// =====================================
-// RENDER ALL COURSES
-// =====================================
 
-function renderAllCourses() {
+// ========================================
+// LOAD ALL COURSES
+// ========================================
+
+function loadAllCourses() {
 
     const container =
         document.getElementById("allCourses");
@@ -801,180 +923,188 @@ function renderAllCourses() {
     container.innerHTML = "";
 
 
-    COURSES.forEach(function(course) {
+    defaultCourses.forEach(function(course) {
 
-        container.appendChild(
-            createCourseCard(course, false)
-        );
+        container.innerHTML +=
+            createCourseCard(
+                course,
+                0,
+                false
+            );
 
     });
 
 }
 
 
-// =====================================
+
+// ========================================
 // CREATE COURSE CARD
-// =====================================
+// ========================================
 
-function createCourseCard(course, enrolled) {
+function createCourseCard(
+    course,
+    progress = 0,
+    enrolled = false
+) {
 
-    const card =
-        document.createElement("article");
+    return `
 
-
-    card.className =
-        "course-card-dashboard";
-
-
-    card.innerHTML = `
-
-        <div class="course-image">
-
-            <span class="course-level">
-                ${course.level}
-            </span>
-
-            <div class="course-icon">
-                ${course.icon}
-            </div>
-
-        </div>
+        <article class="course-card">
 
 
-        <div class="course-content">
+            <div class="course-image">
 
-            <span class="course-category">
-                ${course.category}
-            </span>
-
-
-            <h3>
-                ${course.title}
-            </h3>
-
-
-            <p>
-                ${course.description}
-            </p>
-
-
-            <div class="course-meta">
-
-                <span>
-                    📚 ${course.lessons} Lessons
+                <span class="course-level">
+                    ${escapeHTML(course.level)}
                 </span>
 
-                <span>
-                    ⏱️ ${course.duration}
-                </span>
+                <div class="course-icon">
+                    ${course.icon}
+                </div>
 
             </div>
 
 
-            ${
-                enrolled
-                ?
-                `
+            <div class="course-content">
 
-                <div class="progress-area">
-
-                    <div class="progress-top">
-
-                        <span>
-                            Your Progress
-                        </span>
-
-                        <strong>
-                            ${course.progress}%
-                        </strong>
-
-                    </div>
-
-                    <div class="progress-bar">
-
-                        <span
-                            style="width:${course.progress}%">
-                        </span>
-
-                    </div>
-
-                </div>
-
-                <a
-                    href="course-details.html?id=${course.id}"
-                    class="course-btn">
-                    Continue Learning →
-                </a>
-
-                `
-                :
-                `
-
-                <div class="course-bottom">
-
-                    <div>
-
-                        <small>
-                            Course Fee
-                        </small>
-
-                        <strong>
-                            ₹${course.price}
-                        </strong>
-
-                    </div>
+                <span class="course-category">
+                    ${escapeHTML(course.category)}
+                </span>
 
 
-                    <a
-                        href="course-details.html?id=${course.id}"
-                        class="course-btn">
-                        View Course
-                    </a>
+                <h3>
+                    ${escapeHTML(course.title)}
+                </h3>
+
+
+                <p>
+                    ${escapeHTML(course.description)}
+                </p>
+
+
+                <div class="course-meta">
+
+                    <span>
+                        📚 ${course.lessons} Lessons
+                    </span>
+
+                    <span>
+                        ⏱️ ${escapeHTML(course.duration)}
+                    </span>
 
                 </div>
 
-                `
-            }
 
-        </div>
+                ${
+                    enrolled
+                    ?
+                    `
+
+                    <div class="progress-area">
+
+                        <div class="progress-header">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                ${progress}%
+                            </strong>
+
+                        </div>
+
+                        <div class="progress-bar">
+
+                            <span
+                                style="
+                                width:${progress}%;
+                                ">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        class="btn full"
+                        onclick="
+                        openCourse('${course.id}')
+                        ">
+                        Continue Learning
+                    </button>
+
+                    `
+                    :
+                    `
+
+                    <div class="course-bottom">
+
+                        <div>
+
+                            <small>
+                                Course Fee
+                            </small>
+
+                            <strong>
+                                ₹${course.price}
+                            </strong>
+
+                        </div>
+
+
+                        <button
+                            class="btn"
+                            onclick="
+                            openCourse('${course.id}')
+                            ">
+                            View Course
+                        </button>
+
+                    </div>
+
+                    `
+                }
+
+            </div>
+
+        </article>
 
     `;
-
-
-    return card;
 
 }
 
 
-// =====================================
-// LOGOUT
-// =====================================
 
-document
-.getElementById("logoutBtn")
-.addEventListener("click", async function() {
+// ========================================
+// OPEN COURSE
+// ========================================
 
-    try {
+function openCourse(courseId) {
 
-        await auth.signOut();
+    window.location.href =
+        "course-details.html?id=" +
+        encodeURIComponent(courseId);
 
-        window.location.href =
-            "login.html";
+}
 
-    } catch (error) {
 
-        console.error(
-            "Logout error:",
-            error
-        );
 
-        alert(
-            "Unable to logout. Please try again."
-        );
+// ========================================
+// HTML ESCAPE
+// ========================================
 
-    }
+function escapeHTML(value) {
 
-});
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
 
 </script>
 

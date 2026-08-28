@@ -4,178 +4,372 @@ service cloud.firestore {
 
   match /databases/{database}/documents {
 
-    /*
-     * USER PROFILES
-     * Users can read/update their own profile.
-     */
+    // =========================================================
+    // HELPER FUNCTIONS
+    // =========================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Admin users should have a Firebase custom claim:
+    // { "admin": true }
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.admin == true;
+    }
+
+
+    // =========================================================
+    // USERS / PROFILES
+    // =========================================================
+
     match /users/{userId} {
 
-      allow read, create, update:
-        if request.auth != null
-        && request.auth.uid == userId;
+      // User can read only his/her own profile
+      // Admin can read all profiles
+      allow read: if isOwner(userId) || isAdmin();
 
-      allow delete:
-        if false;
+      // User can create only his/her own profile
+      allow create: if isOwner(userId);
+
+      // User can update only his/her own profile
+      // Admin can update any profile
+      allow update: if isOwner(userId) || isAdmin();
+
+      // Users should not delete their account data directly
+      allow delete: if isAdmin();
     }
 
 
-    /*
-     * COURSES
-     * Anyone can view published courses.
-     * Only authenticated users can access course data.
-     */
+    // =========================================================
+    // COURSES
+    // =========================================================
+
     match /courses/{courseId} {
 
-      allow read:
-        if request.auth != null;
+      // Courses can be viewed without login
+      allow read: if true;
 
-      allow create, update, delete:
-        if false;
+      // Only admin can create/update/delete courses
+      allow create, update, delete: if isAdmin();
     }
 
 
-    /*
-     * ENROLLMENTS
-     * A user can create/read only their own enrollment.
-     */
+    // =========================================================
+    // ENROLLMENTS
+    // =========================================================
+
     match /enrollments/{enrollmentId} {
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // Logged-in user can read only his/her enrollment
+      // Admin can read everything
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
 
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+      // Enrollment must be created only after
+      // a VERIFIED payment exists.
+      //
+      // Expected payment document:
+      // payments/{paymentId}
+      //
+      // status must be "verified"
+      //
+      // payment userId must match logged-in user.
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.courseId is string
+        && request.resource.data.paymentId is string
+        && exists(
+          /databases/$(database)/documents/payments/$(request.resource.data.paymentId)
+        )
+        && get(
+          /databases/$(database)/documents/payments/$(request.resource.data.paymentId)
+        ).data.userId == request.auth.uid
+        && get(
+          /databases/$(database)/documents/payments/$(request.resource.data.paymentId)
+        ).data.courseId == request.resource.data.courseId
+        && get(
+          /databases/$(database)/documents/payments/$(request.resource.data.paymentId)
+        ).data.status == "verified";
 
-      allow update:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // User can update only limited enrollment information.
+      // Admin can update everything.
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.courseId == resource.data.courseId
+          && request.resource.data.paymentId == resource.data.paymentId
+        );
 
-      allow delete:
-        if false;
+      // Only admin can delete enrollments
+      allow delete: if isAdmin();
     }
 
 
-    /*
-     * PAYMENTS
-     * Users can create and read their own payment records.
-     * Payment verification should be performed by trusted
-     * server-side/admin code, not by the browser.
-     */
+    // =========================================================
+    // PAYMENTS
+    // =========================================================
+
     match /payments/{paymentId} {
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // User can see only his/her own payments.
+      // Admin can see all payments.
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
 
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+      // User can create a NEW pending payment record.
+      //
+      // IMPORTANT:
+      // Client is NOT allowed to create a "verified" payment.
+      //
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.courseId is string
+        && request.resource.data.amount is number;
 
-      allow update, delete:
-        if false;
+      // Only admin/server can change payment status.
+      //
+      // This prevents a user from changing:
+      //
+      // pending -> verified
+      //
+      // from the browser.
+      allow update: if isAdmin();
+
+      // Only admin can delete payment records
+      allow delete: if isAdmin();
     }
 
 
-    /*
-     * REFERRALS
-     * Users can read their own referral information.
-     */
+    // =========================================================
+    // REFERRALS
+    // =========================================================
+
     match /referrals/{referralId} {
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // Referral owner can see own referrals
+      // Admin can see everything
+      allow read: if isSignedIn()
+        && (
+          resource.data.referrerId == request.auth.uid
+          || resource.data.referredUserId == request.auth.uid
+          || isAdmin()
+        );
 
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+      // Logged-in users can create referral records
+      // only where they are the referrer.
+      allow create: if isSignedIn()
+        && request.resource.data.referrerId == request.auth.uid;
 
-      allow update, delete:
-        if false;
+      // Referral records should be controlled by backend/admin.
+      allow update, delete: if isAdmin();
     }
 
 
-    /*
-     * AFFILIATE DATA
-     */
-    match /affiliates/{affiliateId} {
+    // =========================================================
+    // EARNINGS
+    // =========================================================
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+    match /earnings/{earningId} {
 
-      allow create:
-        if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+      // User can see only own earnings
+      // Admin can see all earnings
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
 
-      allow update:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
-
-      allow delete:
-        if false;
+      // Earnings MUST NOT be created directly by users.
+      // Backend / Cloud Functions / Admin creates them.
+      allow create, update, delete: if isAdmin();
     }
 
 
-    /*
-     * STORE PRODUCTS
-     * Logged-in users can view products.
-     */
+    // =========================================================
+    // WITHDRAWALS
+    // =========================================================
+
+    match /withdrawals/{withdrawalId} {
+
+      // User can view own withdrawal request
+      // Admin can view all
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
+
+      // User can create withdrawal request for himself/herself.
+      //
+      // Initial status must be pending.
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == "pending"
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0;
+
+      // User cannot approve/reject his own withdrawal.
+      // Only admin can update.
+      allow update: if isAdmin();
+
+      // Only admin can delete.
+      allow delete: if isAdmin();
+    }
+
+
+    // =========================================================
+    // DIGITAL STORE PRODUCTS
+    // =========================================================
+
     match /products/{productId} {
 
-      allow read:
-        if request.auth != null;
+      // Products can be browsed publicly
+      allow read: if true;
 
-      allow create, update, delete:
-        if false;
+      // Only admin can manage products
+      allow create, update, delete: if isAdmin();
     }
 
 
-    /*
-     * ORDERS
-     */
+    // =========================================================
+    // PRODUCT ORDERS
+    // =========================================================
+
     match /orders/{orderId} {
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      // User sees own orders
+      // Admin sees all
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
 
-      allow create:
-        if request.auth != null
+      // Logged-in user can create own order
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid;
 
-      allow update, delete:
-        if false;
+      // Only admin/backend can modify order status
+      allow update, delete: if isAdmin();
     }
 
 
-    /*
-     * LEARNING PROGRESS
-     */
-    match /progress/{progressId} {
+    // =========================================================
+    // COURSE PROGRESS
+    // =========================================================
 
-      allow read:
-        if request.auth != null
-        && resource.data.userId == request.auth.uid;
+    match /courseProgress/{progressId} {
 
-      allow create, update:
-        if request.auth != null
+      // User can read own progress
+      // Admin can read all
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
+
+      // User can create own progress
+      allow create: if isSignedIn()
         && request.resource.data.userId == request.auth.uid;
 
-      allow delete:
-        if false;
+      // User can update own progress
+      allow update: if isSignedIn()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == resource.data.userId;
+
+      // Admin can delete
+      allow delete: if isAdmin();
     }
 
 
-    /*
-     * BLOCK EVERYTHING ELSE
-     */
-    match /{document=**} {
+    // =========================================================
+    // CONTACT / SUPPORT MESSAGES
+    // =========================================================
 
-      allow read, write:
-        if false;
+    match /supportMessages/{messageId} {
+
+      // Anyone can submit a support/contact message
+      allow create: if true;
+
+      // Only admin can read/manage messages
+      allow read, update, delete: if isAdmin();
     }
+
+
+    // =========================================================
+    // SITE SETTINGS
+    // =========================================================
+
+    match /settings/{settingId} {
+
+      // Public website settings can be read
+      allow read: if true;
+
+      // Only admin can change settings
+      allow create, update, delete: if isAdmin();
+    }
+
+
+    // =========================================================
+    // NOTIFICATIONS
+    // =========================================================
+
+    match /notifications/{notificationId} {
+
+      // User can read own notifications
+      // Admin can read all
+      allow read: if isSignedIn()
+        && (
+          resource.data.userId == request.auth.uid
+          || isAdmin()
+        );
+
+      // Backend/admin creates notifications
+      allow create: if isAdmin();
+
+      // User can mark own notification as read
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == resource.data.userId
+        );
+
+      allow delete: if isAdmin();
+    }
+
+
+    // =========================================================
+    // ADMIN LOGS
+    // =========================================================
+
+    match /adminLogs/{logId} {
+
+      // Only admin
+      allow read, create, update, delete: if isAdmin();
+    }
+
+
+    // =========================================================
+    // DEFAULT DENY
+    // =========================================================
+
+    // Any collection not explicitly listed above
+    // is automatically denied.
   }
 }

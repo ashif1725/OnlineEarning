@@ -1,0 +1,181 @@
+rules_version = '2';
+
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+
+    /*
+     * USER PROFILES
+     * Users can read/update their own profile.
+     */
+    match /users/{userId} {
+
+      allow read, create, update:
+        if request.auth != null
+        && request.auth.uid == userId;
+
+      allow delete:
+        if false;
+    }
+
+
+    /*
+     * COURSES
+     * Anyone can view published courses.
+     * Only authenticated users can access course data.
+     */
+    match /courses/{courseId} {
+
+      allow read:
+        if request.auth != null;
+
+      allow create, update, delete:
+        if false;
+    }
+
+
+    /*
+     * ENROLLMENTS
+     * A user can create/read only their own enrollment.
+     */
+    match /enrollments/{enrollmentId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow delete:
+        if false;
+    }
+
+
+    /*
+     * PAYMENTS
+     * Users can create and read their own payment records.
+     * Payment verification should be performed by trusted
+     * server-side/admin code, not by the browser.
+     */
+    match /payments/{paymentId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete:
+        if false;
+    }
+
+
+    /*
+     * REFERRALS
+     * Users can read their own referral information.
+     */
+    match /referrals/{referralId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete:
+        if false;
+    }
+
+
+    /*
+     * AFFILIATE DATA
+     */
+    match /affiliates/{affiliateId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow delete:
+        if false;
+    }
+
+
+    /*
+     * STORE PRODUCTS
+     * Logged-in users can view products.
+     */
+    match /products/{productId} {
+
+      allow read:
+        if request.auth != null;
+
+      allow create, update, delete:
+        if false;
+    }
+
+
+    /*
+     * ORDERS
+     */
+    match /orders/{orderId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow update, delete:
+        if false;
+    }
+
+
+    /*
+     * LEARNING PROGRESS
+     */
+    match /progress/{progressId} {
+
+      allow read:
+        if request.auth != null
+        && resource.data.userId == request.auth.uid;
+
+      allow create, update:
+        if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+
+      allow delete:
+        if false;
+    }
+
+
+    /*
+     * BLOCK EVERYTHING ELSE
+     */
+    match /{document=**} {
+
+      allow read, write:
+        if false;
+    }
+  }
+}

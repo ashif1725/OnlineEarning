@@ -1,12 +1,9 @@
+/* =========================================================
+   SKILLEARN HUB
+   Firebase Configuration
+   ========================================================= */
 
-// ==========================================
-// SkillEarn Hub - Firebase Configuration
-// ==========================================
-
-// Firebase Web configuration
-// NOTE: Firebase Web API key is okay to expose
-// Payment/API secret keys यहां कभी मत रखें.
-
+// Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyAHwV9fDsRXKjiImYuIF-qhi1hQ3MlqKng",
     authDomain: "skillearn-hub.firebaseapp.com",
@@ -18,32 +15,36 @@ const firebaseConfig = {
 };
 
 
-// ==========================================
-// INITIALIZE FIREBASE
-// ==========================================
+/* =========================================================
+   INITIALIZE FIREBASE
+   ========================================================= */
 
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
 
-// ==========================================
-// FIRESTORE
-// ==========================================
+/* =========================================================
+   FIREBASE SERVICES
+   ========================================================= */
 
-const db = firebase.firestore();
-
-
-// ==========================================
-// AUTHENTICATION
-// ==========================================
-
-const auth = firebase.auth();
+const firebaseAuth = firebase.auth();
+const firestoreDB = firebase.firestore();
 
 
-// ==========================================
-// FIREBASE READY
-// ==========================================
+/* =========================================================
+   OPTIONAL:
+   Firebase Analytics
+   ========================================================= */
 
-console.log("Firebase initialized successfully.");
+if (typeof firebase.analytics === "function") {
+    firebase.analytics();
+}
+
+
+/* =========================================================
+   CONSOLE MESSAGE
+   ========================================================= */
+
+console.log("SkillEarn Hub Firebase initialized successfully.");
 console.log("Project:", firebaseConfig.projectId);

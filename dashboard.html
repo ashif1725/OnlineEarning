@@ -3,421 +3,2147 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>Dashboard | SkillEarn Hub</title>
+    <title>Dashboard | SkillEarn Hub</title>
 
-<link rel="stylesheet" href="css/style.css">
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
-<script src="js/firebase-config.js"></script>
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
 
 </head>
 
 
-<body>
+<body class="dashboard-page">
 
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
 <header class="header">
 
-<a href="index.html" class="logo">
-SkillEarn <span>Hub</span>
-</a>
+    <a
+        href="index.html"
+        class="logo"
+    >
+        SkillEarn <span>Hub</span>
+    </a>
 
 
-<nav>
+    <nav class="nav-links">
 
-<a href="index.html">Home</a>
+        <a href="index.html">
+            Home
+        </a>
 
-<a href="courses.html">Courses</a>
+        <a href="courses.html">
+            Courses
+        </a>
 
-<a href="earn.html">Earn Online</a>
+        <a
+            href="dashboard.html"
+            class="active"
+        >
+            Dashboard
+        </a>
 
-<button
-class="logout-btn"
-onclick="logoutUser()">
-Logout
-</button>
+        <a href="referral.html">
+            Referral
+        </a>
 
-</nav>
+        <a href="affiliate.html">
+            Affiliate
+        </a>
+
+        <a href="profile.html">
+            Profile
+        </a>
+
+    </nav>
+
+
+    <button
+        type="button"
+        id="logoutBtn"
+        class="logout-btn"
+    >
+        Logout
+    </button>
 
 </header>
 
 
-<section class="dashboard">
 
-
-<div class="dashboard-header">
-
-<span class="section-label">
-MY ACCOUNT
-</span>
-
-<h1>
-Welcome, <span id="userName">User</span> 👋
-</h1>
-
-<p>
-Manage your learning and online business activity.
-</p>
-
-</div>
-
-
-<div class="dashboard-grid">
-
-
-<div class="dash-stat">
-
-<span>💰</span>
-
-<p>Total Earnings</p>
-
-<h2 id="earnings">
-₹0
-</h2>
-
-</div>
-
-
-<div class="dash-stat">
-
-<span>🎓</span>
-
-<p>Courses Completed</p>
-
-<h2 id="coursesCompleted">
-0
-</h2>
-
-</div>
-
-
-<div class="dash-stat">
-
-<span>🛒</span>
-
-<p>Products</p>
-
-<h2>
-0
-</h2>
-
-</div>
-
-
-<div class="dash-stat">
-
-<span>🤝</span>
-
-<p>Affiliate Sales</p>
-
-<h2>
-0
-</h2>
-
-</div>
-
-
-</div>
-
-
-<div class="dashboard-content">
-
-
-<div class="panel">
-
-<div class="panel-title">
-
-<h2>
-Learning Center
-</h2>
-
-<a href="courses.html">
-Browse Courses
-</a>
-
-</div>
-
-
-<div class="course-progress">
-
-<div>
-
-<strong>
-AI for Beginners
-</strong>
-
-<span>
-72%
-</span>
-
-</div>
-
-<div class="progress">
-
-<div style="width:72%"></div>
-
-</div>
-
-</div>
-
-
-<div class="course-progress">
-
-<div>
-
-<strong>
-Digital Marketing
-</strong>
-
-<span>
-45%
-</span>
-
-</div>
-
-<div class="progress">
-
-<div style="width:45%"></div>
-
-</div>
-
-</div>
-
-
-<div class="course-progress">
-
-<div>
-
-<strong>
-Freelancing Mastery
-</strong>
-
-<span>
-25%
-</span>
-
-</div>
-
-<div class="progress">
-
-<div style="width:25%"></div>
-
-</div>
-
-</div>
-
-
-</div>
-
-
-<div class="panel">
-
-<div class="panel-title">
-
-<h2>
-Wallet
-</h2>
-
-</div>
-
-
-<div class="wallet">
-
-<p>
-Available Balance
-</p>
-
-<h1 id="walletBalance">
-₹0
-</h1>
-
-<button
-class="btn full"
-onclick="withdrawDemo()">
-
-Request Withdrawal
-
-</button>
-
-</div>
-
-</div>
-
-
-</div>
-
-
-<div class="panel referral-panel">
-
-<h2>
-🎁 Referral Program
-</h2>
-
-<p>
-Share SkillEarn Hub with friends and build your
-referral network through eligible products and services.
-</p>
-
-<div class="referral-code">
-
-Your Referral ID:
-
-<strong id="referralId">
-Loading...
-</strong>
-
-</div>
-
-<button
-class="btn"
-onclick="copyReferral()">
-
-Copy Referral ID
-
-</button>
-
-</div>
-
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<section
+    id="loadingSection"
+    class="dashboard-loading"
+>
+
+    <div class="loading-icon">
+        ⏳
+    </div>
+
+    <h2>
+        Loading Dashboard...
+    </h2>
+
+    <p>
+        Please wait.
+    </p>
 
 </section>
 
 
+
+<!-- =====================================================
+     LOGIN REQUIRED
+===================================================== -->
+
+<section
+    id="loginRequired"
+    class="login-required"
+    style="display:none;"
+>
+
+    <div class="login-required-icon">
+        🔐
+    </div>
+
+    <h2>
+        Login Required
+    </h2>
+
+    <p>
+        Please login to access your SkillEarn Hub dashboard.
+    </p>
+
+    <a
+        href="login.html"
+        class="btn"
+    >
+        Login to Continue
+    </a>
+
+</section>
+
+
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<main
+    id="dashboardContent"
+    class="dashboard-container"
+    style="display:none;"
+>
+
+
+    <!-- =================================================
+         WELCOME
+    ================================================== -->
+
+    <section class="dashboard-welcome">
+
+        <div>
+
+            <span class="welcome-badge">
+                👋 Welcome Back
+            </span>
+
+            <h1>
+                Hello,
+                <span id="userName">
+                    Student
+                </span>
+                !
+            </h1>
+
+            <p>
+                Continue learning, track your progress,
+                and explore new opportunities.
+            </p>
+
+        </div>
+
+
+        <div class="welcome-profile">
+
+            <img
+                id="userAvatar"
+                src="https://ui-avatars.com/api/?name=User"
+                alt="Profile"
+            >
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         QUICK STATS
+    ================================================== -->
+
+    <section class="dashboard-stats">
+
+
+        <div class="dashboard-stat-card">
+
+            <div class="dashboard-stat-icon">
+                📚
+            </div>
+
+            <div>
+
+                <span>
+                    Enrolled Courses
+                </span>
+
+                <strong id="enrolledCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-stat-card">
+
+            <div class="dashboard-stat-icon">
+                🎯
+            </div>
+
+            <div>
+
+                <span>
+                    Completed
+                </span>
+
+                <strong id="completedCount">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-stat-card">
+
+            <div class="dashboard-stat-icon">
+                📈
+            </div>
+
+            <div>
+
+                <span>
+                    Learning Progress
+                </span>
+
+                <strong id="overallProgress">
+                    0%
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-stat-card">
+
+            <div class="dashboard-stat-icon">
+                💰
+            </div>
+
+            <div>
+
+                <span>
+                    Available Earnings
+                </span>
+
+                <strong id="availableEarnings">
+                    ₹0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =================================================
+         MAIN GRID
+    ================================================== -->
+
+    <div class="dashboard-grid">
+
+
+        <!-- =============================================
+             COURSES
+        ============================================== -->
+
+        <section class="dashboard-card courses-card">
+
+            <div class="dashboard-card-header">
+
+                <div>
+
+                    <h2>
+                        My Courses
+                    </h2>
+
+                    <p>
+                        Continue where you left off.
+                    </p>
+
+                </div>
+
+                <a
+                    href="courses.html"
+                    class="view-all"
+                >
+                    Browse Courses →
+                </a>
+
+            </div>
+
+
+            <div
+                id="coursesContainer"
+                class="dashboard-courses"
+            >
+
+                <div class="empty-state">
+
+                    <div>
+                        📚
+                    </div>
+
+                    <h3>
+                        No Courses Yet
+                    </h3>
+
+                    <p>
+                        Enroll in a course to start learning.
+                    </p>
+
+                    <a
+                        href="courses.html"
+                        class="btn"
+                    >
+                        Explore Courses
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =============================================
+             PROFILE CARD
+        ============================================== -->
+
+        <section class="dashboard-card">
+
+            <div class="dashboard-card-header">
+
+                <div>
+
+                    <h2>
+                        My Profile
+                    </h2>
+
+                    <p>
+                        Your account information.
+                    </p>
+
+                </div>
+
+                <a
+                    href="profile.html"
+                    class="view-all"
+                >
+                    Edit
+                </a>
+
+            </div>
+
+
+            <div class="profile-summary">
+
+                <img
+                    id="profileAvatar"
+                    src="https://ui-avatars.com/api/?name=User"
+                    alt="Profile"
+                >
+
+
+                <div>
+
+                    <h3 id="profileName">
+                        Student
+                    </h3>
+
+                    <p id="profileEmail">
+                        —
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="profile-info-list">
+
+                <div>
+
+                    <span>
+                        Account
+                    </span>
+
+                    <strong id="accountStatus">
+                        Active
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Member Since
+                    </span>
+
+                    <strong id="memberSince">
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =============================================
+             REFERRAL
+        ============================================== -->
+
+        <section class="dashboard-card referral-dashboard-card">
+
+            <div class="dashboard-card-header">
+
+                <div>
+
+                    <h2>
+                        Referral Program
+                    </h2>
+
+                    <p>
+                        Invite people and track your referrals.
+                    </p>
+
+                </div>
+
+                <div class="dashboard-mini-icon">
+                    🤝
+                </div>
+
+            </div>
+
+
+            <div class="referral-summary">
+
+                <div>
+
+                    <span>
+                        Total Referrals
+                    </span>
+
+                    <strong id="referralCount">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Referral Earnings
+                    </span>
+
+                    <strong id="referralEarnings">
+                        ₹0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="referral.html"
+                class="btn full"
+            >
+                Open Referral Center
+            </a>
+
+        </section>
+
+
+
+        <!-- =============================================
+             AFFILIATE
+        ============================================== -->
+
+        <section class="dashboard-card affiliate-dashboard-card">
+
+            <div class="dashboard-card-header">
+
+                <div>
+
+                    <h2>
+                        Affiliate Program
+                    </h2>
+
+                    <p>
+                        Manage your affiliate activity.
+                    </p>
+
+                </div>
+
+                <div class="dashboard-mini-icon">
+                    💼
+                </div>
+
+            </div>
+
+
+            <div class="affiliate-summary">
+
+                <div>
+
+                    <span>
+                        Conversions
+                    </span>
+
+                    <strong id="affiliateConversions">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Earnings
+                    </span>
+
+                    <strong id="affiliateEarnings">
+                        ₹0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="affiliate.html"
+                class="btn full"
+            >
+                Open Affiliate Center
+            </a>
+
+        </section>
+
+
+
+        <!-- =============================================
+             QUICK ACTIONS
+        ============================================== -->
+
+        <section class="dashboard-card quick-actions-card">
+
+            <div class="dashboard-card-header">
+
+                <div>
+
+                    <h2>
+                        Quick Actions
+                    </h2>
+
+                    <p>
+                        Useful shortcuts.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="quick-actions">
+
+
+                <a
+                    href="courses.html"
+                    class="quick-action"
+                >
+
+                    <span>
+                        📚
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Browse Courses
+                        </strong>
+
+                        <small>
+                            Find your next course
+                        </small>
+
+                    </div>
+
+                </a>
+
+
+                <a
+                    href="profile.html"
+                    class="quick-action"
+                >
+
+                    <span>
+                        👤
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Edit Profile
+                        </strong>
+
+                        <small>
+                            Update your information
+                        </small>
+
+                    </div>
+
+                </a>
+
+
+                <a
+                    href="referral.html"
+                    class="quick-action"
+                >
+
+                    <span>
+                        🤝
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Refer Friends
+                        </strong>
+
+                        <small>
+                            Open referral center
+                        </small>
+
+                    </div>
+
+                </a>
+
+
+                <a
+                    href="affiliate.html"
+                    class="quick-action"
+                >
+
+                    <span>
+                        💼
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            Affiliate
+                        </strong>
+
+                        <small>
+                            View affiliate dashboard
+                        </small>
+
+                    </div>
+
+                </a>
+
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
 <footer>
 
-<div class="footer-logo">
-SkillEarn <span>Hub</span>
-</div>
+    <div class="footer-logo">
+        SkillEarn <span>Hub</span>
+    </div>
 
-<p>
-Learn Skills. Build Income. Grow Online.
-</p>
+    <p>
+        Learn Skills. Build Income. Grow Online.
+    </p>
 
-<p class="copyright">
-© 2026 SkillEarn Hub. All Rights Reserved.
-</p>
+    <p class="copyright">
+        © 2026 SkillEarn Hub. All Rights Reserved.
+    </p>
 
 </footer>
 
 
+
+<!-- =====================================================
+     JAVASCRIPT
+===================================================== -->
+
 <script>
 
-firebase.auth().onAuthStateChanged(async function(user) {
-
-    if (!user) {
-
-        window.location.href =
-            "login.html";
-
-        return;
-
-    }
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
 
-    const name =
-        user.displayName ||
-        user.email.split("@")[0];
+        // =================================================
+        // FIREBASE
+        // =================================================
 
+        if (
+            typeof firebase === "undefined"
+        ) {
 
-    document.getElementById("userName")
-        .innerText = name;
+            document.getElementById(
+                "loadingSection"
+            ).innerHTML =
+                "<h2>Firebase failed to load.</h2>";
 
-
-    document.getElementById("referralId")
-        .innerText =
-        user.uid.substring(0, 8).toUpperCase();
-
-
-    try {
-
-        const doc =
-            await db.collection("users")
-            .doc(user.uid)
-            .get();
-
-
-        if (doc.exists) {
-
-            const data = doc.data();
-
-
-            document.getElementById("earnings")
-                .innerText =
-                "₹" + (data.earnings || 0);
-
-
-            document.getElementById("walletBalance")
-                .innerText =
-                "₹" + (data.earnings || 0);
-
-
-            document.getElementById("coursesCompleted")
-                .innerText =
-                data.coursesCompleted || 0;
+            return;
 
         }
 
-    } catch(error) {
 
-        console.error(error);
+        if (
+            !firebase.apps.length
+        ) {
+
+            firebase.initializeApp(
+                firebaseConfig
+            );
+
+        }
+
+
+        const auth =
+            firebase.auth();
+
+        const db =
+            firebase.firestore();
+
+
+
+        // =================================================
+        // ELEMENTS
+        // =================================================
+
+        const loadingSection =
+            document.getElementById(
+                "loadingSection"
+            );
+
+        const loginRequired =
+            document.getElementById(
+                "loginRequired"
+            );
+
+        const dashboardContent =
+            document.getElementById(
+                "dashboardContent"
+            );
+
+        const logoutBtn =
+            document.getElementById(
+                "logoutBtn"
+            );
+
+
+
+        // =================================================
+        // AUTH STATE
+        // =================================================
+
+        auth.onAuthStateChanged(
+            async function (user) {
+
+
+                if (!user) {
+
+                    loadingSection.style.display =
+                        "none";
+
+                    dashboardContent.style.display =
+                        "none";
+
+                    loginRequired.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                loginRequired.style.display =
+                    "none";
+
+                dashboardContent.style.display =
+                    "block";
+
+
+                await loadDashboard(
+                    user
+                );
+
+            }
+        );
+
+
+
+        // =================================================
+        // LOAD DASHBOARD
+        // =================================================
+
+        async function loadDashboard(
+            user
+        ) {
+
+
+            // ---------------------------------------------
+            // Firebase user information
+            // ---------------------------------------------
+
+            const displayName =
+                user.displayName ||
+                "Student";
+
+
+            const email =
+                user.email ||
+                "—";
+
+
+            const photo =
+                user.photoURL ||
+                createAvatar(
+                    displayName
+                );
+
+
+            setText(
+                "userName",
+                displayName
+            );
+
+
+            setText(
+                "profileName",
+                displayName
+            );
+
+
+            setText(
+                "profileEmail",
+                email
+            );
+
+
+            setImage(
+                "userAvatar",
+                photo
+            );
+
+
+            setImage(
+                "profileAvatar",
+                photo
+            );
+
+
+            // ---------------------------------------------
+            // Member since
+            // ---------------------------------------------
+
+            if (
+                user.metadata &&
+                user.metadata.creationTime
+            ) {
+
+                const date =
+                    new Date(
+                        user.metadata.creationTime
+                    );
+
+
+                setText(
+                    "memberSince",
+                    date.toLocaleDateString(
+                        "en-IN",
+                        {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric"
+                        }
+                    )
+                );
+
+            }
+
+
+
+            // ---------------------------------------------
+            // Firestore user data
+            // ---------------------------------------------
+
+            let userData = {};
+
+
+            try {
+
+                const userSnapshot =
+                    await db
+                        .collection("users")
+                        .doc(user.uid)
+                        .get();
+
+
+                if (
+                    userSnapshot.exists
+                ) {
+
+                    userData =
+                        userSnapshot.data() ||
+                        {};
+
+                }
+
+
+            } catch (error) {
+
+                console.error(
+                    "User data error:",
+                    error
+                );
+
+            }
+
+
+
+            // ---------------------------------------------
+            // Earnings
+            // ---------------------------------------------
+
+            const availableEarnings =
+                Number(
+                    userData.availableEarnings ||
+                    userData.availableAffiliateEarnings ||
+                    0
+                );
+
+
+            setText(
+                "availableEarnings",
+                formatCurrency(
+                    availableEarnings
+                )
+            );
+
+
+
+            // ---------------------------------------------
+            // Referral
+            // ---------------------------------------------
+
+            const referralCount =
+                Number(
+                    userData.referralCount ||
+                    userData.totalReferrals ||
+                    0
+                );
+
+
+            const referralEarnings =
+                Number(
+                    userData.referralEarnings ||
+                    0
+                );
+
+
+            setText(
+                "referralCount",
+                formatNumber(
+                    referralCount
+                )
+            );
+
+
+            setText(
+                "referralEarnings",
+                formatCurrency(
+                    referralEarnings
+                )
+            );
+
+
+
+            // ---------------------------------------------
+            // Affiliate
+            // ---------------------------------------------
+
+            const affiliateConversions =
+                Number(
+                    userData.affiliateConversions ||
+                    0
+                );
+
+
+            const affiliateEarnings =
+                Number(
+                    userData.availableAffiliateEarnings ||
+                    0
+                );
+
+
+            setText(
+                "affiliateConversions",
+                formatNumber(
+                    affiliateConversions
+                )
+            );
+
+
+            setText(
+                "affiliateEarnings",
+                formatCurrency(
+                    affiliateEarnings
+                )
+            );
+
+
+
+            // ---------------------------------------------
+            // Load enrolled courses
+            // ---------------------------------------------
+
+            await loadEnrolledCourses(
+                user.uid
+            );
+
+
+            loadingSection.style.display =
+                "none";
+
+        }
+
+
+
+        // =================================================
+        // LOAD ENROLLMENTS
+        // =================================================
+
+        async function loadEnrolledCourses(
+            uid
+        ) {
+
+
+            const container =
+                document.getElementById(
+                    "coursesContainer"
+                );
+
+
+            try {
+
+
+                const snapshot =
+                    await db
+                        .collection("enrollments")
+                        .where(
+                            "userId",
+                            "==",
+                            uid
+                        )
+                        .get();
+
+
+                if (
+                    snapshot.empty
+                ) {
+
+                    setText(
+                        "enrolledCount",
+                        "0"
+                    );
+
+                    setText(
+                        "completedCount",
+                        "0"
+                    );
+
+                    setText(
+                        "overallProgress",
+                        "0%"
+                    );
+
+                    return;
+
+                }
+
+
+                const enrollments =
+                    [];
+
+
+                snapshot.forEach(
+                    function (doc) {
+
+                        enrollments.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+
+                    }
+                );
+
+
+                const totalCourses =
+                    enrollments.length;
+
+
+                let completed =
+                    0;
+
+
+                let progressTotal =
+                    0;
+
+
+                enrollments.forEach(
+                    function (course) {
+
+                        const progress =
+                            Math.max(
+                                0,
+                                Math.min(
+                                    100,
+                                    Number(
+                                        course.progress ||
+                                        0
+                                    )
+                                )
+                            );
+
+
+                        progressTotal +=
+                            progress;
+
+
+                        if (
+                            progress >= 100 ||
+                            course.status ===
+                            "completed"
+                        ) {
+
+                            completed++;
+
+                        }
+
+                    }
+                );
+
+
+                const averageProgress =
+                    totalCourses > 0
+                        ? Math.round(
+                            progressTotal /
+                            totalCourses
+                        )
+                        : 0;
+
+
+                setText(
+                    "enrolledCount",
+                    formatNumber(
+                        totalCourses
+                    )
+                );
+
+
+                setText(
+                    "completedCount",
+                    formatNumber(
+                        completed
+                    )
+                );
+
+
+                setText(
+                    "overallProgress",
+                    averageProgress +
+                    "%"
+                );
+
+
+                await renderCourses(
+                    enrollments,
+                    container
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Enrollment loading error:",
+                    error
+                );
+
+
+                container.innerHTML =
+                    `
+                    <div class="empty-state">
+
+                        <div>⚠️</div>
+
+                        <h3>
+                            Unable to Load Courses
+                        </h3>
+
+                        <p>
+                            Please refresh the page and try again.
+                        </p>
+
+                    </div>
+                    `;
+
+            }
+
+        }
+
+
+
+        // =================================================
+        // RENDER COURSES
+        // =================================================
+
+        async function renderCourses(
+            enrollments,
+            container
+        ) {
+
+
+            container.innerHTML = "";
+
+
+            for (
+                const enrollment of enrollments.slice(0, 6)
+            ) {
+
+
+                let courseData =
+                    {};
+
+
+                try {
+
+                    const courseSnapshot =
+                        await db
+                            .collection("courses")
+                            .doc(
+                                enrollment.courseId
+                            )
+                            .get();
+
+
+                    if (
+                        courseSnapshot.exists
+                    ) {
+
+                        courseData =
+                            courseSnapshot.data() ||
+                            {};
+
+                    }
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                }
+
+
+                const title =
+                    courseData.title ||
+                    enrollment.courseTitle ||
+                    "Course";
+
+
+                const image =
+                    courseData.image ||
+                    "https://via.placeholder.com/600x350?text=SkillEarn+Hub";
+
+
+                const progress =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Number(
+                                enrollment.progress ||
+                                0
+                            )
+                        )
+                    );
+
+
+                const courseId =
+                    enrollment.courseId ||
+                    "";
+
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "dashboard-course";
+
+
+                card.innerHTML =
+                    `
+                    <img
+                        src="${escapeAttribute(image)}"
+                        alt="${escapeAttribute(title)}"
+                    >
+
+                    <div class="dashboard-course-body">
+
+                        <span class="course-status">
+                            ${
+                                progress >= 100
+                                    ? "✓ Completed"
+                                    : "In Progress"
+                            }
+                        </span>
+
+                        <h3>
+                            ${escapeHtml(title)}
+                        </h3>
+
+                        <div class="progress-row">
+
+                            <span>
+                                Progress
+                            </span>
+
+                            <strong>
+                                ${progress}%
+                            </strong>
+
+                        </div>
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress-fill"
+                                style="width:${progress}%"
+                            ></div>
+
+                        </div>
+
+                        <a
+                            href="course-learn.html?courseId=${encodeURIComponent(courseId)}"
+                            class="btn full"
+                        >
+                            ${
+                                progress >= 100
+                                    ? "Review Course"
+                                    : "Continue Learning"
+                            }
+                        </a>
+
+                    </div>
+                    `;
+
+
+                container.appendChild(
+                    card
+                );
+
+            }
+
+        }
+
+
+
+        // =================================================
+        // LOGOUT
+        // =================================================
+
+        logoutBtn.addEventListener(
+            "click",
+            async function () {
+
+                try {
+
+                    await auth.signOut();
+
+                    window.location.href =
+                        "login.html";
+
+                } catch (error) {
+
+                    console.error(
+                        "Logout error:",
+                        error
+                    );
+
+                    alert(
+                        "Logout failed. Please try again."
+                    );
+
+                }
+
+            }
+        );
+
+
+
+        // =================================================
+        // HELPERS
+        // =================================================
+
+        function setText(
+            id,
+            value
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+
+            if (element) {
+
+                element.textContent =
+                    value;
+
+            }
+
+        }
+
+
+        function setImage(
+            id,
+            src
+        ) {
+
+            const element =
+                document.getElementById(id);
+
+
+            if (element) {
+
+                element.src =
+                    src;
+
+            }
+
+        }
+
+
+        function formatNumber(
+            value
+        ) {
+
+            return new Intl.NumberFormat(
+                "en-IN"
+            ).format(
+                Number(value || 0)
+            );
+
+        }
+
+
+        function formatCurrency(
+            value
+        ) {
+
+            return "₹" +
+                new Intl.NumberFormat(
+                    "en-IN",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                ).format(
+                    Number(value || 0)
+                );
+
+        }
+
+
+        function createAvatar(
+            name
+        ) {
+
+            return (
+                "https://ui-avatars.com/api/?name=" +
+                encodeURIComponent(name) +
+                "&background=2563eb&color=ffffff"
+            );
+
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        function escapeAttribute(
+            value
+        ) {
+
+            return escapeHtml(
+                value
+            );
+
+        }
 
     }
 
-});
-
-
-// Logout
-
-async function logoutUser() {
-
-    await firebase.auth().signOut();
-
-    window.location.href =
-        "login.html";
-
-}
-
-
-// Referral Copy
-
-function copyReferral() {
-
-    const id =
-        document.getElementById("referralId").innerText;
-
-
-    navigator.clipboard.writeText(id);
-
-
-    alert(
-        "Referral ID copied: " + id
-    );
-
-}
-
-
-// Demo withdrawal
-
-function withdrawDemo() {
-
-    alert(
-        "Withdrawal system will be connected " +
-        "to the secure backend/payment system."
-    );
-
-}
+);
 
 </script>
 
 
+
+<!-- =====================================================
+     DASHBOARD CSS
+===================================================== -->
+
+<style>
+
+.dashboard-page {
+    background: #f6f8fc;
+}
+
+
+/* HEADER */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+
+/* LOADING */
+
+.dashboard-loading {
+    min-height: 55vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.loading-icon {
+    font-size: 45px;
+    margin-bottom: 12px;
+}
+
+.dashboard-loading h2 {
+    margin: 0 0 8px;
+    color: #172033;
+}
+
+.dashboard-loading p {
+    color: #70798a;
+}
+
+
+/* LOGIN REQUIRED */
+
+.login-required {
+    max-width: 500px;
+    margin: 100px auto;
+    padding: 45px 25px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 15px 40px rgba(0,0,0,.07);
+}
+
+.login-required-icon {
+    font-size: 45px;
+    margin-bottom: 15px;
+}
+
+.login-required h2 {
+    color: #172033;
+}
+
+.login-required p {
+    color: #70798a;
+    margin-bottom: 25px;
+}
+
+
+/* CONTAINER */
+
+.dashboard-container {
+    width: min(1200px, 94%);
+    margin: 35px auto 70px;
+}
+
+
+/* WELCOME */
+
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    padding: 35px;
+    border-radius: 25px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0,0,0,.05);
+    margin-bottom: 25px;
+}
+
+.welcome-badge {
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 20px;
+    background: #eef4ff;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.dashboard-welcome h1 {
+    font-size: 36px;
+    margin: 14px 0 8px;
+    color: #172033;
+}
+
+.dashboard-welcome h1 span {
+    color: #2563eb;
+}
+
+.dashboard-welcome p {
+    color: #6c7687;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.welcome-profile img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid #eef4ff;
+}
+
+
+/* STATS */
+
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.dashboard-stat-card {
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.05);
+}
+
+.dashboard-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef4ff;
+    font-size: 23px;
+}
+
+.dashboard-stat-card span {
+    display: block;
+    color: #7a8494;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.dashboard-stat-card strong {
+    color: #172033;
+    font-size: 22px;
+}
+
+
+/* GRID */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 25px;
+}
+
+
+/* CARDS */
+
+.dashboard-card {
+    background: #ffffff;
+    border-radius: 22px;
+    padding: 26px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+
+.courses-card {
+    grid-row: span 2;
+}
+
+.dashboard-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.dashboard-card-header h2 {
+    margin: 0 0 5px;
+    color: #172033;
+    font-size: 21px;
+}
+
+.dashboard-card-header p {
+    margin: 0;
+    color: #788293;
+    font-size: 14px;
+}
+
+.view-all {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+
+/* COURSES */
+
+.dashboard-courses {
+    display: grid;
+    gap: 18px;
+}
+
+.dashboard-course {
+    display: grid;
+    grid-template-columns: 190px 1fr;
+    gap: 18px;
+    padding: 14px;
+    border: 1px solid #edf0f5;
+    border-radius: 17px;
+}
+
+.dashboard-course > img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 13px;
+}
+
+.dashboard-course-body {
+    padding: 4px 4px 4px 0;
+}
+
+.course-status {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.dashboard-course h3 {
+    margin: 8px 0 15px;
+    color: #293346;
+}
+
+.progress-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #788293;
+    margin-bottom: 7px;
+}
+
+.progress-row strong {
+    color: #2563eb;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #edf1f6;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: inherit;
+}
+
+
+/* PROFILE */
+
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 22px;
+}
+
+.profile-summary img {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.profile-summary h3 {
+    margin: 0 0 5px;
+    color: #273144;
+}
+
+.profile-summary p {
+    margin: 0;
+    color: #788293;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+.profile-info-list > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 13px 0;
+    border-top: 1px solid #edf0f4;
+}
+
+.profile-info-list span {
+    color: #7b8492;
+    font-size: 14px;
+}
+
+.profile-info-list strong {
+    color: #2b3546;
+    font-size: 14px;
+}
+
+
+/* REFERRAL / AFFILIATE */
+
+.dashboard-mini-icon {
+    font-size: 28px;
+}
+
+.referral-summary,
+.affiliate-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.referral-summary > div,
+.affiliate-summary > div {
+    padding: 15px;
+    border-radius: 13px;
+    background: #f7f9fc;
+}
+
+.referral-summary span,
+.affiliate-summary span {
+    display: block;
+    color: #7c8594;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.referral-summary strong,
+.affiliate-summary strong {
+    color: #1d2739;
+    font-size: 19px;
+}
+
+
+/* QUICK ACTIONS */
+
+.quick-actions-card {
+    grid-column: 1 / -1;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 13px;
+}
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #f7f9fc;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: transform .2s ease;
+}
+
+.quick-action:hover {
+    transform: translateY(-2px);
+}
+
+.quick-action > span {
+    font-size: 25px;
+}
+
+.quick-action strong {
+    display: block;
+    color: #293346;
+    font-size: 14px;
+}
+
+.quick-action small {
+    color: #7b8493;
+    font-size: 12px;
+}
+
+
+/* EMPTY */
+
+.empty-state {
+    text-align: center;
+    padding: 45px 20px;
+}
+
+.empty-state > div {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.empty-state h3 {
+    color: #293346;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #7a8494;
+    margin-bottom: 20px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 1000px) {
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .courses-card {
+        grid-row: auto;
+    }
+
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .nav-links {
+        display: none;
+    }
+
+    .dashboard-container {
+        width: 92%;
+        margin-top: 20px;
+    }
+
+    .dashboard-welcome {
+        padding: 25px;
+    }
+
+    .dashboard-welcome h1 {
+        font-size: 28px;
+    }
+
+    .welcome-profile img {
+        width: 65px;
+        height: 65px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .dashboard-stat-card {
+        padding: 15px;
+    }
+
+    .dashboard-stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 19px;
+    }
+
+    .dashboard-stat-card strong {
+        font-size: 18px;
+    }
+
+    .dashboard-course {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-course > img {
+        height: 190px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .dashboard-welcome {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-card {
+        padding: 20px;
+    }
+
+}
+
+</style>
+
+
 </body>
-</html>
+    </html>

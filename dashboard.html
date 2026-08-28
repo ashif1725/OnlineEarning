@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -9,507 +10,1942 @@
 
     <title>Dashboard | SkillEarn Hub</title>
 
-    <link rel="stylesheet" href="css/style.css">
-
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
+    <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
+
+    <style>
+
+        /* =========================================
+           RESET
+        ========================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            background: #f4f7fb;
+            color: #172033;
+            min-height: 100vh;
+        }
+
+        button,
+        a {
+            font-family: inherit;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+
+        /* =========================================
+           HEADER
+        ========================================= */
+
+        .top-header {
+
+            height: 72px;
+
+            background: #ffffff;
+
+            border-bottom: 1px solid #e7ebf2;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 20px;
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 1000;
+        }
+
+
+        /* HAMBURGER */
+
+        .menu-btn {
+
+            width: 44px;
+            height: 44px;
+
+            border: 0;
+
+            border-radius: 12px;
+
+            background: #f1f5ff;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            gap: 5px;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .menu-btn:hover {
+            background: #e5edff;
+        }
+
+        .menu-btn span {
+
+            width: 21px;
+            height: 2.5px;
+
+            background: #2167e8;
+
+            border-radius: 10px;
+
+            transition: 0.25s;
+        }
+
+
+        /* LOGO */
+
+        .logo {
+
+            font-size: 23px;
+
+            font-weight: 800;
+
+            letter-spacing: -0.7px;
+
+            color: #172033;
+        }
+
+        .logo span {
+            color: #2167e8;
+        }
+
+
+        /* HEADER PROFILE */
+
+        .header-profile {
+
+            width: 42px;
+            height: 42px;
+
+            border-radius: 50%;
+
+            background: #eaf1ff;
+
+            color: #2167e8;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 18px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        /* =========================================
+           SIDE MENU
+        ========================================= */
+
+        .side-menu {
+
+            position: fixed;
+
+            top: 0;
+            left: -310px;
+
+            width: 290px;
+
+            height: 100vh;
+
+            background: #ffffff;
+
+            z-index: 2000;
+
+            box-shadow: 10px 0 35px rgba(20, 40, 80, 0.15);
+
+            transition: left 0.3s ease;
+
+            overflow-y: auto;
+        }
+
+        .side-menu.open {
+            left: 0;
+        }
+
+
+        .side-menu-header {
+
+            height: 90px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 20px;
+
+            border-bottom: 1px solid #edf0f5;
+        }
+
+
+        .side-logo {
+
+            font-size: 22px;
+
+            font-weight: 800;
+        }
+
+        .side-logo span {
+            color: #2167e8;
+        }
+
+
+        .close-menu {
+
+            width: 40px;
+            height: 40px;
+
+            border: 0;
+
+            background: #f2f5fa;
+
+            border-radius: 10px;
+
+            font-size: 24px;
+
+            cursor: pointer;
+
+            color: #4b5563;
+        }
+
+
+        /* USER MINI PROFILE */
+
+        .menu-user {
+
+            margin: 18px;
+
+            padding: 15px;
+
+            background: linear-gradient(
+                135deg,
+                #eef4ff,
+                #f8fbff
+            );
+
+            border-radius: 16px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+        }
+
+
+        .menu-avatar {
+
+            width: 45px;
+            height: 45px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            background: #2167e8;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 18px;
+
+            font-weight: 700;
+        }
+
+
+        .menu-user-name {
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .menu-user-email {
+
+            font-size: 12px;
+
+            color: #7a8494;
+
+            margin-top: 3px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        /* MENU LINKS */
+
+        .menu-section-title {
+
+            padding: 8px 22px;
+
+            color: #9aa3b2;
+
+            font-size: 11px;
+
+            font-weight: 800;
+
+            letter-spacing: 1px;
+
+            text-transform: uppercase;
+        }
+
+
+        .menu-link {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            margin: 4px 12px;
+
+            padding: 13px 14px;
+
+            border-radius: 12px;
+
+            color: #4d5768;
+
+            font-size: 15px;
+
+            font-weight: 600;
+
+            transition: 0.2s;
+        }
+
+
+        .menu-link:hover,
+        .menu-link.active {
+
+            background: #edf4ff;
+
+            color: #2167e8;
+        }
+
+
+        .menu-icon {
+
+            width: 25px;
+
+            text-align: center;
+
+            font-size: 19px;
+        }
+
+
+        .menu-divider {
+
+            height: 1px;
+
+            background: #edf0f5;
+
+            margin: 14px 20px;
+        }
+
+
+        .logout-link {
+            color: #d94b4b;
+        }
+
+        .logout-link:hover {
+            background: #fff0f0;
+            color: #d62f2f;
+        }
+
+
+        /* OVERLAY */
+
+        .menu-overlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(15, 23, 42, 0.45);
+
+            z-index: 1500;
+
+            display: none;
+        }
+
+        .menu-overlay.show {
+            display: block;
+        }
+
+
+        /* =========================================
+           MAIN
+        ========================================= */
+
+        .main {
+
+            width: 100%;
+
+            max-width: 1180px;
+
+            margin: auto;
+
+            padding: 28px 18px 60px;
+        }
+
+
+        /* =========================================
+           WELCOME
+        ========================================= */
+
+        .welcome-card {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2167e8,
+                    #4b8cff
+                );
+
+            color: white;
+
+            border-radius: 24px;
+
+            padding: 28px 24px;
+
+            position: relative;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 15px 35px rgba(33, 103, 232, 0.18);
+        }
+
+
+        .welcome-card::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 190px;
+            height: 190px;
+
+            border-radius: 50%;
+
+            background: rgba(255,255,255,0.10);
+
+            right: -60px;
+
+            top: -65px;
+        }
+
+
+        .welcome-label {
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            letter-spacing: 1.3px;
+
+            opacity: 0.85;
+
+            margin-bottom: 10px;
+        }
+
+
+        .welcome-card h1 {
+
+            font-size: clamp(28px, 6vw, 42px);
+
+            line-height: 1.15;
+
+            margin-bottom: 12px;
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+
+        .welcome-card p {
+
+            max-width: 650px;
+
+            line-height: 1.6;
+
+            opacity: 0.92;
+
+            font-size: 15px;
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+
+        .welcome-actions {
+
+            display: flex;
+
+            gap: 10px;
+
+            flex-wrap: wrap;
+
+            margin-top: 22px;
+
+            position: relative;
+
+            z-index: 2;
+        }
+
+
+        .welcome-btn {
+
+            border: 0;
+
+            border-radius: 11px;
+
+            padding: 12px 17px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        .welcome-btn.primary {
+
+            background: white;
+
+            color: #2167e8;
+        }
+
+
+        .welcome-btn.secondary {
+
+            background: rgba(255,255,255,0.15);
+
+            color: white;
+
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+
+
+        /* =========================================
+           STATISTICS
+        ========================================= */
+
+        .stats-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 15px;
+
+            margin-top: 18px;
+        }
+
+
+        .stat-card {
+
+            background: white;
+
+            border: 1px solid #e7ebf2;
+
+            border-radius: 20px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 5px 18px rgba(20,40,80,0.04);
+        }
+
+
+        .stat-top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+        }
+
+
+        .stat-icon {
+
+            width: 45px;
+            height: 45px;
+
+            border-radius: 13px;
+
+            background: #edf4ff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 21px;
+        }
+
+
+        .stat-title {
+
+            margin-top: 16px;
+
+            color: #7b8492;
+
+            font-size: 13px;
+        }
+
+
+        .stat-value {
+
+            font-size: 27px;
+
+            font-weight: 800;
+
+            margin-top: 5px;
+
+            color: #172033;
+        }
+
+
+        /* =========================================
+           SECTION
+        ========================================= */
+
+        .section {
+
+            margin-top: 25px;
+
+            background: white;
+
+            border: 1px solid #e7ebf2;
+
+            border-radius: 23px;
+
+            padding: 23px;
+
+            box-shadow:
+                0 5px 18px rgba(20,40,80,0.035);
+        }
+
+
+        .section-header {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .section-header h2 {
+
+            font-size: 23px;
+
+            letter-spacing: -0.5px;
+        }
+
+
+        .section-header p {
+
+            margin-top: 5px;
+
+            color: #818a99;
+
+            font-size: 14px;
+        }
+
+
+        .section-link {
+
+            color: #2167e8;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            white-space: nowrap;
+        }
+
+
+        /* =========================================
+           COURSE EMPTY STATE
+        ========================================= */
+
+        .empty-courses {
+
+            border: 1.5px dashed #dce2eb;
+
+            border-radius: 18px;
+
+            padding: 40px 20px;
+
+            text-align: center;
+        }
+
+
+        .empty-icon {
+
+            width: 65px;
+            height: 65px;
+
+            margin: auto;
+
+            border-radius: 18px;
+
+            background: #edf4ff;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 29px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .empty-courses h3 {
+
+            font-size: 20px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .empty-courses p {
+
+            color: #808998;
+
+            font-size: 14px;
+
+            margin-bottom: 18px;
+        }
+
+
+        .blue-btn {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #2167e8;
+
+            color: white;
+
+            border: 0;
+
+            border-radius: 11px;
+
+            padding: 12px 20px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        /* =========================================
+           COURSE CARD
+        ========================================= */
+
+        .courses-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 15px;
+        }
+
+
+        .course-card {
+
+            border: 1px solid #e8ecf2;
+
+            border-radius: 17px;
+
+            padding: 17px;
+        }
+
+
+        .course-card-top {
+
+            display: flex;
+
+            gap: 13px;
+
+            align-items: center;
+        }
+
+
+        .course-card-icon {
+
+            width: 53px;
+            height: 53px;
+
+            background: #edf4ff;
+
+            border-radius: 14px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 25px;
+        }
+
+
+        .course-card h3 {
+
+            font-size: 16px;
+
+            margin-bottom: 4px;
+        }
+
+
+        .course-card small {
+
+            color: #8992a1;
+        }
+
+
+        .progress-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            font-size: 12px;
+
+            color: #7b8492;
+
+            margin-top: 17px;
+
+            margin-bottom: 7px;
+        }
+
+
+        .progress {
+
+            height: 7px;
+
+            background: #e9edf3;
+
+            border-radius: 20px;
+
+            overflow: hidden;
+        }
+
+
+        .progress span {
+
+            display: block;
+
+            height: 100%;
+
+            width: 0%;
+
+            background: #2167e8;
+
+            border-radius: inherit;
+        }
+
+
+        /* =========================================
+           QUICK ACTIONS
+        ========================================= */
+
+        .quick-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 12px;
+        }
+
+
+        .quick-card {
+
+            border: 1px solid #e8ecf2;
+
+            border-radius: 16px;
+
+            padding: 18px;
+
+            text-align: center;
+
+            transition: 0.2s;
+        }
+
+
+        .quick-card:hover {
+
+            transform: translateY(-2px);
+
+            border-color: #cbdafa;
+        }
+
+
+        .quick-card-icon {
+
+            font-size: 25px;
+
+            margin-bottom: 9px;
+        }
+
+
+        .quick-card strong {
+
+            display: block;
+
+            font-size: 14px;
+        }
+
+
+        .quick-card small {
+
+            display: block;
+
+            margin-top: 4px;
+
+            color: #8a93a1;
+
+            font-size: 11px;
+        }
+
+
+        /* =========================================
+           PROFILE SUMMARY
+        ========================================= */
+
+        .profile-box {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 17px;
+
+            background: #f8faff;
+
+            border-radius: 16px;
+        }
+
+
+        .profile-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            min-width: 0;
+        }
+
+
+        .profile-avatar {
+
+            width: 55px;
+            height: 55px;
+
+            flex-shrink: 0;
+
+            border-radius: 50%;
+
+            background: #2167e8;
+
+            color: white;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 20px;
+
+            font-weight: 800;
+        }
+
+
+        .profile-info h3 {
+
+            font-size: 16px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .profile-info p {
+
+            color: #7f8998;
+
+            font-size: 13px;
+
+            margin-top: 3px;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+        }
+
+
+        .edit-btn {
+
+            background: white;
+
+            border: 1px solid #dce2eb;
+
+            color: #2167e8;
+
+            border-radius: 10px;
+
+            padding: 10px 15px;
+
+            font-weight: 700;
+        }
+
+
+        /* =========================================
+           FOOTER
+        ========================================= */
+
+        footer {
+
+            text-align: center;
+
+            padding: 30px 20px;
+
+            color: #8a93a1;
+
+            font-size: 12px;
+        }
+
+
+        footer strong {
+
+            color: #2167e8;
+
+            font-size: 15px;
+        }
+
+
+        /* =========================================
+           DESKTOP
+        ========================================= */
+
+        @media (min-width: 900px) {
+
+            .top-header {
+                padding: 0 30px;
+            }
+
+            .main {
+                padding-top: 35px;
+            }
+
+        }
+
+
+        /* =========================================
+           TABLET
+        ========================================= */
+
+        @media (max-width: 850px) {
+
+            .stats-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+            .quick-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+        }
+
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 600px) {
+
+            .top-header {
+
+                height: 65px;
+
+                padding: 0 14px;
+
+            }
+
+
+            .logo {
+
+                font-size: 20px;
+
+            }
+
+
+            .header-profile {
+
+                width: 38px;
+                height: 38px;
+
+            }
+
+
+            .main {
+
+                padding: 18px 12px 45px;
+
+            }
+
+
+            .welcome-card {
+
+                border-radius: 20px;
+
+                padding: 23px 19px;
+
+            }
+
+
+            .welcome-card h1 {
+
+                font-size: 29px;
+
+            }
+
+
+            .stats-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+                gap: 10px;
+
+            }
+
+
+            .stat-card {
+
+                padding: 15px;
+
+                border-radius: 17px;
+
+            }
+
+
+            .stat-icon {
+
+                width: 39px;
+                height: 39px;
+
+                font-size: 18px;
+
+            }
+
+
+            .stat-value {
+
+                font-size: 23px;
+
+            }
+
+
+            .section {
+
+                padding: 17px;
+
+                border-radius: 19px;
+
+            }
+
+
+            .section-header h2 {
+
+                font-size: 20px;
+
+            }
+
+
+            .courses-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .quick-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+
+            .quick-card {
+
+                padding: 15px 8px;
+
+            }
+
+
+            .profile-box {
+
+                align-items: flex-start;
+
+            }
+
+
+            .edit-btn {
+
+                padding: 8px 11px;
+
+            }
+
+        }
+
+
+        @media (max-width: 370px) {
+
+            .logo {
+                font-size: 18px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
 </head>
 
 
-<body class="dashboard-page">
+<body>
 
 
-<!-- ============================= -->
-<!-- HEADER -->
-<!-- ============================= -->
+<!-- =========================================
+     SIDE MENU OVERLAY
+========================================= -->
 
-<header class="header dashboard-header">
+<div id="menuOverlay"
+     class="menu-overlay"
+     onclick="closeMenu()">
+</div>
 
-    <a href="index.html" class="logo">
-        SkillEarn <span>Hub</span>
-    </a>
 
-    <nav class="dashboard-nav">
 
-        <a href="dashboard.html">
-            Dashboard
-        </a>
+<!-- =========================================
+     SIDE MENU
+========================================= -->
 
-        <a href="courses.html">
-            Courses
-        </a>
+<aside id="sideMenu"
+       class="side-menu">
 
-        <a href="earn.html">
-            Earn
-        </a>
 
-        <a href="referral.html">
-            Referral
-        </a>
+    <div class="side-menu-header">
 
-        <a href="profile.html">
-            Profile
-        </a>
+        <div class="side-logo">
+            SkillEarn <span>Hub</span>
+        </div>
 
-        <button
-            type="button"
-            class="logout-btn"
-            onclick="logoutUser()">
-            Logout
+        <button class="close-menu"
+                onclick="closeMenu()"
+                aria-label="Close menu">
+            ×
         </button>
 
-    </nav>
+    </div>
+
+
+
+    <!-- USER -->
+
+    <div class="menu-user">
+
+        <div id="menuAvatar"
+             class="menu-avatar">
+            U
+        </div>
+
+        <div>
+
+            <div id="menuUserName"
+                 class="menu-user-name">
+                Member
+            </div>
+
+            <div id="menuUserEmail"
+                 class="menu-user-email">
+                Loading...
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="menu-section-title">
+        Main Menu
+    </div>
+
+
+    <a href="dashboard.html"
+       class="menu-link active">
+
+        <span class="menu-icon">🏠</span>
+
+        <span>Dashboard</span>
+
+    </a>
+
+
+    <a href="courses.html"
+       class="menu-link">
+
+        <span class="menu-icon">🎓</span>
+
+        <span>Courses</span>
+
+    </a>
+
+
+    <a href="earn.html"
+       class="menu-link">
+
+        <span class="menu-icon">💰</span>
+
+        <span>Earn</span>
+
+    </a>
+
+
+    <a href="referral.html"
+       class="menu-link">
+
+        <span class="menu-icon">🤝</span>
+
+        <span>Referral</span>
+
+    </a>
+
+
+
+    <div class="menu-section-title">
+        Account
+    </div>
+
+
+    <a href="profile.html"
+       class="menu-link">
+
+        <span class="menu-icon">👤</span>
+
+        <span>My Profile</span>
+
+    </a>
+
+
+    <a href="store.html"
+       class="menu-link">
+
+        <span class="menu-icon">🛍️</span>
+
+        <span>Digital Store</span>
+
+    </a>
+
+
+    <a href="affiliate.html"
+       class="menu-link">
+
+        <span class="menu-icon">🔗</span>
+
+        <span>Affiliate</span>
+
+    </a>
+
+
+
+    <div class="menu-divider"></div>
+
+
+    <a href="index.html"
+       class="menu-link">
+
+        <span class="menu-icon">🌐</span>
+
+        <span>Visit Website</span>
+
+    </a>
+
+
+    <a href="#"
+       onclick="logoutUser(); return false;"
+       class="menu-link logout-link">
+
+        <span class="menu-icon">🚪</span>
+
+        <span>Logout</span>
+
+    </a>
+
+
+</aside>
+
+
+
+<!-- =========================================
+     TOP HEADER
+========================================= -->
+
+<header class="top-header">
+
+
+    <button class="menu-btn"
+            onclick="openMenu()"
+            aria-label="Open menu">
+
+        <span></span>
+        <span></span>
+        <span></span>
+
+    </button>
+
+
+    <a href="dashboard.html"
+       class="logo">
+
+        SkillEarn <span>Hub</span>
+
+    </a>
+
+
+    <a href="profile.html"
+       id="headerAvatar"
+       class="header-profile">
+
+        U
+
+    </a>
+
 
 </header>
 
 
 
-<!-- ============================= -->
-<!-- MAIN -->
-<!-- ============================= -->
+<!-- =========================================
+     MAIN
+========================================= -->
 
-<main class="dashboard-container">
+<main class="main">
 
 
-<!-- ============================= -->
-<!-- WELCOME -->
-<!-- ============================= -->
+    <!-- WELCOME -->
 
-<section class="dashboard-welcome">
+    <section class="welcome-card">
 
-    <div>
 
-        <span class="dashboard-label">
+        <div class="welcome-label">
             MEMBER DASHBOARD
-        </span>
+        </div>
+
 
         <h1>
             Welcome,
-            <span id="userName">
+            <span id="welcomeName">
                 Member
-            </span> 👋
+            </span>
+            👋
         </h1>
+
 
         <p>
             Continue learning, track your progress
-            and explore new opportunities.
+            and explore opportunities available
+            on SkillEarn Hub.
         </p>
 
-    </div>
 
-    <div class="welcome-actions">
+        <div class="welcome-actions">
 
-        <a href="courses.html" class="btn">
-            Browse Courses
-        </a>
-
-        <a href="profile.html"
-           class="btn secondary-btn">
-            My Profile
-        </a>
-
-    </div>
-
-</section>
+            <a href="courses.html"
+               class="welcome-btn primary">
+                Browse Courses
+            </a>
 
 
+            <a href="profile.html"
+               class="welcome-btn secondary">
+                My Profile
+            </a>
 
-<!-- ============================= -->
-<!-- USER STATS -->
-<!-- ============================= -->
-
-<section class="dashboard-stats">
-
-
-    <div class="dashboard-stat-card">
-
-        <div class="stat-icon">
-            🎓
         </div>
 
-        <div>
+    </section>
 
-            <span>
+
+
+    <!-- =====================================
+         STATISTICS
+    ====================================== -->
+
+    <section class="stats-grid">
+
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div class="stat-icon">
+                    🎓
+                </div>
+
+            </div>
+
+            <div class="stat-title">
                 Enrolled Courses
-            </span>
+            </div>
 
-            <strong id="enrolledCount">
+            <div id="enrolledCount"
+                 class="stat-value">
                 0
-            </strong>
+            </div>
 
         </div>
 
-    </div>
 
 
+        <div class="stat-card">
 
-    <div class="dashboard-stat-card">
+            <div class="stat-top">
 
-        <div class="stat-icon">
-            📈
-        </div>
+                <div class="stat-icon">
+                    📈
+                </div>
 
-        <div>
+            </div>
 
-            <span>
+            <div class="stat-title">
                 Learning Progress
-            </span>
+            </div>
 
-            <strong id="learningProgress">
+            <div id="learningProgress"
+                 class="stat-value">
                 0%
-            </strong>
+            </div>
 
         </div>
 
-    </div>
 
 
+        <div class="stat-card">
 
-    <div class="dashboard-stat-card">
+            <div class="stat-top">
 
-        <div class="stat-icon">
-            💰
-        </div>
+                <div class="stat-icon">
+                    💰
+                </div>
 
-        <div>
+            </div>
 
-            <span>
+            <div class="stat-title">
                 Available Earnings
-            </span>
-
-            <strong id="availableEarnings">
-                ₹0.00
-            </strong>
-
-        </div>
-
-    </div>
-
-
-
-    <div class="dashboard-stat-card">
-
-        <div class="stat-icon">
-            👥
-        </div>
-
-        <div>
-
-            <span>
-                Referrals
-            </span>
-
-            <strong id="referralCount">
-                0
-            </strong>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- ============================= -->
-<!-- MY COURSES -->
-<!-- ============================= -->
-
-<section class="dashboard-section">
-
-    <div class="section-heading">
-
-        <div>
-
-            <span class="section-label">
-                LEARNING
-            </span>
-
-            <h2>
-                My Courses
-            </h2>
-
-            <p>
-                Continue where you left off.
-            </p>
-
-        </div>
-
-        <a href="courses.html"
-           class="section-link">
-            Browse Courses →
-        </a>
-
-    </div>
-
-
-    <div id="myCourses"
-         class="course-grid">
-
-        <div class="loading-card">
-
-            <div class="loading-icon">
-                ⏳
             </div>
 
-            <h3>
-                Loading your courses...
-            </h3>
-
-            <p>
-                Please wait a moment.
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- ============================= -->
-<!-- ALL COURSES -->
-<!-- ============================= -->
-
-<section class="dashboard-section">
-
-    <div class="section-heading">
-
-        <div>
-
-            <span class="section-label">
-                EXPLORE
-            </span>
-
-            <h2>
-                All Courses
-            </h2>
-
-            <p>
-                Explore all available courses on SkillEarn Hub.
-            </p>
-
-        </div>
-
-        <a href="courses.html"
-           class="section-link">
-            View All →
-        </a>
-
-    </div>
-
-
-    <div id="allCourses"
-         class="course-grid">
-
-        <!-- Courses will be inserted here -->
-
-    </div>
-
-</section>
-
-
-
-<!-- ============================= -->
-<!-- QUICK ACTIONS -->
-<!-- ============================= -->
-
-<section class="dashboard-section">
-
-    <div class="section-heading">
-
-        <div>
-
-            <span class="section-label">
-                QUICK ACCESS
-            </span>
-
-            <h2>
-                Quick Actions
-            </h2>
-
-        </div>
-
-    </div>
-
-
-    <div class="quick-actions">
-
-
-        <a href="courses.html"
-           class="quick-card">
-
-            <div class="quick-icon">
-                🎓
+            <div id="availableEarnings"
+                 class="stat-value">
+                ₹0
             </div>
+
+        </div>
+
+
+
+        <div class="stat-card">
+
+            <div class="stat-top">
+
+                <div class="stat-icon">
+                    🤝
+                </div>
+
+            </div>
+
+            <div class="stat-title">
+                Referral Earnings
+            </div>
+
+            <div id="referralEarnings"
+                 class="stat-value">
+                ₹0
+            </div>
+
+        </div>
+
+
+    </section>
+
+
+
+    <!-- =====================================
+         MY COURSES
+    ====================================== -->
+
+    <section class="section">
+
+
+        <div class="section-header">
 
             <div>
 
-                <h3>
-                    Browse Courses
-                </h3>
+                <h2>
+                    My Courses
+                </h2>
 
                 <p>
-                    Discover new skills.
+                    Continue where you left off.
                 </p>
 
             </div>
 
-            <span>
-                →
-            </span>
 
-        </a>
+            <a href="courses.html"
+               class="section-link">
+                Browse All →
+            </a>
+
+        </div>
 
 
 
-        <a href="earn.html"
-           class="quick-card">
+        <div id="myCourses"
+             class="courses-grid">
 
-            <div class="quick-icon">
-                💰
-            </div>
 
-            <div>
+            <div class="empty-courses">
+
+                <div class="empty-icon">
+                    🎓
+                </div>
 
                 <h3>
-                    Earning
+                    No Courses Yet
                 </h3>
 
                 <p>
-                    Explore earning opportunities.
+                    Enroll in a course to start
+                    your learning journey.
+                </p>
+
+                <a href="courses.html"
+                   class="blue-btn">
+                    Explore Courses
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================
+         QUICK ACTIONS
+    ====================================== -->
+
+    <section class="section">
+
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>
+                    Quick Actions
+                </h2>
+
+                <p>
+                    Access important sections quickly.
                 </p>
 
             </div>
 
-            <span>
-                →
-            </span>
-
-        </a>
+        </div>
 
 
+        <div class="quick-grid">
 
-        <a href="referral.html"
-           class="quick-card">
 
-            <div class="quick-icon">
-                🤝
-            </div>
+            <a href="courses.html"
+               class="quick-card">
+
+                <div class="quick-card-icon">
+                    📚
+                </div>
+
+                <strong>
+                    Learn
+                </strong>
+
+                <small>
+                    Browse courses
+                </small>
+
+            </a>
+
+
+            <a href="earn.html"
+               class="quick-card">
+
+                <div class="quick-card-icon">
+                    💵
+                </div>
+
+                <strong>
+                    Earn
+                </strong>
+
+                <small>
+                    Earning options
+                </small>
+
+            </a>
+
+
+            <a href="referral.html"
+               class="quick-card">
+
+                <div class="quick-card-icon">
+                    🤝
+                </div>
+
+                <strong>
+                    Refer
+                </strong>
+
+                <small>
+                    Referral program
+                </small>
+
+            </a>
+
+
+            <a href="profile.html"
+               class="quick-card">
+
+                <div class="quick-card-icon">
+                    ⚙️
+                </div>
+
+                <strong>
+                    Profile
+                </strong>
+
+                <small>
+                    Manage account
+                </small>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================
+         PROFILE
+    ====================================== -->
+
+    <section class="section">
+
+
+        <div class="section-header">
 
             <div>
 
-                <h3>
-                    Referral Program
-                </h3>
+                <h2>
+                    My Profile
+                </h2>
 
                 <p>
-                    Invite friends and earn rewards.
+                    Your account information.
                 </p>
 
             </div>
 
-            <span>
-                →
-            </span>
 
-        </a>
+            <a href="profile.html"
+               class="section-link">
+                Edit →
+            </a>
+
+        </div>
 
 
+        <div class="profile-box">
 
-        <a href="store.html"
-           class="quick-card">
 
-            <div class="quick-icon">
-                🛒
+            <div class="profile-left">
+
+
+                <div id="profileAvatar"
+                     class="profile-avatar">
+                    U
+                </div>
+
+
+                <div class="profile-info">
+
+                    <h3 id="profileName">
+                        Member
+                    </h3>
+
+                    <p id="profileEmail">
+                        Loading...
+                    </p>
+
+                </div>
+
+
             </div>
 
-            <div>
 
-                <h3>
-                    Digital Store
-                </h3>
-
-                <p>
-                    Explore digital products.
-                </p>
-
-            </div>
-
-            <span>
-                →
-            </span>
-
-        </a>
-
-    </div>
-
-</section>
+            <a href="profile.html"
+               class="edit-btn">
+                Edit
+            </a>
 
 
+        </div>
 
-<!-- ============================= -->
-<!-- PROFILE SUMMARY -->
-<!-- ============================= -->
-
-<section class="profile-summary">
-
-    <div class="profile-avatar"
-         id="profileAvatar">
-        👤
-    </div>
-
-
-    <div class="profile-info">
-
-        <span>
-            YOUR ACCOUNT
-        </span>
-
-        <h2 id="profileName">
-            Member
-        </h2>
-
-        <p id="profileEmail">
-            Loading...
-        </p>
-
-    </div>
-
-
-    <a href="profile.html"
-       class="btn secondary-btn">
-        Edit Profile
-    </a>
-
-</section>
+    </section>
 
 
 </main>
 
 
 
-<!-- ============================= -->
-<!-- FOOTER -->
-<!-- ============================= -->
+<!-- =========================================
+     FOOTER
+========================================= -->
 
 <footer>
 
-    <div class="footer-logo">
-        SkillEarn <span>Hub</span>
-    </div>
+    <strong>
+        SkillEarn Hub
+    </strong>
 
     <p>
         Learn Skills. Build Income. Grow Online.
     </p>
 
-    <p class="copyright">
+    <p>
         © 2026 SkillEarn Hub. All Rights Reserved.
     </p>
 
@@ -517,207 +1953,269 @@
 
 
 
-<!-- ============================= -->
-<!-- DASHBOARD SCRIPT -->
-<!-- ============================= -->
-
 <script>
 
+/* =========================================
+   FIREBASE INITIALIZATION
+========================================= */
+
+if (!firebase.apps.length) {
+
+    firebase.initializeApp(firebaseConfig);
+
+}
+
+const auth = firebase.auth();
+
 const db = firebase.firestore();
-const dashboardAuth = firebase.auth();
 
 
-// ========================================
-// COURSE CATALOG
-// ========================================
 
-const defaultCourses = [
+/* =========================================
+   MENU
+========================================= */
 
-    {
-        id: "digital-marketing",
-        title: "Digital Marketing",
-        category: "Marketing",
-        description:
-            "Learn the fundamentals of digital marketing, content creation and online promotion.",
-        price: 499,
-        lessons: 20,
-        duration: "4 Weeks",
-        level: "Beginner",
-        icon: "📣"
-    },
+function openMenu() {
 
-    {
-        id: "online-business",
-        title: "Online Business",
-        category: "Business",
-        description:
-            "Learn how to build and manage a digital business from the ground up.",
-        price: 699,
-        lessons: 25,
-        duration: "5 Weeks",
-        level: "Beginner",
-        icon: "💼"
-    },
+    document
+        .getElementById("sideMenu")
+        .classList.add("open");
 
-    {
-        id: "affiliate-marketing",
-        title: "Affiliate Marketing",
-        category: "Marketing",
-        description:
-            "Understand affiliate marketing, content promotion and commission-based models.",
-        price: 599,
-        lessons: 22,
-        duration: "4 Weeks",
-        level: "Intermediate",
-        icon: "🤝"
-    },
+    document
+        .getElementById("menuOverlay")
+        .classList.add("show");
 
-    {
-        id: "freelancing",
-        title: "Freelancing",
-        category: "Career",
-        description:
-            "Learn essential freelancing skills and how to build a professional online profile.",
-        price: 799,
-        lessons: 30,
-        duration: "6 Weeks",
-        level: "Beginner",
-        icon: "💻"
-    },
+}
 
-    {
-        id: "content-creation",
-        title: "Content Creation",
-        category: "Creative",
-        description:
-            "Learn content planning, social media strategy and digital content creation.",
-        price: 499,
-        lessons: 18,
-        duration: "4 Weeks",
-        level: "Beginner",
-        icon: "🎥"
-    },
 
-    {
-        id: "graphic-design",
-        title: "Graphic Design",
-        category: "Design",
-        description:
-            "Learn the fundamentals of graphic design and create professional digital designs.",
-        price: 699,
-        lessons: 24,
-        duration: "5 Weeks",
-        level: "Beginner",
-        icon: "🎨"
+function closeMenu() {
+
+    document
+        .getElementById("sideMenu")
+        .classList.remove("open");
+
+    document
+        .getElementById("menuOverlay")
+        .classList.remove("show");
+
+}
+
+
+
+/* =========================================
+   LOGOUT
+========================================= */
+
+async function logoutUser() {
+
+    try {
+
+        await auth.signOut();
+
+        window.location.href =
+            "login.html";
+
+    } catch (error) {
+
+        console.error(
+            "Logout error:",
+            error
+        );
+
+        alert(
+            "Unable to logout. Please try again."
+        );
+
     }
 
-];
+}
 
 
-// ========================================
-// AUTH STATE
-// ========================================
 
-dashboardAuth.onAuthStateChanged(async function(user) {
+/* =========================================
+   AUTH STATE
+========================================= */
+
+auth.onAuthStateChanged(async function(user) {
+
+
+    /*
+       Dashboard is protected.
+       User must be logged in.
+    */
 
     if (!user) {
 
-        window.location.href = "login.html";
+        window.location.href =
+            "login.html?redirect=dashboard.html";
 
         return;
+
     }
 
 
-    console.log("Logged in user:", user.uid);
+    /* USER NAME */
+
+    let displayName =
+        user.displayName;
 
 
-    // User basic information
+    if (!displayName) {
 
-    const displayName =
-        user.displayName ||
-        user.email?.split("@")[0] ||
+        displayName =
+            user.email
+                ? user.email.split("@")[0]
+                : "Member";
+
+    }
+
+
+    displayName =
+        displayName.trim();
+
+
+    const firstName =
+        displayName.split(" ")[0] ||
         "Member";
 
 
-    document.getElementById("userName").textContent =
+    /* AVATAR */
+
+    const avatarLetter =
+        firstName
+            .charAt(0)
+            .toUpperCase();
+
+
+    document
+        .getElementById("welcomeName")
+        .textContent =
+        firstName;
+
+
+    document
+        .getElementById("menuUserName")
+        .textContent =
         displayName;
 
 
-    document.getElementById("profileName").textContent =
-        displayName;
-
-
-    document.getElementById("profileEmail").textContent =
+    document
+        .getElementById("menuUserEmail")
+        .textContent =
         user.email || "";
 
 
-    // Load dashboard data
+    document
+        .getElementById("profileName")
+        .textContent =
+        displayName;
+
+
+    document
+        .getElementById("profileEmail")
+        .textContent =
+        user.email || "";
+
+
+    document
+        .getElementById("menuAvatar")
+        .textContent =
+        avatarLetter;
+
+
+    document
+        .getElementById("profileAvatar")
+        .textContent =
+        avatarLetter;
+
+
+    document
+        .getElementById("headerAvatar")
+        .textContent =
+        avatarLetter;
+
+
+    /*
+       Load user data from Firestore.
+    */
 
     await loadUserData(user);
 
-    loadAllCourses();
+
+    /*
+       Load enrolled courses.
+    */
+
+    await loadEnrolledCourses(user);
 
 });
 
 
 
-// ========================================
-// LOAD USER DATA
-// ========================================
+/* =========================================
+   USER DATA
+========================================= */
 
 async function loadUserData(user) {
 
     try {
 
         const userRef =
-            db.collection("users").doc(user.uid);
+            db.collection("users")
+              .doc(user.uid);
 
 
-        const userSnap =
+        const snapshot =
             await userRef.get();
 
 
-        if (userSnap.exists) {
+        if (!snapshot.exists) {
 
-            const data = userSnap.data();
-
-
-            const earnings =
-                Number(data.earnings || 0);
-
-
-            const referrals =
-                Number(data.referralCount || 0);
-
-
-            const progress =
-                Number(data.learningProgress || 0);
-
-
-            document.getElementById(
-                "availableEarnings"
-            ).textContent =
-                "₹" + earnings.toFixed(2);
-
-
-            document.getElementById(
-                "referralCount"
-            ).textContent =
-                referrals;
-
-
-            document.getElementById(
-                "learningProgress"
-            ).textContent =
-                progress + "%";
-
+            return;
 
         }
 
 
-        // Load enrolled courses
+        const data =
+            snapshot.data();
 
-        await loadMyCourses(user.uid);
+
+        /*
+           Earnings are displayed only from
+           Firestore data.
+
+           Example:
+           earnings: 150
+           referralEarnings: 50
+        */
+
+
+        const earnings =
+            Number(data.earnings || 0);
+
+
+        const referralEarnings =
+            Number(
+                data.referralEarnings || 0
+            );
+
+
+        document
+            .getElementById(
+                "availableEarnings"
+            )
+            .textContent =
+            "₹" +
+            earnings.toFixed(2);
+
+
+        document
+            .getElementById(
+                "referralEarnings"
+            )
+            .textContent =
+            "₹" +
+            referralEarnings.toFixed(2);
 
 
     } catch (error) {
@@ -727,131 +2225,212 @@ async function loadUserData(user) {
             error
         );
 
-
-        /*
-         * If Firestore permission is not configured yet,
-         * don't break the complete dashboard.
-         */
-
-        document.getElementById(
-            "availableEarnings"
-        ).textContent = "₹0.00";
-
-
-        document.getElementById(
-            "referralCount"
-        ).textContent = "0";
-
-
-        document.getElementById(
-            "learningProgress"
-        ).textContent = "0%";
-
-
-        showEmptyMyCourses();
-
     }
 
 }
 
 
 
-// ========================================
-// LOAD MY COURSES
-// ========================================
+/* =========================================
+   ENROLLED COURSES
+========================================= */
 
-async function loadMyCourses(uid) {
+async function loadEnrolledCourses(user) {
 
     const container =
-        document.getElementById("myCourses");
+        document.getElementById(
+            "myCourses"
+        );
 
 
     try {
 
+        /*
+           Expected Firestore structure:
+
+           users/{uid}/enrollments/{courseId}
+
+           Example:
+
+           users
+             └── USER_ID
+                  └── enrollments
+                       └── digital-marketing
+        */
+
+
         const snapshot =
             await db
                 .collection("users")
-                .doc(uid)
+                .doc(user.uid)
                 .collection("enrollments")
                 .get();
 
 
         if (snapshot.empty) {
 
-            showEmptyMyCourses();
+            document
+                .getElementById(
+                    "enrolledCount"
+                )
+                .textContent = "0";
 
-            document.getElementById(
-                "enrolledCount"
-            ).textContent = "0";
+
+            container.innerHTML = `
+
+                <div class="empty-courses">
+
+                    <div class="empty-icon">
+                        🎓
+                    </div>
+
+                    <h3>
+                        No Courses Yet
+                    </h3>
+
+                    <p>
+                        You haven't enrolled in
+                        any course yet.
+                    </p>
+
+                    <a href="courses.html"
+                       class="blue-btn">
+
+                        Explore Courses
+
+                    </a>
+
+                </div>
+
+            `;
 
             return;
+
         }
+
+
+        document
+            .getElementById(
+                "enrolledCount"
+            )
+            .textContent =
+            snapshot.size;
 
 
         container.innerHTML = "";
 
 
-        let enrolledCount = 0;
         let totalProgress = 0;
+
+        let courseCount = 0;
 
 
         snapshot.forEach(function(doc) {
 
-            const enrollment =
+            const data =
                 doc.data();
 
 
-            const course =
-                defaultCourses.find(
-                    c => c.id === enrollment.courseId
-                );
-
-
-            if (!course) return;
-
-
-            enrolledCount++;
+            const title =
+                data.courseTitle ||
+                data.title ||
+                "Course";
 
 
             const progress =
-                Number(
-                    enrollment.progress || 0
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        Number(
+                            data.progress || 0
+                        )
+                    )
                 );
+
+
+            const icon =
+                data.icon ||
+                "🎓";
 
 
             totalProgress += progress;
 
+            courseCount++;
 
-            container.innerHTML +=
-                createCourseCard(
-                    course,
-                    progress,
-                    true
-                );
+
+            container.innerHTML += `
+
+                <div class="course-card">
+
+                    <div class="course-card-top">
+
+                        <div class="course-card-icon">
+                            ${escapeHTML(icon)}
+                        </div>
+
+                        <div>
+
+                            <h3>
+                                ${escapeHTML(title)}
+                            </h3>
+
+                            <small>
+                                Enrolled Course
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-row">
+
+                        <span>
+                            Progress
+                        </span>
+
+                        <strong>
+                            ${progress}%
+                        </strong>
+
+                    </div>
+
+
+                    <div class="progress">
+
+                        <span
+                            style="width:${progress}%">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `;
 
         });
 
 
-        document.getElementById(
-            "enrolledCount"
-        ).textContent =
-            enrolledCount;
+        /*
+           Average learning progress
+        */
 
-
-        if (enrolledCount > 0) {
-
-            const average =
-                Math.round(
+        const averageProgress =
+            courseCount > 0
+                ? Math.round(
                     totalProgress /
-                    enrolledCount
-                );
+                    courseCount
+                  )
+                : 0;
 
 
-            document.getElementById(
+        document
+            .getElementById(
                 "learningProgress"
-            ).textContent =
-                average + "%";
-        }
+            )
+            .textContent =
+            averageProgress + "%";
 
 
     } catch (error) {
@@ -862,7 +2441,26 @@ async function loadMyCourses(uid) {
         );
 
 
-        showEmptyMyCourses();
+        container.innerHTML = `
+
+            <div class="empty-courses">
+
+                <div class="empty-icon">
+                    ⚠️
+                </div>
+
+                <h3>
+                    Unable to Load Courses
+                </h3>
+
+                <p>
+                    Please refresh the page
+                    and try again.
+                </p>
+
+            </div>
+
+        `;
 
     }
 
@@ -870,241 +2468,59 @@ async function loadMyCourses(uid) {
 
 
 
-// ========================================
-// EMPTY MY COURSES
-// ========================================
-
-function showEmptyMyCourses() {
-
-    const container =
-        document.getElementById("myCourses");
-
-
-    container.innerHTML = `
-
-        <div class="loading-card">
-
-            <div class="loading-icon">
-                🎓
-            </div>
-
-            <h3>
-                No Courses Enrolled Yet
-            </h3>
-
-            <p>
-                Purchase a course to start learning.
-            </p>
-
-            <a
-                href="courses.html"
-                class="btn">
-                Explore Courses
-            </a>
-
-        </div>
-
-    `;
-
-}
-
-
-
-// ========================================
-// LOAD ALL COURSES
-// ========================================
-
-function loadAllCourses() {
-
-    const container =
-        document.getElementById("allCourses");
-
-
-    container.innerHTML = "";
-
-
-    defaultCourses.forEach(function(course) {
-
-        container.innerHTML +=
-            createCourseCard(
-                course,
-                0,
-                false
-            );
-
-    });
-
-}
-
-
-
-// ========================================
-// CREATE COURSE CARD
-// ========================================
-
-function createCourseCard(
-    course,
-    progress = 0,
-    enrolled = false
-) {
-
-    return `
-
-        <article class="course-card">
-
-
-            <div class="course-image">
-
-                <span class="course-level">
-                    ${escapeHTML(course.level)}
-                </span>
-
-                <div class="course-icon">
-                    ${course.icon}
-                </div>
-
-            </div>
-
-
-            <div class="course-content">
-
-                <span class="course-category">
-                    ${escapeHTML(course.category)}
-                </span>
-
-
-                <h3>
-                    ${escapeHTML(course.title)}
-                </h3>
-
-
-                <p>
-                    ${escapeHTML(course.description)}
-                </p>
-
-
-                <div class="course-meta">
-
-                    <span>
-                        📚 ${course.lessons} Lessons
-                    </span>
-
-                    <span>
-                        ⏱️ ${escapeHTML(course.duration)}
-                    </span>
-
-                </div>
-
-
-                ${
-                    enrolled
-                    ?
-                    `
-
-                    <div class="progress-area">
-
-                        <div class="progress-header">
-
-                            <span>
-                                Progress
-                            </span>
-
-                            <strong>
-                                ${progress}%
-                            </strong>
-
-                        </div>
-
-                        <div class="progress-bar">
-
-                            <span
-                                style="
-                                width:${progress}%;
-                                ">
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                    <button
-                        class="btn full"
-                        onclick="
-                        openCourse('${course.id}')
-                        ">
-                        Continue Learning
-                    </button>
-
-                    `
-                    :
-                    `
-
-                    <div class="course-bottom">
-
-                        <div>
-
-                            <small>
-                                Course Fee
-                            </small>
-
-                            <strong>
-                                ₹${course.price}
-                            </strong>
-
-                        </div>
-
-
-                        <button
-                            class="btn"
-                            onclick="
-                            openCourse('${course.id}')
-                            ">
-                            View Course
-                        </button>
-
-                    </div>
-
-                    `
-                }
-
-            </div>
-
-        </article>
-
-    `;
-
-}
-
-
-
-// ========================================
-// OPEN COURSE
-// ========================================
-
-function openCourse(courseId) {
-
-    window.location.href =
-        "course-details.html?id=" +
-        encodeURIComponent(courseId);
-
-}
-
-
-
-// ========================================
-// HTML ESCAPE
-// ========================================
+/* =========================================
+   HTML ESCAPE
+========================================= */
 
 function escapeHTML(value) {
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 
 }
+
+
+
+/* =========================================
+   ESC KEY CLOSE MENU
+========================================= */
+
+document.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Escape") {
+
+            closeMenu();
+
+        }
+
+    }
+);
 
 </script>
 

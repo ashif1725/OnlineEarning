@@ -1,30 +1,23 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Course Details | SkillEarn Hub</title>
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <link rel="stylesheet" href="css/style.css">
 
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
-    <!-- Firebase Config -->
     <script src="js/firebase-config.js"></script>
 
 </head>
@@ -33,531 +26,183 @@
 <body>
 
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
-
 <header class="header">
 
-    <a
-        href="index.html"
-        class="logo"
-    >
+    <a href="index.html" class="logo">
         SkillEarn <span>Hub</span>
     </a>
 
-
-    <nav class="nav-links">
-
-        <a href="index.html">
-            Home
-        </a>
-
-        <a href="courses.html">
-            Courses
-        </a>
-
-        <a href="dashboard.html">
-            Dashboard
-        </a>
-
-        <a href="profile.html">
-            Profile
-        </a>
-
-    </nav>
-
-
-    <a
-        href="login.html"
-        id="headerLoginBtn"
-        class="btn"
-    >
-        Login
+    <a href="courses.html"
+       class="back-home">
+        ← All Courses
     </a>
 
 </header>
 
 
 
-<!-- =====================================================
-     PAGE
-===================================================== -->
-
-<main class="course-details-page">
+<main>
 
 
-    <!-- Loading -->
+<!-- COURSE HERO -->
 
-    <section
-        id="loadingSection"
-        class="course-loading"
-    >
+<section class="course-details-hero">
 
-        <div class="loading-spinner">
-            ⏳
-        </div>
-
-        <h2>
-            Loading course...
-        </h2>
-
-        <p>
-            Please wait while we load the course details.
-        </p>
-
-    </section>
+    <div class="course-details-container">
 
 
-
-    <!-- Error -->
-
-    <section
-        id="errorSection"
-        class="course-error"
-        style="display:none;"
-    >
-
-        <div class="error-icon">
-            ⚠️
-        </div>
-
-        <h2>
-            Course Not Found
-        </h2>
-
-        <p id="errorText">
-            The requested course could not be found.
-        </p>
-
-        <a
-            href="courses.html"
-            class="btn"
-        >
-            Browse Courses
-        </a>
-
-    </section>
+        <div class="course-details-main">
 
 
-
-    <!-- Course -->
-
-    <section
-        id="courseSection"
-        style="display:none;"
-    >
+            <span id="courseCategory"
+                  class="section-label">
+                COURSE
+            </span>
 
 
-        <!-- =================================================
-             HERO
-        ================================================== -->
-
-        <div class="course-hero">
+            <h1 id="courseTitle">
+                Loading Course...
+            </h1>
 
 
-            <div class="course-hero-image">
+            <p id="courseDescription">
+                Please wait while course details load.
+            </p>
 
-                <img
-                    id="courseImage"
-                    src=""
-                    alt="Course"
-                >
 
-                <span
-                    id="courseCategory"
-                    class="course-category"
-                >
-                    Course
+            <div class="course-detail-meta">
+
+                <span id="courseLessons">
+                    📚 Lessons
+                </span>
+
+                <span id="courseDuration">
+                    ⏱️ Duration
+                </span>
+
+                <span id="courseLevel">
+                    🎯 Level
                 </span>
 
             </div>
 
-
-
-            <div class="course-hero-content">
-
-                <div class="course-breadcrumb">
-
-                    <a href="courses.html">
-                        Courses
-                    </a>
-
-                    <span>
-                        /
-                    </span>
-
-                    <span id="breadcrumbTitle">
-                        Course
-                    </span>
-
-                </div>
-
-
-                <h1 id="courseTitle">
-                    Course Title
-                </h1>
-
-
-                <p
-                    id="courseDescription"
-                    class="course-description"
-                >
-                    Course description
-                </p>
-
-
-                <div class="course-meta">
-
-                    <span>
-                        ⭐
-                        <strong id="courseRating">
-                            4.8
-                        </strong>
-                    </span>
-
-                    <span>
-                        👥
-                        <strong id="courseStudents">
-                            0
-                        </strong>
-                        students
-                    </span>
-
-                    <span>
-                        📚
-                        <strong id="courseLessons">
-                            0
-                        </strong>
-                        lessons
-                    </span>
-
-                    <span>
-                        ⏱️
-                        <strong id="courseDuration">
-                            0
-                        </strong>
-                    </span>
-
-                </div>
-
-
-                <div class="course-price-box">
-
-                    <div>
-
-                        <span class="price-label">
-                            Course Price
-                        </span>
-
-                        <div
-                            id="coursePrice"
-                            class="course-price"
-                        >
-                            ₹0
-                        </div>
-
-                    </div>
-
-
-                    <div
-                        id="courseOriginalPriceBox"
-                        style="display:none;"
-                    >
-
-                        <span
-                            id="courseOriginalPrice"
-                            class="original-price"
-                        >
-                            ₹0
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    id="enrollBtn"
-                    type="button"
-                    class="btn enroll-btn"
-                >
-                    Enroll Now
-                </button>
-
-
-                <p
-                    id="enrollMessage"
-                    class="enroll-message"
-                ></p>
-
-
-            </div>
-
         </div>
 
 
 
-        <!-- =================================================
-             CONTENT GRID
-        ================================================== -->
+        <div class="course-purchase-card">
 
-        <div class="course-content-grid">
 
+            <div class="large-course-icon"
+                 id="courseIcon">
+                🎓
+            </div>
 
-            <!-- Main -->
 
-            <div class="course-main-content">
+            <small>
+                COURSE FEE
+            </small>
 
 
-                <!-- What You'll Learn -->
+            <div class="course-detail-price"
+                 id="coursePrice">
+                ₹0
+            </div>
 
-                <section class="course-card">
 
-                    <h2>
-                        What You'll Learn
-                    </h2>
+            <button
+                id="enrollButton"
+                class="btn full"
+                onclick="startEnrollment()">
 
+                Enroll Now
 
-                    <div
-                        id="learningPoints"
-                        class="learning-grid"
-                    >
+            </button>
 
-                        <!-- Generated by JS -->
 
-                    </div>
+            <p class="secure-note">
+                🔒 Secure checkout
+            </p>
 
-                </section>
+        </div>
 
 
+    </div>
 
-                <!-- Curriculum -->
+</section>
 
-                <section class="course-card">
 
-                    <div class="section-heading">
 
-                        <div>
+<!-- COURSE CONTENT -->
 
-                            <h2>
-                                Course Curriculum
-                            </h2>
+<section class="course-content-section">
 
-                            <p>
-                                Learn step-by-step with structured
-                                lessons.
-                            </p>
 
-                        </div>
+    <div class="course-content-layout">
 
-                        <span
-                            id="curriculumCount"
-                            class="lesson-count"
-                        >
-                            0 Lessons
-                        </span>
 
-                    </div>
+        <div>
 
 
-                    <div
-                        id="curriculum"
-                        class="curriculum"
-                    >
+            <h2>
+                What You'll Learn
+            </h2>
 
-                        <!-- Generated by JS -->
 
-                    </div>
+            <div class="learning-list">
 
-                </section>
 
+                <div>
+                    ✓ Practical fundamentals
+                </div>
 
+                <div>
+                    ✓ Step-by-step learning
+                </div>
 
-                <!-- Instructor -->
+                <div>
+                    ✓ Real-world examples
+                </div>
 
-                <section class="course-card">
+                <div>
+                    ✓ Beginner-friendly lessons
+                </div>
 
-                    <h2>
-                        Your Instructor
-                    </h2>
+                <div>
+                    ✓ Practical assignments
+                </div>
 
-
-                    <div class="instructor-box">
-
-                        <img
-                            id="instructorImage"
-                            src="https://ui-avatars.com/api/?name=SkillEarn+Hub"
-                            alt="Instructor"
-                        >
-
-
-                        <div>
-
-                            <h3 id="instructorName">
-                                SkillEarn Hub
-                            </h3>
-
-                            <p id="instructorBio">
-                                Learn practical digital skills
-                                with SkillEarn Hub.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- FAQ -->
-
-                <section class="course-card">
-
-                    <h2>
-                        Frequently Asked Questions
-                    </h2>
-
-
-                    <div class="faq-list">
-
-
-                        <details>
-
-                            <summary>
-                                Do I need an account to enroll?
-                            </summary>
-
-                            <p>
-                                Yes. You must be logged in before
-                                enrolling in a course.
-                            </p>
-
-                        </details>
-
-
-                        <details>
-
-                            <summary>
-                                How does enrollment work?
-                            </summary>
-
-                            <p>
-                                For paid courses, you will be
-                                redirected to the payment page.
-                                Access is granted only after the
-                                payment has been verified.
-                            </p>
-
-                        </details>
-
-
-                        <details>
-
-                            <summary>
-                                Can I access the course later?
-                            </summary>
-
-                            <p>
-                                Yes. Once your enrollment is
-                                verified, you can access the course
-                                from your dashboard.
-                            </p>
-
-                        </details>
-
-
-                        <details>
-
-                            <summary>
-                                Is payment information stored here?
-                            </summary>
-
-                            <p>
-                                Payment details should be processed
-                                through a trusted payment provider.
-                                Never store card or UPI credentials
-                                directly in Firestore.
-                            </p>
-
-                        </details>
-
-
-                    </div>
-
-                </section>
+                <div>
+                    ✓ Progress tracking
+                </div>
 
 
             </div>
 
 
 
-            <!-- Sidebar -->
-
-            <aside class="course-sidebar">
-
-
-                <div class="course-card sticky-card">
-
-                    <h3>
-                        Course Includes
-                    </h3>
+            <h2 class="curriculum-title">
+                Course Curriculum
+            </h2>
 
 
-                    <ul class="includes-list">
+            <div id="curriculum">
 
-                        <li>
-                            🎥 Video Lessons
-                        </li>
+                <!-- Curriculum loaded here -->
 
-                        <li>
-                            📚 Structured Curriculum
-                        </li>
+            </div>
 
-                        <li>
-                            📱 Mobile Friendly
-                        </li>
-
-                        <li>
-                            📊 Learning Progress
-                        </li>
-
-                        <li>
-                            🎓 Course Completion
-                        </li>
-
-                        <li>
-                            🔐 Secure Course Access
-                        </li>
-
-                    </ul>
-
-
-                    <button
-                        id="sidebarEnrollBtn"
-                        type="button"
-                        class="btn full"
-                    >
-                        Enroll Now
-                    </button>
-
-                </div>
-
-
-            </aside>
 
         </div>
 
-    </section>
+
+    </div>
+
+</section>
 
 </main>
 
 
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
 
 <footer>
 
@@ -577,1711 +222,514 @@
 
 
 
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+"use strict";
 
 
-        // =================================================
-        // FIREBASE CHECK
-        // =================================================
+// ==========================================
+// FIREBASE
+// ==========================================
 
-        if (
-            typeof firebase === "undefined"
-        ) {
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 
-            showError(
-                "Firebase could not be loaded."
-            );
+const auth = firebase.auth();
 
-            return;
 
-        }
+// ==========================================
+// COURSES
+// ==========================================
 
+const courses = {
 
-        // =================================================
-        // INITIALIZE
-        // =================================================
+    "digital-marketing": {
 
-        if (
-            !firebase.apps.length
-        ) {
+        title: "Digital Marketing",
 
-            firebase.initializeApp(
-                firebaseConfig
-            );
+        category: "Marketing",
 
-        }
+        description:
+        "Learn digital marketing fundamentals, content strategy, SEO basics and online promotion.",
 
+        price: 499,
 
-        const auth =
-            firebase.auth();
+        lessons: 20,
 
-        const db =
-            firebase.firestore();
+        duration: "4 Weeks",
 
+        level: "Beginner",
 
+        icon: "📣",
 
-        // =================================================
-        // ELEMENTS
-        // =================================================
+        curriculum: [
+            "Introduction to Digital Marketing",
+            "Understanding Your Audience",
+            "Content Marketing Fundamentals",
+            "SEO Basics",
+            "Social Media Strategy",
+            "Digital Campaign Planning"
+        ]
 
-        const loadingSection =
-            document.getElementById(
-                "loadingSection"
-            );
+    },
 
-        const errorSection =
-            document.getElementById(
-                "errorSection"
-            );
 
-        const courseSection =
-            document.getElementById(
-                "courseSection"
-            );
+    "online-business": {
 
-        const enrollBtn =
-            document.getElementById(
-                "enrollBtn"
-            );
+        title: "Online Business",
 
-        const sidebarEnrollBtn =
-            document.getElementById(
-                "sidebarEnrollBtn"
-            );
+        category: "Business",
 
-        const headerLoginBtn =
-            document.getElementById(
-                "headerLoginBtn"
-            );
+        description:
+        "Learn the fundamentals of building and managing a digital business.",
 
+        price: 699,
 
+        lessons: 25,
 
-        // =================================================
-        // COURSE ID
-        // =================================================
+        duration: "5 Weeks",
 
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
+        level: "Beginner",
 
+        icon: "💼",
 
-        /*
-         * Example:
-         *
-         * course-details.html?id=digital-marketing
-         *
-         * OR
-         *
-         * course-details.html?courseId=abc123
-         */
+        curriculum: [
+            "Online Business Fundamentals",
+            "Choosing a Business Model",
+            "Creating an Online Presence",
+            "Customer Research",
+            "Marketing Basics",
+            "Business Growth Strategy"
+        ]
 
-        const courseId =
-            params.get("courseId") ||
-            params.get("id");
+    },
 
 
+    "affiliate-marketing": {
 
-        if (!courseId) {
+        title: "Affiliate Marketing",
 
-            showError(
-                "No course ID was provided in the URL."
-            );
+        category: "Marketing",
 
-            return;
+        description:
+        "Learn responsible affiliate marketing, content promotion and commission-based marketing.",
 
-        }
+        price: 599,
 
+        lessons: 22,
 
+        duration: "4 Weeks",
 
-        // =================================================
-        // AUTH STATE
-        // =================================================
+        level: "Intermediate",
 
-        auth.onAuthStateChanged(
-            async function (user) {
+        icon: "🔗",
 
+        curriculum: [
+            "Affiliate Marketing Basics",
+            "Understanding Affiliate Programs",
+            "Content Strategy",
+            "Audience Building",
+            "Promotion Methods",
+            "Tracking & Analytics"
+        ]
 
-                if (user) {
+    },
 
-                    headerLoginBtn.textContent =
-                        "Dashboard";
 
-                    headerLoginBtn.href =
-                        "dashboard.html";
+    "freelancing": {
 
-                } else {
+        title: "Freelancing",
 
-                    headerLoginBtn.textContent =
-                        "Login";
+        category: "Business",
 
-                    headerLoginBtn.href =
-                        "login.html";
+        description:
+        "Learn freelancing fundamentals, portfolio building and professional client communication.",
 
-                }
+        price: 799,
 
+        lessons: 30,
 
-                await loadCourse(
-                    courseId,
-                    user
-                );
+        duration: "6 Weeks",
 
-            }
-        );
+        level: "Beginner",
 
+        icon: "💻",
 
+        curriculum: [
+            "Introduction to Freelancing",
+            "Choosing Your Skill",
+            "Building a Portfolio",
+            "Finding Clients",
+            "Writing Professional Proposals",
+            "Client Communication",
+            "Project Management"
+        ]
 
-        // =================================================
-        // LOAD COURSE
-        // =================================================
+    },
 
-        async function loadCourse(
-            id,
-            user
-        ) {
 
-            try {
+    "content-creation": {
 
+        title: "Content Creation",
 
-                /*
-                 * Course data is loaded from Firestore.
-                 *
-                 * Collection:
-                 *
-                 * courses/{courseId}
-                 */
+        category: "Marketing",
 
-                const courseRef =
-                    db
-                        .collection("courses")
-                        .doc(id);
+        description:
+        "Learn practical content planning, storytelling and digital content creation.",
 
+        price: 499,
 
-                const snapshot =
-                    await courseRef.get();
+        lessons: 18,
 
+        duration: "4 Weeks",
 
+        level: "Beginner",
 
-                if (!snapshot.exists) {
+        icon: "🎥",
 
-                    /*
-                     * Demo fallback course.
-                     *
-                     * Remove this fallback when your
-                     * Firestore courses collection is ready.
-                     */
+        curriculum: [
+            "Content Creation Fundamentals",
+            "Finding Content Ideas",
+            "Storytelling Basics",
+            "Short-Form Content",
+            "Content Planning",
+            "Audience Engagement"
+        ]
 
-                    const demoCourse =
-                        getDemoCourse(id);
+    },
 
-                    if (!demoCourse) {
 
-                        showError(
-                            "This course does not exist."
-                        );
+    "graphic-design": {
 
-                        return;
+        title: "Graphic Design",
 
-                    }
+        category: "Design",
 
-                    renderCourse(
-                        demoCourse,
-                        user
-                    );
+        description:
+        "Learn graphic design principles and create professional digital designs.",
 
-                    return;
+        price: 699,
 
-                }
+        lessons: 24,
 
+        duration: "5 Weeks",
 
-                const course =
-                    snapshot.data();
+        level: "Beginner",
 
+        icon: "🎨",
 
-                course.id =
-                    snapshot.id;
+        curriculum: [
+            "Design Fundamentals",
+            "Typography",
+            "Color Theory",
+            "Layout & Composition",
+            "Social Media Designs",
+            "Portfolio Project"
+        ]
 
+    },
 
-                renderCourse(
-                    course,
-                    user
-                );
 
+    "web-development": {
 
-            } catch (error) {
+        title: "Web Development",
 
-                console.error(
-                    "Course loading error:",
-                    error
-                );
+        category: "Technology",
 
+        description:
+        "Learn HTML, CSS and JavaScript fundamentals to build modern websites.",
 
-                showError(
-                    "Unable to load the course. Please try again."
-                );
+        price: 899,
 
-            }
+        lessons: 35,
 
-        }
+        duration: "8 Weeks",
 
+        level: "Beginner",
 
+        icon: "🌐",
 
-        // =================================================
-        // RENDER COURSE
-        // =================================================
+        curriculum: [
+            "HTML Fundamentals",
+            "CSS Fundamentals",
+            "Responsive Design",
+            "JavaScript Basics",
+            "DOM Manipulation",
+            "Building a Website",
+            "Final Project"
+        ]
 
-        function renderCourse(
-            course,
-            user
-        ) {
+    },
 
 
-            loadingSection.style.display =
-                "none";
+    "ai-productivity": {
 
+        title: "AI & Productivity",
 
-            courseSection.style.display =
-                "block";
+        category: "Technology",
 
+        description:
+        "Learn practical AI concepts and productivity workflows.",
 
-            // Image
+        price: 699,
 
-            document.getElementById(
-                "courseImage"
-            ).src =
-                course.image ||
-                "https://via.placeholder.com/800x500?text=SkillEarn+Hub";
+        lessons: 20,
 
+        duration: "4 Weeks",
 
-            document.getElementById(
-                "courseImage"
-            ).alt =
-                course.title ||
-                "Course";
+        level: "Beginner",
 
+        icon: "🤖",
 
-            // Category
-
-            document.getElementById(
-                "courseCategory"
-            ).textContent =
-                course.category ||
-                "Digital Skills";
-
-
-            // Title
-
-            document.getElementById(
-                "courseTitle"
-            ).textContent =
-                course.title ||
-                "SkillEarn Hub Course";
-
-
-            document.getElementById(
-                "breadcrumbTitle"
-            ).textContent =
-                course.title ||
-                "Course";
-
-
-            // Description
-
-            document.getElementById(
-                "courseDescription"
-            ).textContent =
-                course.description ||
-                "Learn practical digital skills with SkillEarn Hub.";
-
-
-            // Rating
-
-            document.getElementById(
-                "courseRating"
-            ).textContent =
-                course.rating ||
-                "4.8";
-
-
-            // Students
-
-            document.getElementById(
-                "courseStudents"
-            ).textContent =
-                formatNumber(
-                    course.students || 0
-                );
-
-
-            // Lessons
-
-            const lessons =
-                Array.isArray(
-                    course.curriculum
-                )
-                    ? course.curriculum.length
-                    : Number(
-                        course.lessons || 0
-                    );
-
-
-            document.getElementById(
-                "courseLessons"
-            ).textContent =
-                lessons;
-
-
-            document.getElementById(
-                "curriculumCount"
-            ).textContent =
-                lessons +
-                (
-                    lessons === 1
-                        ? " Lesson"
-                        : " Lessons"
-                );
-
-
-            // Duration
-
-            document.getElementById(
-                "courseDuration"
-            ).textContent =
-                course.duration ||
-                "Self-paced";
-
-
-            // Price
-
-            const price =
-                Number(
-                    course.price || 0
-                );
-
-
-            document.getElementById(
-                "coursePrice"
-            ).textContent =
-                formatCurrency(
-                    price
-                );
-
-
-            // Original Price
-
-            const originalPrice =
-                Number(
-                    course.originalPrice || 0
-                );
-
-
-            if (
-                originalPrice > price
-            ) {
-
-                document.getElementById(
-                    "courseOriginalPriceBox"
-                ).style.display =
-                    "block";
-
-
-                document.getElementById(
-                    "courseOriginalPrice"
-                ).textContent =
-                    formatCurrency(
-                        originalPrice
-                    );
-
-            }
-
-
-            // Learning Points
-
-            renderLearningPoints(
-                course.learningPoints ||
-                course.whatYouWillLearn ||
-                []
-            );
-
-
-            // Curriculum
-
-            renderCurriculum(
-                course.curriculum ||
-                []
-            );
-
-
-            // Instructor
-
-            document.getElementById(
-                "instructorName"
-            ).textContent =
-                course.instructorName ||
-                "SkillEarn Hub";
-
-
-            document.getElementById(
-                "instructorBio"
-            ).textContent =
-                course.instructorBio ||
-                "Learn practical digital skills through structured lessons.";
-
-
-            if (
-                course.instructorImage
-            ) {
-
-                document.getElementById(
-                    "instructorImage"
-                ).src =
-                    course.instructorImage;
-
-            }
-
-
-            // Check enrollment
-
-            if (user) {
-
-                checkEnrollment(
-                    user.uid,
-                    course.id || courseId,
-                    price
-                );
-
-            } else {
-
-                setEnrollState(
-                    "Login to Enroll",
-                    true
-                );
-
-            }
-
-        }
-
-
-
-        // =================================================
-        // LEARNING POINTS
-        // =================================================
-
-        function renderLearningPoints(
-            points
-        ) {
-
-            const container =
-                document.getElementById(
-                    "learningPoints"
-                );
-
-
-            container.innerHTML = "";
-
-
-            if (
-                !Array.isArray(points) ||
-                points.length === 0
-            ) {
-
-                points = [
-
-                    "Build practical digital skills",
-
-                    "Learn step-by-step",
-
-                    "Work on real-world projects",
-
-                    "Improve your online knowledge"
-
-                ];
-
-            }
-
-
-            points.forEach(
-                function (point) {
-
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    item.className =
-                        "learning-item";
-
-
-                    item.innerHTML =
-                        `
-                        <span class="check-icon">
-                            ✓
-                        </span>
-
-                        <span>
-                            ${escapeHtml(point)}
-                        </span>
-                        `;
-
-
-                    container.appendChild(
-                        item
-                    );
-
-                }
-            );
-
-        }
-
-
-
-        // =================================================
-        // CURRICULUM
-        // =================================================
-
-        function renderCurriculum(
-            curriculum
-        ) {
-
-            const container =
-                document.getElementById(
-                    "curriculum"
-                );
-
-
-            container.innerHTML = "";
-
-
-            if (
-                !Array.isArray(curriculum) ||
-                curriculum.length === 0
-            ) {
-
-                container.innerHTML =
-                    `
-                    <div class="empty-curriculum">
-                        <span>📚</span>
-                        <p>
-                            Course curriculum will be
-                            available after enrollment.
-                        </p>
-                    </div>
-                    `;
-
-                return;
-
-            }
-
-
-            curriculum.forEach(
-                function (lesson, index) {
-
-
-                    const lessonTitle =
-                        typeof lesson === "string"
-                            ? lesson
-                            : (
-                                lesson.title ||
-                                "Lesson " +
-                                (index + 1)
-                            );
-
-
-                    const duration =
-                        typeof lesson === "object"
-                            ? (
-                                lesson.duration ||
-                                ""
-                            )
-                            : "";
-
-
-                    const row =
-                        document.createElement(
-                            "div"
-                        );
-
-
-                    row.className =
-                        "curriculum-item";
-
-
-                    row.innerHTML =
-                        `
-                        <div class="lesson-number">
-                            ${index + 1}
-                        </div>
-
-                        <div class="lesson-info">
-
-                            <strong>
-                                ${escapeHtml(
-                                    lessonTitle
-                                )}
-                            </strong>
-
-                            ${
-                                duration
-                                    ? `
-                                    <span>
-                                        ${escapeHtml(
-                                            duration
-                                        )}
-                                    </span>
-                                    `
-                                    : ""
-                            }
-
-                        </div>
-
-                        <span class="lesson-lock">
-                            🔒
-                        </span>
-                        `;
-
-
-                    container.appendChild(
-                        row
-                    );
-
-                }
-            );
-
-        }
-
-
-
-        // =================================================
-        // CHECK ENROLLMENT
-        // =================================================
-
-        async function checkEnrollment(
-            uid,
-            id,
-            price
-        ) {
-
-            try {
-
-                const enrollmentId =
-                    uid + "_" + id;
-
-
-                const enrollment =
-                    await db
-                        .collection("enrollments")
-                        .doc(enrollmentId)
-                        .get();
-
-
-                if (
-                    enrollment.exists
-                ) {
-
-                    const data =
-                        enrollment.data() ||
-                        {};
-
-
-                    if (
-                        data.status ===
-                        "active"
-                    ) {
-
-                        setEnrollState(
-                            "Continue Learning",
-                            false
-                        );
-
-                        return;
-
-                    }
-
-                }
-
-
-                setEnrollState(
-                    price > 0
-                        ? "Enroll & Pay"
-                        : "Enroll Free",
-                    false
-                );
-
-
-            } catch (error) {
-
-                console.error(
-                    "Enrollment check error:",
-                    error
-                );
-
-
-                setEnrollState(
-                    price > 0
-                        ? "Enroll & Pay"
-                        : "Enroll Free",
-                    false
-                );
-
-            }
-
-        }
-
-
-
-        // =================================================
-        // ENROLL BUTTON STATE
-        // =================================================
-
-        function setEnrollState(
-            text,
-            loginRequired
-        ) {
-
-            enrollBtn.textContent =
-                text;
-
-
-            sidebarEnrollBtn.textContent =
-                text;
-
-
-            enrollBtn.disabled =
-                false;
-
-
-            sidebarEnrollBtn.disabled =
-                false;
-
-
-            if (loginRequired) {
-
-                enrollBtn.dataset.action =
-                    "login";
-
-                sidebarEnrollBtn.dataset.action =
-                    "login";
-
-            } else {
-
-                enrollBtn.dataset.action =
-                    "enroll";
-
-                sidebarEnrollBtn.dataset.action =
-                    "enroll";
-
-            }
-
-        }
-
-
-
-        // =================================================
-        // ENROLL
-        // =================================================
-
-        async function handleEnroll() {
-
-            const user =
-                auth.currentUser;
-
-
-            // NEVER enroll without login
-
-            if (!user) {
-
-                window.location.href =
-                    "login.html?redirect=" +
-                    encodeURIComponent(
-                        window.location.href
-                    );
-
-                return;
-
-            }
-
-
-            const currentCourseId =
-                courseId;
-
-
-            if (!currentCourseId) {
-                return;
-            }
-
-
-            /*
-             * Get course again to obtain current price.
-             */
-
-            let course;
-
-
-            try {
-
-                const snapshot =
-                    await db
-                        .collection("courses")
-                        .doc(currentCourseId)
-                        .get();
-
-
-                if (!snapshot.exists) {
-
-                    showEnrollMessage(
-                        "Course is no longer available.",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-
-                course =
-                    snapshot.data();
-
-
-            } catch (error) {
-
-                console.error(
-                    error
-                );
-
-
-                showEnrollMessage(
-                    "Unable to verify course details.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-
-            const price =
-                Number(
-                    course.price || 0
-                );
-
-
-            /*
-             * FREE COURSE
-             */
-
-            if (price <= 0) {
-
-                /*
-                 * Create enrollment record.
-                 *
-                 * For production, Firestore rules should
-                 * validate this operation or a trusted
-                 * backend should create it.
-                 */
-
-                try {
-
-                    const enrollmentId =
-                        user.uid +
-                        "_" +
-                        currentCourseId;
-
-
-                    await db
-                        .collection("enrollments")
-                        .doc(enrollmentId)
-                        .set({
-
-                            userId:
-                                user.uid,
-
-                            courseId:
-                                currentCourseId,
-
-                            status:
-                                "active",
-
-                            paymentStatus:
-                                "free",
-
-                            enrolledAt:
-                                firebase.firestore
-                                    .FieldValue
-                                    .serverTimestamp()
-
-                        });
-
-
-                    window.location.href =
-                        "dashboard.html";
-
-
-                } catch (error) {
-
-                    console.error(
-                        "Free enrollment error:",
-                        error
-                    );
-
-
-                    showEnrollMessage(
-                        "Unable to enroll. Please try again.",
-                        "error"
-                    );
-
-                }
-
-
-                return;
-
-            }
-
-
-            /*
-             * PAID COURSE
-             *
-             * Do NOT mark the user as enrolled here.
-             *
-             * Send them to payment.html.
-             */
-
-            const paymentUrl =
-                "payment.html" +
-                "?courseId=" +
-                encodeURIComponent(
-                    currentCourseId
-                );
-
-
-            window.location.href =
-                paymentUrl;
-
-        }
-
-
-
-        // =================================================
-        // BUTTON EVENTS
-        // =================================================
-
-        enrollBtn.addEventListener(
-            "click",
-            handleEnroll
-        );
-
-
-        sidebarEnrollBtn.addEventListener(
-            "click",
-            handleEnroll
-        );
-
-
-
-        // =================================================
-        // ERROR
-        // =================================================
-
-        function showError(
-            message
-        ) {
-
-            loadingSection.style.display =
-                "none";
-
-
-            courseSection.style.display =
-                "none";
-
-
-            errorSection.style.display =
-                "block";
-
-
-            document.getElementById(
-                "errorText"
-            ).textContent =
-                message;
-
-        }
-
-
-
-        // =================================================
-        // ENROLL MESSAGE
-        // =================================================
-
-        function showEnrollMessage(
-            message,
-            type
-        ) {
-
-            const element =
-                document.getElementById(
-                    "enrollMessage"
-                );
-
-
-            element.textContent =
-                message;
-
-
-            element.className =
-                "enroll-message " +
-                type;
-
-        }
-
-
-
-        // =================================================
-        // FORMAT CURRENCY
-        // =================================================
-
-        function formatCurrency(
-            amount
-        ) {
-
-            return "₹" +
-                new Intl.NumberFormat(
-                    "en-IN",
-                    {
-                        maximumFractionDigits: 2
-                    }
-                ).format(amount);
-
-        }
-
-
-
-        // =================================================
-        // FORMAT NUMBER
-        // =================================================
-
-        function formatNumber(
-            number
-        ) {
-
-            return new Intl.NumberFormat(
-                "en-IN"
-            ).format(
-                Number(number || 0)
-            );
-
-        }
-
-
-
-        // =================================================
-        // HTML ESCAPE
-        // =================================================
-
-        function escapeHtml(
-            value
-        ) {
-
-            return String(value)
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
-
-        }
-
-
-
-        // =================================================
-        // DEMO COURSE
-        // =================================================
-
-        function getDemoCourse(
-            id
-        ) {
-
-            /*
-             * This demo course makes the page usable
-             * before you create your Firestore courses.
-             *
-             * Replace/remove it for production.
-             */
-
-            const demoCourses = {
-
-                "digital-marketing": {
-
-                    id:
-                        "digital-marketing",
-
-                    title:
-                        "Digital Marketing Masterclass",
-
-                    category:
-                        "Digital Marketing",
-
-                    description:
-                        "Learn the fundamentals of digital marketing, content strategy, social media and online growth.",
-
-                    image:
-                        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80",
-
-                    price:
-                        999,
-
-                    originalPrice:
-                        1999,
-
-                    rating:
-                        4.8,
-
-                    students:
-                        1250,
-
-                    duration:
-                        "8 Hours",
-
-                    learningPoints: [
-
-                        "Understand digital marketing fundamentals",
-
-                        "Create a practical content strategy",
-
-                        "Learn social media marketing basics",
-
-                        "Understand online customer journeys",
-
-                        "Measure marketing performance"
-
-                    ],
-
-                    curriculum: [
-
-                        {
-                            title:
-                                "Introduction to Digital Marketing",
-                            duration:
-                                "25 min"
-                        },
-
-                        {
-                            title:
-                                "Understanding Your Audience",
-                            duration:
-                                "40 min"
-                        },
-
-                        {
-                            title:
-                                "Content Strategy",
-                            duration:
-                                "55 min"
-                        },
-
-                        {
-                            title:
-                                "Social Media Fundamentals",
-                            duration:
-                                "60 min"
-                        },
-
-                        {
-                            title:
-                                "Analytics & Measurement",
-                            duration:
-                                "45 min"
-                        }
-
-                    ],
-
-                    instructorName:
-                        "SkillEarn Hub",
-
-                    instructorBio:
-                        "Learn practical digital skills through structured and beginner-friendly lessons."
-
-                }
-
-            };
-
-
-            return demoCourses[id] ||
-                null;
-
-        }
+        curriculum: [
+            "Introduction to AI",
+            "AI Productivity Concepts",
+            "Prompting Fundamentals",
+            "Content Workflows",
+            "Research & Productivity",
+            "Practical AI Projects"
+        ]
 
     }
 
-);
+};
+
+
+// ==========================================
+// GET COURSE ID
+// ==========================================
+
+const params =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const courseId =
+    params.get("id");
+
+
+// ==========================================
+// LOAD COURSE
+// ==========================================
+
+const course =
+    courses[courseId];
+
+
+if (!course) {
+
+    document.getElementById(
+        "courseTitle"
+    ).textContent =
+        "Course Not Found";
+
+
+    document.getElementById(
+        "courseDescription"
+    ).textContent =
+        "The requested course could not be found.";
+
+
+} else {
+
+    loadCourse(course);
+
+}
+
+
+
+// ==========================================
+// LOAD COURSE DETAILS
+// ==========================================
+
+function loadCourse(course) {
+
+
+    document.getElementById(
+        "courseTitle"
+    ).textContent =
+        course.title;
+
+
+    document.getElementById(
+        "courseCategory"
+    ).textContent =
+        course.category.toUpperCase();
+
+
+    document.getElementById(
+        "courseDescription"
+    ).textContent =
+        course.description;
+
+
+    document.getElementById(
+        "coursePrice"
+    ).textContent =
+        "₹" + course.price;
+
+
+    document.getElementById(
+        "courseLessons"
+    ).textContent =
+        "📚 " + course.lessons + " Lessons";
+
+
+    document.getElementById(
+        "courseDuration"
+    ).textContent =
+        "⏱️ " + course.duration;
+
+
+    document.getElementById(
+        "courseLevel"
+    ).textContent =
+        "🎯 " + course.level;
+
+
+    document.getElementById(
+        "courseIcon"
+    ).textContent =
+        course.icon;
+
+
+    loadCurriculum(course);
+
+}
+
+
+
+// ==========================================
+// CURRICULUM
+// ==========================================
+
+function loadCurriculum(course) {
+
+    const container =
+        document.getElementById(
+            "curriculum"
+        );
+
+
+    container.innerHTML = "";
+
+
+    course.curriculum.forEach(
+        function(lesson, index) {
+
+            container.innerHTML += `
+
+                <div class="curriculum-item">
+
+                    <span class="lesson-number">
+                        ${index + 1}
+                    </span>
+
+                    <span>
+                        ${escapeHTML(lesson)}
+                    </span>
+
+                    <span>
+                        🔒
+                    </span>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+}
+
+
+
+// ==========================================
+// ENROLL
+// ==========================================
+
+function startEnrollment() {
+
+
+    if (!course) {
+
+        alert(
+            "Course not found."
+        );
+
+        return;
+    }
+
+
+    const user =
+        auth.currentUser;
+
+
+    /*
+     * LOGIN REQUIRED
+     */
+
+    if (!user) {
+
+        const login =
+            confirm(
+                "Please login or create an account before enrolling."
+            );
+
+
+        if (login) {
+
+            window.location.href =
+                "login.html?redirect=" +
+                encodeURIComponent(
+                    window.location.href
+                );
+
+        }
+
+        return;
+
+    }
+
+
+    /*
+     * USER IS LOGGED IN
+     *
+     * Send to payment page.
+     *
+     * Payment page should create a pending
+     * payment request.
+     */
+
+    window.location.href =
+        "payment.html?course=" +
+        encodeURIComponent(
+            course.id
+        );
+
+}
+
+
+
+// ==========================================
+// HTML ESCAPE
+// ==========================================
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
 
 </script>
 
-
-
-<!-- =====================================================
-     PAGE STYLES
-===================================================== -->
-
-<style>
-
-.course-details-page {
-    width: min(1200px, 94%);
-    margin: 35px auto 70px;
-}
-
-.course-loading,
-.course-error {
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.loading-spinner,
-.error-icon {
-    font-size: 45px;
-    margin-bottom: 15px;
-}
-
-.course-error h2,
-.course-loading h2 {
-    color: #172033;
-}
-
-.course-error p,
-.course-loading p {
-    color: #697386;
-}
-
-
-/* HERO */
-
-.course-hero {
-    display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: 35px;
-    align-items: center;
-    margin-bottom: 35px;
-}
-
-.course-hero-image {
-    position: relative;
-    overflow: hidden;
-    border-radius: 24px;
-    min-height: 380px;
-    background: #eef2f7;
-}
-
-.course-hero-image img {
-    width: 100%;
-    height: 100%;
-    min-height: 380px;
-    object-fit: cover;
-    display: block;
-}
-
-.course-category {
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    background: #ffffff;
-    padding: 8px 14px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 700;
-    color: #2563eb;
-}
-
-.course-breadcrumb {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-    font-size: 13px;
-    color: #7a8496;
-}
-
-.course-breadcrumb a {
-    color: #2563eb;
-    text-decoration: none;
-}
-
-.course-hero-content h1 {
-    font-size: 42px;
-    line-height: 1.12;
-    color: #172033;
-    margin: 0 0 18px;
-}
-
-.course-description {
-    color: #657084;
-    line-height: 1.7;
-    font-size: 16px;
-}
-
-.course-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin: 22px 0;
-    color: #606b7e;
-    font-size: 14px;
-}
-
-.course-price-box {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.price-label {
-    display: block;
-    color: #7b8493;
-    font-size: 13px;
-    margin-bottom: 4px;
-}
-
-.course-price {
-    font-size: 32px;
-    font-weight: 800;
-    color: #172033;
-}
-
-.original-price {
-    color: #9aa2af;
-    text-decoration: line-through;
-}
-
-.enroll-btn {
-    min-width: 210px;
-}
-
-.enroll-message {
-    margin-top: 12px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.enroll-message.error {
-    color: #c62828;
-}
-
-
-/* CONTENT */
-
-.course-content-grid {
-    display: grid;
-    grid-template-columns: 1fr 330px;
-    gap: 25px;
-}
-
-.course-main-content {
-    min-width: 0;
-}
-
-.course-card {
-    background: #ffffff;
-    border-radius: 22px;
-    padding: 28px;
-    margin-bottom: 25px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-}
-
-.course-card h2 {
-    margin: 0 0 10px;
-    color: #172033;
-    font-size: 22px;
-}
-
-.course-card > p {
-    color: #6b7280;
-}
-
-.section-heading {
-    display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.section-heading p {
-    margin: 5px 0 0;
-    color: #7a8494;
-}
-
-.lesson-count {
-    background: #eef4ff;
-    color: #2563eb;
-    padding: 8px 12px;
-    border-radius: 20px;
-    white-space: nowrap;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-
-/* LEARNING */
-
-.learning-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.learning-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 14px;
-    border-radius: 12px;
-    background: #f7f9fc;
-    color: #3e4859;
-    line-height: 1.5;
-}
-
-.check-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
-    border-radius: 50%;
-    background: #e7f8ed;
-    color: #188542;
-    font-weight: 800;
-}
-
-
-/* CURRICULUM */
-
-.curriculum {
-    margin-top: 20px;
-}
-
-.curriculum-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 16px 0;
-    border-bottom: 1px solid #edf0f5;
-}
-
-.curriculum-item:last-child {
-    border-bottom: none;
-}
-
-.lesson-number {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 10px;
-    background: #eef4ff;
-    color: #2563eb;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 800;
-}
-
-.lesson-info {
-    flex: 1;
-}
-
-.lesson-info strong {
-    display: block;
-    color: #293346;
-    margin-bottom: 4px;
-}
-
-.lesson-info span {
-    color: #8a93a1;
-    font-size: 13px;
-}
-
-.lesson-lock {
-    color: #8c95a4;
-}
-
-.empty-curriculum {
-    text-align: center;
-    padding: 30px;
-    color: #7b8492;
-}
-
-.empty-curriculum span {
-    font-size: 35px;
-}
-
-
-/* INSTRUCTOR */
-
-.instructor-box {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    margin-top: 20px;
-}
-
-.instructor-box img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.instructor-box h3 {
-    margin: 0 0 7px;
-    color: #202a3a;
-}
-
-.instructor-box p {
-    margin: 0;
-    color: #70798a;
-    line-height: 1.5;
-}
-
-
-/* SIDEBAR */
-
-.sticky-card {
-    position: sticky;
-    top: 20px;
-}
-
-.sticky-card h3 {
-    color: #172033;
-    margin-top: 0;
-}
-
-.includes-list {
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.includes-list li {
-    padding: 11px 0;
-    border-bottom: 1px solid #edf0f4;
-    color: #596476;
-    font-size: 14px;
-}
-
-.includes-list li:last-child {
-    border-bottom: none;
-}
-
-
-/* FAQ */
-
-.faq-list {
-    margin-top: 20px;
-}
-
-.faq-list details {
-    border-bottom: 1px solid #edf0f4;
-    padding: 16px 0;
-}
-
-.faq-list summary {
-    cursor: pointer;
-    font-weight: 700;
-    color: #293346;
-}
-
-.faq-list p {
-    color: #70798a;
-    line-height: 1.6;
-    margin-bottom: 0;
-}
-
-
-/* RESPONSIVE */
-
-@media (max-width: 900px) {
-
-    .nav-links {
-        display: none;
-    }
-
-    .course-hero {
-        grid-template-columns: 1fr;
-    }
-
-    .course-content-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .sticky-card {
-        position: static;
-    }
-
-}
-
-
-@media (max-width: 600px) {
-
-    .course-details-page {
-        width: 92%;
-        margin-top: 20px;
-    }
-
-    .course-hero-image,
-    .course-hero-image img {
-        min-height: 240px;
-    }
-
-    .course-hero-content h1 {
-        font-size: 30px;
-    }
-
-    .course-card {
-        padding: 20px;
-        border-radius: 17px;
-    }
-
-    .learning-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .section-heading {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .course-meta {
-        gap: 10px;
-    }
-
-    .course-price {
-        font-size: 27px;
-    }
-
-}
-
-</style>
 
 </body>
 </html>

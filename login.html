@@ -1,161 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Login | SkillEarn Hub</title>
+    <meta charset="UTF-8">
 
-<link rel="stylesheet" href="css/style.css">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <meta
+        name="description"
+        content="Login to your SkillEarn Hub account."
+    >
 
-<script src="js/firebase-config.js"></script>
-<script src="js/auth.js"></script>
+    <title>Login | SkillEarn Hub</title>
+
+
+    <!-- =====================================================
+         CSS
+    ====================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+
+    <!-- =====================================================
+         FIREBASE SDK
+         IMPORTANT: Keep this order.
+    ====================================================== -->
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+    </script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
+    </script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js">
+    </script>
+
+
+    <!-- Firebase Configuration -->
+
+    <script src="js/firebase-config.js"></script>
+
+
+    <!-- Authentication -->
+
+    <script
+        src="js/auth.js"
+        defer>
+    </script>
 
 </head>
 
+
 <body class="auth-page">
 
-<header class="header">
 
-<a href="index.html" class="logo">
-SkillEarn <span>Hub</span>
-</a>
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-<a href="index.html" class="back-home">
-← Home
-</a>
+    <header class="header">
 
-</header>
-
-
-<main class="auth-wrapper">
-
-<div class="auth-promo">
-
-<span class="promo-badge">
-🚀 SKILLEARN HUB
-</span>
-
-<h1>
-Learn Skills.<br>
-<span>Build Income.</span><br>
-Grow Online.
-</h1>
-
-<p>
-Learn digital skills and discover legitimate online
-business opportunities.
-</p>
-
-<div class="promo-features">
-
-<div>🎓 Learn Digital Skills</div>
-<div>💼 Build Online Business</div>
-<div>🛒 Sell Digital Products</div>
-<div>🤝 Affiliate Opportunities</div>
-
-</div>
-
-</div>
+        <a
+            href="index.html"
+            class="logo"
+        >
+            SkillEarn <span>Hub</span>
+        </a>
 
 
-<div class="auth-box">
+        <a
+            href="index.html"
+            class="back-home"
+        >
+            ← Home
+        </a>
 
-<div class="auth-icon">
-🔐
-</div>
-
-<h2>Welcome Back</h2>
-
-<p class="auth-subtitle">
-Login to your SkillEarn Hub account
-</p>
+    </header>
 
 
-<form id="loginForm">
 
-<label>Email Address</label>
+    <!-- =====================================================
+         MAIN AUTH SECTION
+    ====================================================== -->
 
-<input
-type="email"
-id="loginEmail"
-placeholder="Enter your email"
-required
->
+    <main class="auth-wrapper">
 
 
-<label>Password</label>
+        <!-- =================================================
+             LEFT PROMO
+        ================================================== -->
 
-<input
-type="password"
-id="loginPassword"
-placeholder="Enter your password"
-required
->
+        <section class="auth-promo">
 
-
-<div class="forgot-row">
-
-<a href="#" onclick="forgotPassword()">
-Forgot Password?
-</a>
-
-</div>
+            <span class="promo-badge">
+                🚀 SKILLEARN HUB
+            </span>
 
 
-<button type="submit" class="btn full">
-Login to Account
-</button>
+            <h1>
+                Learn Skills.<br>
 
-</form>
+                <span>
+                    Build Income.
+                </span><br>
 
-
-<div class="divider">
-<span>OR</span>
-</div>
-
-
-<button class="google-btn" onclick="googleLogin()">
-🔵 Continue with Google
-</button>
+                Grow Online.
+            </h1>
 
 
-<p class="auth-bottom">
-
-Don't have an account?
-
-<a href="register.html">
-Create Free Account
-</a>
-
-</p>
-
-<p id="authMessage" class="auth-message"></p>
-
-</div>
-
-</main>
+            <p>
+                Learn digital skills, explore online
+                opportunities and build your digital journey
+                with SkillEarn Hub.
+            </p>
 
 
-<footer>
+            <div class="promo-features">
 
-<div class="footer-logo">
-SkillEarn <span>Hub</span>
-</div>
+                <div>
+                    🎓 Learn Digital Skills
+                </div>
 
-<p>
-Learn Skills. Build Income. Grow Online.
-</p>
+                <div>
+                    💼 Explore Online Business
+                </div>
 
-<p class="copyright">
-© 2026 SkillEarn Hub. All Rights Reserved.
-</p>
+                <div>
+                    🛒 Digital Products
+                </div>
 
-</footer>
+                <div>
+                    🤝 Referral Opportunities
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             LOGIN BOX
+        ================================================== -->
+
+        <section class="auth-box">
+
+
+            <div class="auth-icon">
+                🔐
+            </div>
+
+
+            <h2>
+                Welcome Back
+            </h2>
+
+
+            <p class="auth-subtitle">
+                Login to your SkillEarn Hub account
+            </p>
+
+
+
+            <!-- =================================================
+                 LOGIN FORM
+            ================================================== -->
+
+            <form
+                id="loginForm"
+                autocomplete="on"
+            >
+
+
+                <!-- EMAIL -->
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
+
+
+                <input
+                    type="email"
+                    id="loginEmail"
+                    name="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                >
+
+
+
+                <!-- PASSWORD -->
+
+                <label for="loginPassword">
+                    Password
+                </label>
+
+
+                <input
+                    type="password"
+                    id="loginPassword"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+
+
+
+                <!-- FORGOT PASSWORD -->
+
+                <div class="forgot-row">
+
+                    <a
+                        href="#"
+                        onclick="forgotPassword(); return false;"
+                    >
+                        Forgot Password?
+                    </a>
+
+                </div>
+
+
+
+                <!-- LOGIN BUTTON -->
+
+                <button
+                    type="submit"
+                    class="btn full"
+                >
+                    Login to Account
+                </button>
+
+            </form>
+
+
+
+            <!-- =================================================
+                 DIVIDER
+            ================================================== -->
+
+            <div class="divider">
+
+                <span>
+                    OR
+                </span>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 GOOGLE LOGIN
+            ================================================== -->
+
+            <button
+                type="button"
+                class="google-btn"
+            >
+                🔵 Continue with Google
+            </button>
+
+
+
+            <!-- =================================================
+                 REGISTER LINK
+            ================================================== -->
+
+            <p class="auth-bottom">
+
+                Don't have an account?
+
+                <a href="register.html">
+                    Create Free Account
+                </a>
+
+            </p>
+
+
+
+            <!-- =================================================
+                 AUTH MESSAGE
+            ================================================== -->
+
+            <p
+                id="authMessage"
+                class="auth-message"
+                style="display: none;"
+                role="alert"
+                aria-live="polite"
+            ></p>
+
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer>
+
+        <div class="footer-logo">
+
+            SkillEarn <span>Hub</span>
+
+        </div>
+
+
+        <p>
+            Learn Skills. Build Income. Grow Online.
+        </p>
+
+
+        <p class="copyright">
+            © 2026 SkillEarn Hub. All Rights Reserved.
+        </p>
+
+    </footer>
+
 
 </body>
+
 </html>

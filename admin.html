@@ -1,1 +1,1330 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Panel | SkillEarn Hub</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <script src="js/firebase-config.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7fb;
+            color: #172033;
+        }
+
+        .admin-login {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 15px 50px rgba(20, 40, 80, 0.12);
+        }
+
+        .brand {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        .brand h1 span {
+            color: #2463eb;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 7px 14px;
+            border-radius: 50px;
+            background: #edf4ff;
+            color: #2463eb;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+            font-size: 26px;
+        }
+
+        .subtitle {
+            color: #788397;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d9dee8;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #2463eb;
+            box-shadow: 0 0 0 3px rgba(36, 99, 235, .1);
+        }
+
+        .admin-btn {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 15px;
+            background: #2463eb;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .admin-btn:hover {
+            background: #1854d4;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .success {
+            background: #edfff4;
+            color: #168044;
+        }
+
+        /* ADMIN DASHBOARD */
+
+        .admin-app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 72px;
+            background: #ffffff;
+            border-bottom: 1px solid #e5e9f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-logo {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .top-logo span {
+            color: #2463eb;
+        }
+
+        .admin-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #2463eb;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+        }
+
+        .logout-btn {
+            border: 1px solid #dce1e9;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .admin-layout {
+            display: flex;
+        }
+
+        .sidebar {
+            width: 250px;
+            min-height: calc(100vh - 72px);
+            background: #ffffff;
+            border-right: 1px solid #e5e9f0;
+            padding: 22px 15px;
+        }
+
+        .sidebar-title {
+            color: #9aa4b2;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 10px 14px;
+        }
+
+        .side-link {
+            display: block;
+            padding: 13px 15px;
+            margin-bottom: 6px;
+            border-radius: 11px;
+            text-decoration: none;
+            color: #465166;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .side-link:hover,
+        .side-link.active {
+            background: #edf4ff;
+            color: #2463eb;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            max-width: 1400px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .page-heading p {
+            color: #7d8798;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e8ecf2;
+            border-radius: 18px;
+            padding: 22px;
+        }
+
+        .stat-icon {
+            font-size: 25px;
+            margin-bottom: 15px;
+        }
+
+        .stat-label {
+            color: #818b9b;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e8ecf2;
+            padding: 22px;
+            margin-bottom: 22px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .refresh-btn {
+            border: 1px solid #dce2ec;
+            background: white;
+            border-radius: 9px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        th,
+        td {
+            padding: 14px 10px;
+            text-align: left;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        th {
+            color: #788397;
+            font-size: 13px;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .status.active {
+            background: #eafaf0;
+            color: #168044;
+        }
+
+        .status.pending {
+            background: #fff8df;
+            color: #9a7100;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px;
+            color: #8791a1;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 900px) {
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .sidebar {
+                width: 210px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 650px) {
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .top-logo {
+                font-size: 20px;
+            }
+
+            .admin-user > div:not(.avatar) {
+                display: none;
+            }
+
+            .admin-layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                border-right: 0;
+                border-bottom: 1px solid #e5e9f0;
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+
+            .sidebar-title {
+                display: none;
+            }
+
+            .side-link {
+                white-space: nowrap;
+                margin: 0 4px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .page-heading h1 {
+                font-size: 26px;
+            }
+
+            .login-card {
+                padding: 25px 20px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ============================= -->
+<!-- ADMIN LOGIN -->
+<!-- ============================= -->
+
+<section id="adminLogin" class="admin-login">
+
+    <div class="login-card">
+
+        <div class="brand">
+            <h1>SkillEarn <span>Hub</span></h1>
+            <div class="admin-badge">🔐 ADMIN PANEL</div>
+        </div>
+
+        <h2>Admin Login</h2>
+
+        <p class="subtitle">
+            Sign in with an authorized administrator account.
+        </p>
+
+        <form id="adminLoginForm">
+
+            <div class="form-group">
+                <label>Email Address</label>
+
+                <input
+                    type="email"
+                    id="adminEmail"
+                    placeholder="Admin email"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+
+                <input
+                    type="password"
+                    id="adminPassword"
+                    placeholder="Admin password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="admin-btn">
+                Login to Admin Panel
+            </button>
+
+        </form>
+
+        <div id="loginMessage" class="message"></div>
+
+    </div>
+
+</section>
+
+
+<!-- ============================= -->
+<!-- ADMIN APPLICATION -->
+<!-- ============================= -->
+
+<section id="adminApp" class="admin-app">
+
+    <header class="topbar">
+
+        <div class="top-logo">
+            SkillEarn <span>Hub</span>
+        </div>
+
+        <div class="admin-user">
+
+            <div>
+                <strong id="adminName">Administrator</strong>
+                <small id="adminEmailDisplay"></small>
+            </div>
+
+            <div class="avatar" id="adminAvatar">
+                A
+            </div>
+
+            <button class="logout-btn" onclick="adminLogout()">
+                Logout
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-title">
+                ADMIN MENU
+            </div>
+
+            <a class="side-link active">
+                📊 Dashboard
+            </a>
+
+            <a class="side-link">
+                👥 Users
+            </a>
+
+            <a class="side-link">
+                📚 Courses
+            </a>
+
+            <a class="side-link">
+                💳 Payments
+            </a>
+
+            <a class="side-link">
+                🤝 Referrals
+            </a>
+
+            <a class="side-link">
+                🛍️ Digital Store
+            </a>
+
+            <a class="side-link">
+                💰 Earnings
+            </a>
+
+            <a class="side-link" href="index.html">
+                🌐 Visit Website
+            </a>
+
+        </aside>
+
+
+        <!-- MAIN -->
+
+        <main class="main-content">
+
+            <div class="page-heading">
+
+                <h1>Admin Dashboard 👋</h1>
+
+                <p>
+                    Manage SkillEarn Hub from one place.
+                </p>
+
+            </div>
+
+
+            <!-- STATISTICS -->
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">👥</div>
+
+                    <div class="stat-label">
+                        Total Users
+                    </div>
+
+                    <div class="stat-value" id="totalUsers">
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">📚</div>
+
+                    <div class="stat-label">
+                        Courses
+                    </div>
+
+                    <div class="stat-value" id="totalCourses">
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">💳</div>
+
+                    <div class="stat-label">
+                        Payments
+                    </div>
+
+                    <div class="stat-value" id="totalPayments">
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-icon">💰</div>
+
+                    <div class="stat-label">
+                        Revenue
+                    </div>
+
+                    <div class="stat-value" id="totalRevenue">
+                        ₹0
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECENT USERS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h2>Recent Users</h2>
+
+                    <button
+                        class="refresh-btn"
+                        onclick="loadAdminData()">
+                        ↻ Refresh
+                    </button>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="usersTable">
+
+                            <tr>
+                                <td colspan="4" class="empty">
+                                    Loading users...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <!-- RECENT PAYMENTS -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <h2>Recent Payments</h2>
+
+                </div>
+
+                <div class="table-wrap">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="paymentsTable">
+
+                            <tr>
+                                <td colspan="4" class="empty">
+                                    Loading payments...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</section>
+
+
+<script>
+
+    /*
+    ==========================================
+    FIREBASE INITIALIZATION
+    ==========================================
+    */
+
+    const adminAuth = firebase.auth();
+    const adminDb = firebase.firestore();
+
+
+    /*
+    ==========================================
+    MESSAGE
+    ==========================================
+    */
+
+    function showLoginMessage(message, type = "error") {
+
+        const box = document.getElementById("loginMessage");
+
+        box.textContent = message;
+
+        box.className = "message " + type;
+
+        box.style.display = "block";
+    }
+
+
+    /*
+    ==========================================
+    CHECK ADMIN ROLE
+    ==========================================
+    */
+
+    async function checkAdmin(user) {
+
+        if (!user) {
+            showAdminLogin();
+            return;
+        }
+
+        try {
+
+            const userDoc = await adminDb
+                .collection("users")
+                .doc(user.uid)
+                .get();
+
+            if (!userDoc.exists) {
+
+                await adminAuth.signOut();
+
+                showLoginMessage(
+                    "Admin access denied. User profile was not found."
+                );
+
+                return;
+            }
+
+            const data = userDoc.data();
+
+            if (data.role !== "admin") {
+
+                await adminAuth.signOut();
+
+                showLoginMessage(
+                    "Access denied. This account is not an administrator."
+                );
+
+                return;
+            }
+
+            showAdminPanel(user, data);
+
+        } catch (error) {
+
+            console.error(error);
+
+            showLoginMessage(
+                "Unable to verify admin permissions. Please try again."
+            );
+
+        }
+    }
+
+
+    /*
+    ==========================================
+    LOGIN
+    ==========================================
+    */
+
+    document
+        .getElementById("adminLoginForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const email =
+                document.getElementById("adminEmail")
+                .value
+                .trim();
+
+            const password =
+                document.getElementById("adminPassword")
+                .value;
+
+            if (!email || !password) {
+
+                showLoginMessage(
+                    "Please enter email and password."
+                );
+
+                return;
+            }
+
+            try {
+
+                showLoginMessage(
+                    "Signing in...",
+                    "success"
+                );
+
+                const result =
+                    await adminAuth
+                    .signInWithEmailAndPassword(
+                        email,
+                        password
+                    );
+
+                await checkAdmin(result.user);
+
+            } catch (error) {
+
+                console.error(error);
+
+                let message =
+                    "Unable to login.";
+
+                if (
+                    error.code ===
+                    "auth/invalid-credential"
+                ) {
+                    message =
+                        "Invalid email or password.";
+                }
+
+                if (
+                    error.code ===
+                    "auth/too-many-requests"
+                ) {
+                    message =
+                        "Too many attempts. Please try again later.";
+                }
+
+                showLoginMessage(message);
+
+            }
+
+        });
+
+
+    /*
+    ==========================================
+    AUTH STATE
+    ==========================================
+    */
+
+    adminAuth.onAuthStateChanged(function(user) {
+
+        if (user) {
+            checkAdmin(user);
+        } else {
+            showAdminLogin();
+        }
+
+    });
+
+
+    /*
+    ==========================================
+    SHOW LOGIN
+    ==========================================
+    */
+
+    function showAdminLogin() {
+
+        document.getElementById("adminLogin")
+            .style.display = "flex";
+
+        document.getElementById("adminApp")
+            .style.display = "none";
+    }
+
+
+    /*
+    ==========================================
+    SHOW ADMIN PANEL
+    ==========================================
+    */
+
+    function showAdminPanel(user, data) {
+
+        document.getElementById("adminLogin")
+            .style.display = "none";
+
+        document.getElementById("adminApp")
+            .style.display = "block";
+
+        const name =
+            data.name ||
+            user.displayName ||
+            "Administrator";
+
+        document.getElementById("adminName")
+            .textContent = name;
+
+        document.getElementById("adminEmailDisplay")
+            .textContent = user.email;
+
+        document.getElementById("adminAvatar")
+            .textContent =
+            name.charAt(0).toUpperCase();
+
+        loadAdminData();
+    }
+
+
+    /*
+    ==========================================
+    LOGOUT
+    ==========================================
+    */
+
+    async function adminLogout() {
+
+        try {
+
+            await adminAuth.signOut();
+
+            window.location.href = "login.html";
+
+        } catch (error) {
+
+            console.error(
+                "Logout error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+    ==========================================
+    LOAD ADMIN DATA
+    ==========================================
+    */
+
+    async function loadAdminData() {
+
+        try {
+
+            const usersSnapshot =
+                await adminDb
+                .collection("users")
+                .get();
+
+            document.getElementById("totalUsers")
+                .textContent =
+                usersSnapshot.size;
+
+
+            const usersTable =
+                document.getElementById("usersTable");
+
+            usersTable.innerHTML = "";
+
+
+            if (usersSnapshot.empty) {
+
+                usersTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty">
+                            No users found.
+                        </td>
+                    </tr>
+                `;
+
+            } else {
+
+                let count = 0;
+
+                usersSnapshot.forEach(doc => {
+
+                    if (count >= 10) return;
+
+                    const data = doc.data();
+
+                    const name =
+                        data.name ||
+                        "Member";
+
+                    const email =
+                        data.email ||
+                        "—";
+
+                    const role =
+                        data.role ||
+                        "user";
+
+                    usersTable.innerHTML += `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(name)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(email)}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(role)}
+                            </td>
+
+                            <td>
+                                <span class="status active">
+                                    Active
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                    count++;
+
+                });
+
+            }
+
+
+            /*
+            ==================================
+            COURSES
+            ==================================
+            */
+
+            try {
+
+                const coursesSnapshot =
+                    await adminDb
+                    .collection("courses")
+                    .get();
+
+                document.getElementById("totalCourses")
+                    .textContent =
+                    coursesSnapshot.size;
+
+            } catch {
+
+                document.getElementById("totalCourses")
+                    .textContent = "0";
+
+            }
+
+
+            /*
+            ==================================
+            PAYMENTS
+            ==================================
+            */
+
+            try {
+
+                const paymentsSnapshot =
+                    await adminDb
+                    .collection("payments")
+                    .get();
+
+                document.getElementById("totalPayments")
+                    .textContent =
+                    paymentsSnapshot.size;
+
+
+                let revenue = 0;
+
+                paymentsSnapshot.forEach(doc => {
+
+                    const payment = doc.data();
+
+                    if (
+                        payment.status === "success" ||
+                        payment.status === "paid"
+                    ) {
+
+                        revenue +=
+                            Number(
+                                payment.amount || 0
+                            );
+
+                    }
+
+                });
+
+                document.getElementById("totalRevenue")
+                    .textContent =
+                    "₹" +
+                    revenue.toLocaleString("en-IN");
+
+                loadPaymentsTable(
+                    paymentsSnapshot
+                );
+
+            } catch {
+
+                document.getElementById("totalPayments")
+                    .textContent = "0";
+
+                document.getElementById("totalRevenue")
+                    .textContent = "₹0";
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Admin data error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    /*
+    ==========================================
+    PAYMENTS TABLE
+    ==========================================
+    */
+
+    function loadPaymentsTable(snapshot) {
+
+        const table =
+            document.getElementById(
+                "paymentsTable"
+            );
+
+        table.innerHTML = "";
+
+
+        if (snapshot.empty) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="4" class="empty">
+                        No payments found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        let count = 0;
+
+
+        snapshot.forEach(doc => {
+
+            if (count >= 10) return;
+
+            const payment =
+                doc.data();
+
+            const amount =
+                Number(
+                    payment.amount || 0
+                );
+
+
+            let date = "—";
+
+            if (payment.createdAt) {
+
+                if (
+                    typeof payment.createdAt
+                    .toDate === "function"
+                ) {
+
+                    date =
+                        payment.createdAt
+                        .toDate()
+                        .toLocaleDateString(
+                            "en-IN"
+                        );
+
+                }
+
+            }
+
+
+            const status =
+                payment.status ||
+                "pending";
+
+
+            table.innerHTML += `
+
+                <tr>
+
+                    <td>
+                        ${escapeHtml(
+                            payment.email ||
+                            payment.userEmail ||
+                            "Member"
+                        )}
+                    </td>
+
+                    <td>
+                        ₹${amount.toLocaleString("en-IN")}
+                    </td>
+
+                    <td>
+
+                        <span class="status ${
+                            status === "success" ||
+                            status === "paid"
+                                ? "active"
+                                : "pending"
+                        }">
+
+                            ${escapeHtml(status)}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+                        ${date}
+                    </td>
+
+                </tr>
+
+            `;
+
+            count++;
+
+        });
+
+    }
+
+
+    /*
+    ==========================================
+    HTML ESCAPE
+    ==========================================
+    */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+</script>
+
+</body>
+</html>

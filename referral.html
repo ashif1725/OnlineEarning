@@ -1,1 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Referral | SkillEarn Hub</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="header">
+
+    <a href="index.html" class="logo">
+        SkillEarn <span>Hub</span>
+    </a>
+
+    <nav class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="courses.html">Courses</a>
+        <a href="profile.html">Profile</a>
+        <a href="referral.html" class="active">Referral</a>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn">
+        Logout
+    </button>
+
+</header>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="referral-page">
+
+    <!-- Loading -->
+
+    <div id="loadingBox" class="loading-box">
+        Loading referral information...
+    </div>
+
+
+    <!-- Login Required -->
+
+    <section id="loginRequired"
+             class="referral-card"
+             style="display:none;">
+
+        <div class="referral-icon">
+            🔐
+        </div>
+
+        <h1>Login Required</h1>
+
+        <p>
+            Please login to your SkillEarn Hub account
+            to access your referral dashboard.
+        </p>
+
+        <a href="login.html" class="btn">
+            Login Now
+        </a>
+
+    </section>
+
+
+    <!-- Referral Dashboard -->
+
+    <section id="referralContent"
+             style="display:none;">
+
+        <!-- Hero -->
+
+        <div class="referral-hero">
+
+            <div>
+
+                <span class="promo-badge">
+                    🤝 REFERRAL PROGRAM
+                </span>
+
+                <h1>
+                    Invite Friends.<br>
+                    <span>Grow Together.</span>
+                </h1>
+
+                <p>
+                    Share your referral link with friends and
+                    help them discover SkillEarn Hub.
+                </p>
+
+            </div>
+
+            <div class="referral-hero-icon">
+                🚀
+            </div>
+
+        </div>
+
+
+        <!-- User Info -->
+
+        <div class="referral-card user-referral-card">
+
+            <div class="card-header">
+
+                <div>
+                    <h2>Your Referral Link</h2>
+
+                    <p>
+                        Share this link with your friends.
+                    </p>
+                </div>
+
+                <div class="small-icon">
+                    🔗
+                </div>
+
+            </div>
+
+
+            <div class="referral-link-box">
+
+                <input
+                    type="text"
+                    id="referralLink"
+                    readonly
+                >
+
+                <button
+                    type="button"
+                    id="copyReferralBtn"
+                    class="copy-btn">
+                    Copy
+                </button>
+
+            </div>
+
+
+            <p id="copyMessage"
+               class="success-message">
+            </p>
+
+        </div>
+
+
+        <!-- Stats -->
+
+        <div class="referral-stats">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    👥
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Total Referrals
+                    </span>
+
+                    <strong id="totalReferrals">
+                        0
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ✅
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Successful Referrals
+                    </span>
+
+                    <strong id="successfulReferrals">
+                        0
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    💰
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Referral Earnings
+                    </span>
+
+                    <strong id="referralEarnings">
+                        ₹0
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Share -->
+
+        <div class="referral-card share-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>Share Your Referral</h2>
+
+                    <p>
+                        Invite your friends using your
+                        personal referral link.
+                    </p>
+
+                </div>
+
+                <div class="small-icon">
+                    📤
+                </div>
+
+            </div>
+
+
+            <div class="share-buttons">
+
+                <button
+                    type="button"
+                    id="shareBtn"
+                    class="share-btn">
+                    📤 Share Link
+                </button>
+
+                <button
+                    type="button"
+                    id="copyBtn"
+                    class="share-btn secondary">
+                    📋 Copy Link
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- How it works -->
+
+        <div class="referral-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>How Referrals Work</h2>
+
+                    <p>
+                        Follow these simple steps.
+                    </p>
+
+                </div>
+
+                <div class="small-icon">
+                    💡
+                </div>
+
+            </div>
+
+
+            <div class="steps">
+
+                <div class="step">
+
+                    <div class="step-number">
+                        1
+                    </div>
+
+                    <div>
+
+                        <h3>Copy Your Link</h3>
+
+                        <p>
+                            Copy your personal SkillEarn Hub
+                            referral link.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        2
+                    </div>
+
+                    <div>
+
+                        <h3>Invite Friends</h3>
+
+                        <p>
+                            Share your referral link with
+                            people you know.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        3
+                    </div>
+
+                    <div>
+
+                        <h3>They Register</h3>
+
+                        <p>
+                            Your friend creates an account
+                            through your referral link.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="step">
+
+                    <div class="step-number">
+                        4
+                    </div>
+
+                    <div>
+
+                        <h3>Eligible Activity</h3>
+
+                        <p>
+                            Referral rewards are calculated
+                            according to your program rules.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Referral History -->
+
+        <div class="referral-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>Referral History</h2>
+
+                    <p>
+                        Your referral activity will appear here.
+                    </p>
+
+                </div>
+
+                <div class="small-icon">
+                    📊
+                </div>
+
+            </div>
+
+
+            <div id="referralHistory"
+                 class="referral-history">
+
+                <div class="empty-history">
+
+                    <div class="empty-icon">
+                        👥
+                    </div>
+
+                    <h3>No Referrals Yet</h3>
+
+                    <p>
+                        Share your referral link to start
+                        building your referral network.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Important Notice -->
+
+        <div class="referral-notice">
+
+            <strong>
+                ℹ️ Important
+            </strong>
+
+            <p>
+                Referral rewards are subject to the terms,
+                eligibility requirements and verification
+                rules of SkillEarn Hub. Never promise a fixed
+                earning amount unless it is actually defined
+                in your program terms.
+            </p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <div class="footer-logo">
+        SkillEarn <span>Hub</span>
+    </div>
+
+    <p>
+        Learn Skills. Build Income. Grow Online.
+    </p>
+
+    <p class="copyright">
+        © 2026 SkillEarn Hub. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const loadingBox =
+        document.getElementById("loadingBox");
+
+    const loginRequired =
+        document.getElementById("loginRequired");
+
+    const referralContent =
+        document.getElementById("referralContent");
+
+    const referralLinkInput =
+        document.getElementById("referralLink");
+
+    const copyReferralBtn =
+        document.getElementById("copyReferralBtn");
+
+    const copyBtn =
+        document.getElementById("copyBtn");
+
+    const shareBtn =
+        document.getElementById("shareBtn");
+
+    const copyMessage =
+        document.getElementById("copyMessage");
+
+    const logoutBtn =
+        document.getElementById("logoutBtn");
+
+
+    // ===============================
+    // FIREBASE AUTH STATE
+    // ===============================
+
+    if (typeof firebase === "undefined") {
+
+        loadingBox.textContent =
+            "Firebase could not be loaded.";
+
+        return;
+    }
+
+
+    // Initialize Firebase only once
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+
+    // ===============================
+    // AUTH STATE
+    // ===============================
+
+    auth.onAuthStateChanged(async function (user) {
+
+        loadingBox.style.display = "none";
+
+
+        if (!user) {
+
+            loginRequired.style.display = "block";
+            referralContent.style.display = "none";
+
+            return;
+        }
+
+
+        loginRequired.style.display = "none";
+        referralContent.style.display = "block";
+
+
+        await loadReferralData(user);
+
+    });
+
+
+    // ===============================
+    // LOAD REFERRAL DATA
+    // ===============================
+
+    async function loadReferralData(user) {
+
+        const uid = user.uid;
+
+        const referralCode =
+            createReferralCode(uid);
+
+
+        const baseUrl =
+            window.location.origin +
+            window.location.pathname
+                .split("/")
+                .slice(0, -1)
+                .join("/");
+
+
+        const referralLink =
+            baseUrl +
+            "/register.html?ref=" +
+            encodeURIComponent(referralCode);
+
+
+        referralLinkInput.value =
+            referralLink;
+
+
+        // Default values
+
+        document.getElementById(
+            "totalReferrals"
+        ).textContent = "0";
+
+
+        document.getElementById(
+            "successfulReferrals"
+        ).textContent = "0";
+
+
+        document.getElementById(
+            "referralEarnings"
+        ).textContent = "₹0";
+
+
+        // Try loading user referral statistics
+
+        try {
+
+            const userDoc =
+                await db
+                    .collection("users")
+                    .doc(uid)
+                    .get();
+
+
+            if (userDoc.exists) {
+
+                const data =
+                    userDoc.data() || {};
+
+
+                const total =
+                    Number(
+                        data.totalReferrals || 0
+                    );
+
+
+                const successful =
+                    Number(
+                        data.successfulReferrals || 0
+                    );
+
+
+                const earnings =
+                    Number(
+                        data.referralEarnings || 0
+                    );
+
+
+                document.getElementById(
+                    "totalReferrals"
+                ).textContent = total;
+
+
+                document.getElementById(
+                    "successfulReferrals"
+                ).textContent = successful;
+
+
+                document.getElementById(
+                    "referralEarnings"
+                ).textContent =
+                    "₹" + earnings.toFixed(2);
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Referral data error:",
+                error
+            );
+
+            /*
+             * Do not show database errors to users
+             * unless needed.
+             *
+             * Referral rewards should be calculated
+             * securely on the server.
+             */
+
+        }
+
+    }
+
+
+    // ===============================
+    // CREATE REFERRAL CODE
+    // ===============================
+
+    function createReferralCode(uid) {
+
+        if (!uid) {
+            return "";
+        }
+
+
+        return "SEH-" +
+            uid
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .substring(0, 8)
+                .toUpperCase();
+
+    }
+
+
+    // ===============================
+    // COPY FUNCTION
+    // ===============================
+
+    async function copyReferralLink() {
+
+        const link =
+            referralLinkInput.value;
+
+
+        if (!link) {
+            return;
+        }
+
+
+        try {
+
+            await navigator.clipboard.writeText(link);
+
+            showCopyMessage(
+                "Referral link copied successfully!"
+            );
+
+
+        } catch (error) {
+
+            referralLinkInput.select();
+
+            document.execCommand("copy");
+
+            showCopyMessage(
+                "Referral link copied!"
+            );
+
+        }
+
+    }
+
+
+    // ===============================
+    // COPY BUTTONS
+    // ===============================
+
+    copyReferralBtn.addEventListener(
+        "click",
+        copyReferralLink
+    );
+
+
+    copyBtn.addEventListener(
+        "click",
+        copyReferralLink
+    );
+
+
+    // ===============================
+    // SHARE
+    // ===============================
+
+    shareBtn.addEventListener(
+        "click",
+        async function () {
+
+            const link =
+                referralLinkInput.value;
+
+
+            if (!link) {
+                return;
+            }
+
+
+            const shareData = {
+
+                title:
+                    "Join SkillEarn Hub",
+
+                text:
+                    "Join SkillEarn Hub and explore digital skills.",
+
+                url:
+                    link
+            };
+
+
+            if (
+                navigator.share &&
+                window.isSecureContext
+            ) {
+
+                try {
+
+                    await navigator.share(
+                        shareData
+                    );
+
+                } catch (error) {
+
+                    if (
+                        error.name !==
+                        "AbortError"
+                    ) {
+
+                        console.error(
+                            error
+                        );
+
+                    }
+
+                }
+
+            } else {
+
+                await copyReferralLink();
+
+            }
+
+        }
+    );
+
+
+    // ===============================
+    // COPY MESSAGE
+    // ===============================
+
+    function showCopyMessage(message) {
+
+        copyMessage.textContent =
+            message;
+
+
+        setTimeout(function () {
+
+            copyMessage.textContent = "";
+
+        }, 3000);
+
+    }
+
+
+    // ===============================
+    // LOGOUT
+    // ===============================
+
+    logoutBtn.addEventListener(
+        "click",
+        async function () {
+
+            try {
+
+                await auth.signOut();
+
+                window.location.href =
+                    "login.html";
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+                alert(
+                    "Unable to logout. Please try again."
+                );
+
+            }
+
+        }
+    );
+
+});
+
+</script>
+
+</body>
+</html>

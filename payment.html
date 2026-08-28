@@ -1,1 +1,1434 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Secure Payment | SkillEarn Hub</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <script src="js/firebase-config.js"></script>
+
+</head>
+
+
+<body class="payment-page">
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<header class="header">
+
+    <a
+        href="index.html"
+        class="logo"
+    >
+        SkillEarn <span>Hub</span>
+    </a>
+
+
+    <a
+        href="courses.html"
+        class="back-home"
+    >
+        ← Courses
+    </a>
+
+</header>
+
+
+
+<!-- =====================================================
+     LOADING
+===================================================== -->
+
+<section
+    id="loading"
+    class="payment-loading"
+>
+
+    <div class="loading-icon">
+        ⏳
+    </div>
+
+    <h2>
+        Preparing Secure Checkout...
+    </h2>
+
+    <p>
+        Please wait.
+    </p>
+
+</section>
+
+
+
+<!-- =====================================================
+     LOGIN REQUIRED
+===================================================== -->
+
+<section
+    id="loginRequired"
+    class="payment-message"
+    style="display:none;"
+>
+
+    <div class="message-icon">
+        🔐
+    </div>
+
+    <h2>
+        Login Required
+    </h2>
+
+    <p>
+        You must login before making a course payment.
+    </p>
+
+    <a
+        href="login.html"
+        class="btn"
+    >
+        Login to Continue
+    </a>
+
+</section>
+
+
+
+<!-- =====================================================
+     PAYMENT CONTENT
+===================================================== -->
+
+<main
+    id="paymentContent"
+    class="payment-container"
+    style="display:none;"
+>
+
+
+    <!-- =================================================
+         HEADER
+    ================================================== -->
+
+    <div class="payment-heading">
+
+        <span class="secure-badge">
+            🔒 SECURE CHECKOUT
+        </span>
+
+        <h1>
+            Complete Your
+            <span>Enrollment</span>
+        </h1>
+
+        <p>
+            Review your course details and continue
+            to the secure payment gateway.
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================================
+         PAYMENT GRID
+    ================================================== -->
+
+    <div class="payment-grid">
+
+
+        <!-- =============================================
+             COURSE SUMMARY
+        ============================================== -->
+
+        <section class="payment-card">
+
+            <div class="card-title">
+
+                <div>
+                    📚
+                </div>
+
+                <div>
+
+                    <h2>
+                        Course Summary
+                    </h2>
+
+                    <p>
+                        Review your purchase
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="course-summary">
+
+                <div
+                    id="courseIcon"
+                    class="course-icon"
+                >
+                    🎓
+                </div>
+
+
+                <div>
+
+                    <h3 id="courseTitle">
+                        Course
+                    </h3>
+
+                    <p id="courseDescription">
+                        Loading course information...
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Course Fee
+                </span>
+
+                <strong id="coursePrice">
+                    ₹0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-row">
+
+                <span>
+                    Platform Fee
+                </span>
+
+                <strong>
+                    ₹0
+                </strong>
+
+            </div>
+
+
+            <div class="summary-total">
+
+                <span>
+                    Total Amount
+                </span>
+
+                <strong id="totalAmount">
+                    ₹0
+                </strong>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =============================================
+             PAYMENT CARD
+        ============================================== -->
+
+        <section class="payment-card">
+
+            <div class="card-title">
+
+                <div>
+                    💳
+                </div>
+
+                <div>
+
+                    <h2>
+                        Payment
+                    </h2>
+
+                    <p>
+                        Secure payment processing
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="secure-box">
+
+                <div>
+                    🔐
+                </div>
+
+                <div>
+
+                    <strong>
+                        Secure Checkout
+                    </strong>
+
+                    <p>
+                        Your payment should be processed
+                        through an approved payment gateway.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAYMENT BUTTON -->
+
+            <button
+                type="button"
+                id="payButton"
+                class="pay-button"
+            >
+
+                <span>
+                    🔒
+                </span>
+
+                Pay
+                <span id="payAmount">
+                    ₹0
+                </span>
+
+            </button>
+
+
+            <p
+                id="paymentMessage"
+                class="payment-message-small"
+            ></p>
+
+
+            <div class="payment-methods">
+
+                <span>
+                    Accepted through secure gateway
+                </span>
+
+            </div>
+
+
+            <div class="payment-note">
+
+                <strong>
+                    Important
+                </strong>
+
+                <p>
+                    Enrollment is activated only after
+                    the payment gateway confirms the
+                    transaction on the server.
+                </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+
+    <!-- =================================================
+         TRUST
+    ================================================== -->
+
+    <section class="payment-trust">
+
+        <div>
+            🔒
+            <strong>
+                Secure Checkout
+            </strong>
+        </div>
+
+        <div>
+            ✓
+            <strong>
+                Verified Payment
+            </strong>
+        </div>
+
+        <div>
+            📚
+            <strong>
+                Course Enrollment
+            </strong>
+        </div>
+
+    </section>
+
+</main>
+
+
+
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer>
+
+    <div class="footer-logo">
+        SkillEarn <span>Hub</span>
+    </div>
+
+    <p>
+        Learn Skills. Build Income. Grow Online.
+    </p>
+
+    <p class="copyright">
+        © 2026 SkillEarn Hub. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        /* =================================================
+           FIREBASE
+        ================================================= */
+
+        if (
+            typeof firebase === "undefined"
+        ) {
+
+            showError(
+                "Firebase could not be loaded."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            !firebase.apps.length
+        ) {
+
+            firebase.initializeApp(
+                firebaseConfig
+            );
+
+        }
+
+
+        const auth =
+            firebase.auth();
+
+
+        const db =
+            firebase.firestore();
+
+
+
+        /* =================================================
+           ELEMENTS
+        ================================================= */
+
+        const loading =
+            document.getElementById(
+                "loading"
+            );
+
+
+        const loginRequired =
+            document.getElementById(
+                "loginRequired"
+            );
+
+
+        const paymentContent =
+            document.getElementById(
+                "paymentContent"
+            );
+
+
+        const payButton =
+            document.getElementById(
+                "payButton"
+            );
+
+
+        const paymentMessage =
+            document.getElementById(
+                "paymentMessage"
+            );
+
+
+
+        /* =================================================
+           COURSE ID
+        ================================================= */
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+
+        const courseId =
+            params.get("id") ||
+            params.get("courseId");
+
+
+
+        /* =================================================
+           COURSE DATA
+        ================================================= */
+
+        const defaultCourses = {
+
+            "digital-marketing": {
+
+                title:
+                    "Digital Marketing",
+
+                description:
+                    "Learn the fundamentals of digital marketing, content and online promotion.",
+
+                price:
+                    499,
+
+                icon:
+                    "📣"
+
+            },
+
+
+            "freelancing": {
+
+                title:
+                    "Freelancing Basics",
+
+                description:
+                    "Understand freelancing fundamentals, profiles, clients and professional work.",
+
+                price:
+                    399,
+
+                icon:
+                    "💼"
+
+            },
+
+
+            "social-media": {
+
+                title:
+                    "Social Media Skills",
+
+                description:
+                    "Learn the fundamentals of creating useful social media content.",
+
+                price:
+                    349,
+
+                icon:
+                    "📱"
+
+            },
+
+
+            "online-business": {
+
+                title:
+                    "Online Business Fundamentals",
+
+                description:
+                    "Learn the basics of creating and managing an online business.",
+
+                price:
+                    699,
+
+                icon:
+                    "🚀"
+
+            },
+
+
+            "content-creation": {
+
+                title:
+                    "Content Creation",
+
+                description:
+                    "Learn the fundamentals of creating digital content.",
+
+                price:
+                    399,
+
+                icon:
+                    "🎬"
+
+            },
+
+
+            "affiliate-basics": {
+
+                title:
+                    "Affiliate Marketing Basics",
+
+                description:
+                    "Understand affiliate marketing concepts and ethical promotion.",
+
+                price:
+                    549,
+
+                icon:
+                    "🔗"
+
+            }
+
+        };
+
+
+
+        let selectedCourse =
+            null;
+
+
+
+        /* =================================================
+           AUTH CHECK
+        ================================================= */
+
+        auth.onAuthStateChanged(
+            async function (user) {
+
+
+                if (!user) {
+
+                    loading.style.display =
+                        "none";
+
+                    paymentContent.style.display =
+                        "none";
+
+                    loginRequired.style.display =
+                        "block";
+
+                    return;
+
+                }
+
+
+                if (!courseId) {
+
+                    loading.style.display =
+                        "none";
+
+                    showError(
+                        "Course was not selected."
+                    );
+
+                    return;
+
+                }
+
+
+                try {
+
+                    selectedCourse =
+                        await getCourse(
+                            courseId
+                        );
+
+
+                    if (!selectedCourse) {
+
+                        throw new Error(
+                            "Course not found."
+                        );
+
+                    }
+
+
+                    displayCourse(
+                        selectedCourse
+                    );
+
+
+                    loading.style.display =
+                        "none";
+
+                    paymentContent.style.display =
+                        "block";
+
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    loading.style.display =
+                        "none";
+
+                    showError(
+                        "Unable to load this course."
+                    );
+
+                }
+
+            }
+        );
+
+
+
+        /* =================================================
+           GET COURSE
+        ================================================= */
+
+        async function getCourse(
+            id
+        ) {
+
+            try {
+
+                const doc =
+                    await db
+                        .collection("courses")
+                        .doc(id)
+                        .get();
+
+
+                if (
+                    doc.exists
+                ) {
+
+                    return {
+
+                        id: doc.id,
+
+                        ...doc.data()
+
+                    };
+
+                }
+
+            } catch (error) {
+
+                console.log(
+                    "Firestore course lookup failed.",
+                    error.message
+                );
+
+            }
+
+
+            if (
+                defaultCourses[id]
+            ) {
+
+                return {
+
+                    id: id,
+
+                    ...defaultCourses[id]
+
+                };
+
+            }
+
+
+            return null;
+
+        }
+
+
+
+        /* =================================================
+           DISPLAY COURSE
+        ================================================= */
+
+        function displayCourse(
+            course
+        ) {
+
+            const price =
+                Number(
+                    course.price || 0
+                );
+
+
+            document.getElementById(
+                "courseTitle"
+            ).textContent =
+                course.title ||
+                "Course";
+
+
+            document.getElementById(
+                "courseDescription"
+            ).textContent =
+                course.description ||
+                "Course enrollment";
+
+
+            document.getElementById(
+                "courseIcon"
+            ).textContent =
+                course.icon ||
+                "🎓";
+
+
+            document.getElementById(
+                "coursePrice"
+            ).textContent =
+                formatCurrency(
+                    price
+                );
+
+
+            document.getElementById(
+                "totalAmount"
+            ).textContent =
+                formatCurrency(
+                    price
+                );
+
+
+            document.getElementById(
+                "payAmount"
+            ).textContent =
+                formatCurrency(
+                    price
+                );
+
+        }
+
+
+
+        /* =================================================
+           PAYMENT BUTTON
+        ================================================= */
+
+        payButton.addEventListener(
+            "click",
+            async function () {
+
+
+                const user =
+                    auth.currentUser;
+
+
+                if (!user) {
+
+                    window.location.href =
+                        "login.html";
+
+                    return;
+
+                }
+
+
+                if (!selectedCourse) {
+
+                    showPaymentMessage(
+                        "Course information is not available.",
+                        true
+                    );
+
+                    return;
+
+                }
+
+
+                const amount =
+                    Number(
+                        selectedCourse.price ||
+                        0
+                    );
+
+
+                if (
+                    amount <= 0
+                ) {
+
+                    showPaymentMessage(
+                        "Invalid course amount.",
+                        true
+                    );
+
+                    return;
+
+                }
+
+
+                /*
+                 * IMPORTANT SECURITY NOTE
+                 *
+                 * The browser must NOT mark the course
+                 * as paid or enrolled.
+                 *
+                 * Your backend should:
+                 *
+                 * 1. Create a payment order.
+                 * 2. Send the order to the payment gateway.
+                 * 3. Verify the gateway response.
+                 * 4. Verify the payment signature.
+                 * 5. Create the enrollment.
+                 *
+                 * Example backend endpoint:
+                 *
+                 * POST /api/create-payment-order
+                 *
+                 * Then:
+                 *
+                 * POST /api/verify-payment
+                 *
+                 */
+
+
+                showPaymentMessage(
+                    "Secure payment gateway setup is required before accepting real payments.",
+                    false
+                );
+
+            }
+        );
+
+
+
+        /* =================================================
+           MESSAGE
+        ================================================= */
+
+        function showPaymentMessage(
+            message,
+            isError
+        ) {
+
+            paymentMessage.textContent =
+                message;
+
+
+            paymentMessage.className =
+                "payment-message-small " +
+                (
+                    isError
+                    ?
+                    "error"
+                    :
+                    "info"
+                );
+
+        }
+
+
+
+        function showError(
+            message
+        ) {
+
+            loading.style.display =
+                "none";
+
+
+            loginRequired.style.display =
+                "none";
+
+
+            paymentContent.style.display =
+                "block";
+
+
+            paymentContent.innerHTML =
+                `
+                <div class="payment-message">
+
+                    <div class="message-icon">
+                        ⚠️
+                    </div>
+
+                    <h2>
+                        Something Went Wrong
+                    </h2>
+
+                    <p>
+                        ${escapeHtml(message)}
+                    </p>
+
+                    <a
+                        href="courses.html"
+                        class="btn"
+                    >
+                        Back to Courses
+                    </a>
+
+                </div>
+                `;
+
+        }
+
+
+
+        /* =================================================
+           HELPERS
+        ================================================= */
+
+        function formatCurrency(
+            value
+        ) {
+
+            return "₹" +
+                new Intl.NumberFormat(
+                    "en-IN",
+                    {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }
+                ).format(
+                    Number(value || 0)
+                );
+
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            return String(value)
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+    }
+
+);
+
+</script>
+
+
+
+<!-- =====================================================
+     PAGE CSS
+===================================================== -->
+
+<style>
+
+body {
+    margin: 0;
+    background: #f6f8fc;
+}
+
+
+/* LOADING */
+
+.payment-loading {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+.loading-icon {
+    font-size: 45px;
+    margin-bottom: 10px;
+}
+
+
+/* LOGIN */
+
+.payment-message {
+    width: min(550px, 90%);
+    margin: 80px auto;
+    padding: 45px 25px;
+    box-sizing: border-box;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.07);
+}
+
+.message-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.payment-message h2 {
+    color: #172033;
+}
+
+.payment-message p {
+    color: #788293;
+    line-height: 1.6;
+}
+
+
+/* CONTAINER */
+
+.payment-container {
+    width: min(1100px, 92%);
+    margin: 45px auto 70px;
+}
+
+
+/* HEADING */
+
+.payment-heading {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.secure-badge {
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 30px;
+    background: #eef4ff;
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.payment-heading h1 {
+    margin: 15px 0 10px;
+    font-size: 40px;
+    color: #172033;
+}
+
+.payment-heading h1 span {
+    color: #2563eb;
+}
+
+.payment-heading p {
+    color: #788293;
+}
+
+
+/* GRID */
+
+.payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+
+/* CARD */
+
+.payment-card {
+    padding: 28px;
+    background: #ffffff;
+    border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.05);
+}
+
+.card-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin-bottom: 25px;
+}
+
+.card-title > div:first-child {
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: #eef4ff;
+    font-size: 22px;
+}
+
+.card-title h2 {
+    margin: 0 0 3px;
+    font-size: 20px;
+    color: #172033;
+}
+
+.card-title p {
+    margin: 0;
+    color: #89919e;
+    font-size: 12px;
+}
+
+
+/* COURSE */
+
+.course-summary {
+    display: flex;
+    gap: 15px;
+    padding: 18px;
+    background: #f7f9fc;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.course-icon {
+    width: 65px;
+    height: 65px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef4ff;
+    border-radius: 14px;
+    font-size: 32px;
+}
+
+.course-summary h3 {
+    margin: 5px 0;
+    color: #172033;
+}
+
+.course-summary p {
+    margin: 0;
+    color: #788293;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* SUMMARY */
+
+.summary-row,
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #edf0f4;
+}
+
+.summary-row span {
+    color: #788293;
+    font-size: 13px;
+}
+
+.summary-row strong {
+    color: #293346;
+}
+
+.summary-total {
+    border: 0;
+    padding-top: 20px;
+}
+
+.summary-total span {
+    color: #172033;
+    font-weight: 700;
+}
+
+.summary-total strong {
+    color: #2563eb;
+    font-size: 25px;
+}
+
+
+/* SECURE */
+
+.secure-box {
+    display: flex;
+    gap: 13px;
+    padding: 17px;
+    background: #f0f8f3;
+    border: 1px solid #dcefe2;
+    border-radius: 14px;
+    margin-bottom: 25px;
+}
+
+.secure-box > div:first-child {
+    font-size: 24px;
+}
+
+.secure-box strong {
+    display: block;
+    color: #176b39;
+    margin-bottom: 4px;
+}
+
+.secure-box p {
+    margin: 0;
+    color: #61766a;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* PAY BUTTON */
+
+.pay-button {
+    width: 100%;
+    padding: 16px;
+    border: 0;
+    border-radius: 13px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.pay-button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+
+/* MESSAGE */
+
+.payment-message-small {
+    min-height: 20px;
+    margin: 15px 0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.payment-message-small.info {
+    color: #2563eb;
+}
+
+.payment-message-small.error {
+    color: #c62828;
+}
+
+
+/* METHODS */
+
+.payment-methods {
+    padding: 18px 0;
+    border-top: 1px solid #edf0f4;
+    border-bottom: 1px solid #edf0f4;
+    color: #89919e;
+    text-align: center;
+    font-size: 11px;
+}
+
+
+/* NOTE */
+
+.payment-note {
+    margin-top: 20px;
+    padding: 14px;
+    background: #fff9e8;
+    border-radius: 12px;
+}
+
+.payment-note strong {
+    color: #806300;
+    font-size: 12px;
+}
+
+.payment-note p {
+    margin: 5px 0 0;
+    color: #8b7b4b;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+
+/* TRUST */
+
+.payment-trust {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 30px;
+    color: #667085;
+    font-size: 12px;
+}
+
+.payment-trust div {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+
+    .payment-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-heading h1 {
+        font-size: 32px;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .payment-container {
+        width: 92%;
+        margin-top: 25px;
+    }
+
+    .payment-card {
+        padding: 20px;
+    }
+
+    .payment-trust {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+
+}
+
+</style>
+
+
+</body>
+</html>

@@ -1,1 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
+    <title>My Profile | SkillEarn Hub</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Authentication -->
+    <script src="js/auth.js"></script>
+
+    <style>
+        .profile-page {
+            min-height: 100vh;
+            background: #f5f7fb;
+        }
+
+        .profile-container {
+            width: min(1100px, 92%);
+            margin: 40px auto;
+        }
+
+        .profile-header-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #2563eb;
+            background: #e8eefc;
+        }
+
+        .profile-title {
+            flex: 1;
+        }
+
+        .profile-title h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+            color: #172033;
+        }
+
+        .profile-title p {
+            margin: 5px 0;
+            color: #687386;
+            font-size: 15px;
+        }
+
+        .verified-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 6px 12px;
+            border-radius: 30px;
+            background: #e9f9ef;
+            color: #16803c;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .profile-card {
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .profile-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .profile-card h2 {
+            margin: 0 0 20px;
+            color: #172033;
+            font-size: 21px;
+        }
+
+        .profile-field {
+            margin-bottom: 18px;
+        }
+
+        .profile-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4c5668;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .profile-field input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border: 1px solid #d9deea;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .profile-field input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+        }
+
+        .profile-field input:disabled {
+            background: #f3f5f8;
+            color: #687386;
+            cursor: not-allowed;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .profile-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 13px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .primary-btn {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .primary-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .secondary-btn {
+            background: #eef2f7;
+            color: #273449;
+        }
+
+        .secondary-btn:hover {
+            background: #e2e7ef;
+        }
+
+        .danger-btn {
+            background: #feecec;
+            color: #c62828;
+        }
+
+        .danger-btn:hover {
+            background: #fbdada;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-box {
+            padding: 20px;
+            border-radius: 16px;
+            background: #f7f9fc;
+            text-align: center;
+        }
+
+        .stat-box strong {
+            display: block;
+            font-size: 25px;
+            color: #2563eb;
+            margin-bottom: 5px;
+        }
+
+        .stat-box span {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .message {
+            display: none;
+            margin-top: 15px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .message.success {
+            display: block;
+            background: #eaf8ef;
+            color: #18733b;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #697386;
+            font-weight: 600;
+        }
+
+        @media (max-width: 750px) {
+            .profile-header-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 28px 20px;
+            }
+
+            .profile-title h1 {
+                font-size: 26px;
+            }
+
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-card.full-width {
+                grid-column: auto;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-container {
+                margin: 25px auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="profile-page">
+
+<header class="header">
+
+    <a href="index.html" class="logo">
+        SkillEarn <span>Hub</span>
+    </a>
+
+    <a href="dashboard.html" class="back-home">
+        ← Dashboard
+    </a>
+
+</header>
+
+
+<main class="profile-container">
+
+    <!-- Loading -->
+    <div id="profileLoading" class="loading">
+        Loading your profile...
+    </div>
+
+
+    <!-- Profile Content -->
+    <div id="profileContent" style="display:none;">
+
+        <!-- Profile Header -->
+        <section class="profile-header-card">
+
+            <img
+                id="profileAvatar"
+                class="profile-avatar"
+                src="https://ui-avatars.com/api/?name=User&background=2563eb&color=fff"
+                alt="Profile"
+            >
+
+            <div class="profile-title">
+
+                <h1 id="displayName">
+                    User
+                </h1>
+
+                <p id="displayEmail">
+                    Loading...
+                </p>
+
+                <span
+                    id="verificationBadge"
+                    class="verified-badge"
+                >
+                    ✓ Account Active
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <div class="profile-grid">
+
+            <!-- Personal Information -->
+            <section class="profile-card">
+
+                <h2>Personal Information</h2>
+
+                <div class="profile-field">
+
+                    <label for="name">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Enter your full name"
+                    >
+
+                </div>
+
+
+                <div class="profile-field">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="profile-field">
+
+                    <label for="phone">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="phone"
+                        placeholder="Enter phone number"
+                    >
+
+                </div>
+
+
+                <div class="profile-actions">
+
+                    <button
+                        type="button"
+                        class="profile-btn primary-btn"
+                        id="saveProfileBtn"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="profileMessage"
+                    class="message"
+                ></div>
+
+            </section>
+
+
+            <!-- Account Information -->
+            <section class="profile-card">
+
+                <h2>Account Information</h2>
+
+                <div class="profile-field">
+
+                    <label>
+                        User ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="userId"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="profile-field">
+
+                    <label>
+                        Login Provider
+                    </label>
+
+                    <input
+                        type="text"
+                        id="loginProvider"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="profile-field">
+
+                    <label>
+                        Account Created
+                    </label>
+
+                    <input
+                        type="text"
+                        id="createdAt"
+                        disabled
+                    >
+
+                </div>
+
+            </section>
+
+
+            <!-- Account Statistics -->
+            <section class="profile-card full-width">
+
+                <h2>My Activity</h2>
+
+                <div class="stats-grid">
+
+                    <div class="stat-box">
+
+                        <strong id="courseCount">
+                            0
+                        </strong>
+
+                        <span>
+                            Enrolled Courses
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-box">
+
+                        <strong id="referralCount">
+                            0
+                        </strong>
+
+                        <span>
+                            Referrals
+                        </span>
+
+                    </div>
+
+
+                    <div class="stat-box">
+
+                        <strong id="earningAmount">
+                            ₹0
+                        </strong>
+
+                        <span>
+                            Available Earnings
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- Security -->
+            <section class="profile-card">
+
+                <h2>Security</h2>
+
+                <div class="profile-actions">
+
+                    <button
+                        type="button"
+                        class="profile-btn secondary-btn"
+                        id="resetPasswordBtn"
+                    >
+                        Reset Password
+                    </button>
+
+                </div>
+
+                <div
+                    id="securityMessage"
+                    class="message"
+                ></div>
+
+            </section>
+
+
+            <!-- Logout -->
+            <section class="profile-card">
+
+                <h2>Account Actions</h2>
+
+                <div class="profile-actions">
+
+                    <button
+                        type="button"
+                        class="profile-btn danger-btn"
+                        id="logoutBtn"
+                    >
+                        Logout
+                    </button>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<footer>
+
+    <div class="footer-logo">
+        SkillEarn <span>Hub</span>
+    </div>
+
+    <p>
+        Learn Skills. Build Income. Grow Online.
+    </p>
+
+    <p class="copyright">
+        © 2026 SkillEarn Hub. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (typeof firebase === "undefined") {
+        console.error("Firebase SDK is not loaded.");
+        return;
+    }
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+
+    const loading = document.getElementById("profileLoading");
+    const content = document.getElementById("profileContent");
+
+    const nameInput = document.getElementById("name");
+    const emailInput = document.getElementById("email");
+    const phoneInput = document.getElementById("phone");
+
+    const displayName = document.getElementById("displayName");
+    const displayEmail = document.getElementById("displayEmail");
+    const profileAvatar = document.getElementById("profileAvatar");
+
+    const userId = document.getElementById("userId");
+    const loginProvider = document.getElementById("loginProvider");
+    const createdAt = document.getElementById("createdAt");
+
+    const saveProfileBtn =
+        document.getElementById("saveProfileBtn");
+
+    const resetPasswordBtn =
+        document.getElementById("resetPasswordBtn");
+
+    const logoutBtn =
+        document.getElementById("logoutBtn");
+
+
+    function showMessage(element, text, type) {
+
+        element.textContent = text;
+
+        element.className =
+            "message " + type;
+
+    }
+
+
+    function getProviderName(user) {
+
+        if (!user.providerData || !user.providerData.length) {
+            return "Email / Password";
+        }
+
+        const provider = user.providerData[0].provider;
+
+        if (provider === "google.com") {
+            return "Google";
+        }
+
+        if (provider === "password") {
+            return "Email / Password";
+        }
+
+        return provider;
+    }
+
+
+    function formatDate(date) {
+
+        if (!date) {
+            return "Not available";
+        }
+
+        return new Intl.DateTimeFormat("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        }).format(date);
+    }
+
+
+    async function loadProfile(user) {
+
+        try {
+
+            let profileData = {};
+
+            const docRef =
+                db.collection("users").doc(user.uid);
+
+            const snapshot =
+                await docRef.get();
+
+            if (snapshot.exists) {
+                profileData = snapshot.data() || {};
+            }
+
+
+            const name =
+                profileData.name ||
+                user.displayName ||
+                "User";
+
+            const email =
+                user.email ||
+                profileData.email ||
+                "";
+
+            const phone =
+                profileData.phone ||
+                user.phoneNumber ||
+                "";
+
+
+            nameInput.value = name;
+            emailInput.value = email;
+            phoneInput.value = phone;
+
+            displayName.textContent = name;
+            displayEmail.textContent = email;
+
+            userId.value = user.uid;
+
+            loginProvider.value =
+                getProviderName(user);
+
+            if (user.metadata &&
+                user.metadata.creationTime) {
+
+                createdAt.value =
+                    formatDate(
+                        new Date(user.metadata.creationTime)
+                    );
+
+            }
+
+
+            if (user.photoURL) {
+
+                profileAvatar.src =
+                    user.photoURL;
+
+            } else {
+
+                profileAvatar.src =
+                    "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(name) +
+                    "&background=2563eb&color=fff";
+
+            }
+
+
+            /*
+             * Basic activity statistics.
+             *
+             * These queries require Firestore rules
+             * that allow the logged-in user to read
+             * their own data.
+             */
+
+            try {
+
+                const enrollments =
+                    await db.collection("enrollments")
+                    .where("userId", "==", user.uid)
+                    .get();
+
+                document.getElementById("courseCount")
+                    .textContent = enrollments.size;
+
+            } catch (error) {
+
+                console.warn(
+                    "Could not load enrollments:",
+                    error
+                );
+
+            }
+
+
+            try {
+
+                const referrals =
+                    await db.collection("referrals")
+                    .where("referrerId", "==", user.uid)
+                    .get();
+
+                document.getElementById("referralCount")
+                    .textContent = referrals.size;
+
+            } catch (error) {
+
+                console.warn(
+                    "Could not load referrals:",
+                    error
+                );
+
+            }
+
+
+            try {
+
+                const wallet =
+                    await db.collection("wallets")
+                    .doc(user.uid)
+                    .get();
+
+                if (wallet.exists) {
+
+                    const data =
+                        wallet.data() || {};
+
+                    const balance =
+                        Number(data.balance || 0);
+
+                    document.getElementById(
+                        "earningAmount"
+                    ).textContent =
+                        "₹" +
+                        balance.toLocaleString("en-IN");
+
+                }
+
+            } catch (error) {
+
+                console.warn(
+                    "Could not load wallet:",
+                    error
+                );
+
+            }
+
+
+            loading.style.display = "none";
+            content.style.display = "block";
+
+        } catch (error) {
+
+            console.error(
+                "Profile loading error:",
+                error
+            );
+
+            loading.textContent =
+                "Unable to load profile. Please try again.";
+
+        }
+
+    }
+
+
+    /*
+     * AUTH STATE
+     *
+     * User is not allowed to access profile
+     * without logging in.
+     */
+
+    auth.onAuthStateChanged(function (user) {
+
+        if (!user) {
+
+            window.location.href =
+                "login.html";
+
+            return;
+
+        }
+
+        loadProfile(user);
+
+    });
+
+
+    /*
+     * SAVE PROFILE
+     */
+
+    saveProfileBtn.addEventListener(
+        "click",
+        async function () {
+
+            const user = auth.currentUser;
+
+            if (!user) {
+                window.location.href =
+                    "login.html";
+                return;
+            }
+
+
+            const name =
+                nameInput.value.trim();
+
+            const phone =
+                phoneInput.value.trim();
+
+
+            if (!name) {
+
+                showMessage(
+                    document.getElementById(
+                        "profileMessage"
+                    ),
+                    "Please enter your full name.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            saveProfileBtn.disabled = true;
+            saveProfileBtn.textContent =
+                "Saving...";
+
+
+            try {
+
+                await db
+                    .collection("users")
+                    .doc(user.uid)
+                    .set({
+
+                        name: name,
+
+                        email:
+                            user.email || "",
+
+                        phone: phone,
+
+                        updatedAt:
+                            firebase.firestore.FieldValue
+                            .serverTimestamp()
+
+                    }, {
+                        merge: true
+                    });
+
+
+                /*
+                 * Also update Firebase Auth
+                 * display name.
+                 */
+
+                await user.updateProfile({
+                    displayName: name
+                });
+
+
+                displayName.textContent =
+                    name;
+
+
+                showMessage(
+                    document.getElementById(
+                        "profileMessage"
+                    ),
+                    "Profile updated successfully.",
+                    "success"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Save profile error:",
+                    error
+                );
+
+                showMessage(
+                    document.getElementById(
+                        "profileMessage"
+                    ),
+                    error.message ||
+                    "Unable to update profile.",
+                    "error"
+                );
+
+            } finally {
+
+                saveProfileBtn.disabled = false;
+                saveProfileBtn.textContent =
+                    "Save Changes";
+
+            }
+
+        }
+    );
+
+
+    /*
+     * RESET PASSWORD
+     */
+
+    resetPasswordBtn.addEventListener(
+        "click",
+        async function () {
+
+            const user = auth.currentUser;
+
+            if (!user || !user.email) {
+
+                showMessage(
+                    document.getElementById(
+                        "securityMessage"
+                    ),
+                    "No email address is available for this account.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+
+            try {
+
+                await auth.sendPasswordResetEmail(
+                    user.email
+                );
+
+
+                showMessage(
+                    document.getElementById(
+                        "securityMessage"
+                    ),
+                    "Password reset email sent to " +
+                    user.email,
+                    "success"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Password reset error:",
+                    error
+                );
+
+                showMessage(
+                    document.getElementById(
+                        "securityMessage"
+                    ),
+                    error.message ||
+                    "Unable to send password reset email.",
+                    "error"
+                );
+
+            }
+
+        }
+    );
+
+
+    /*
+     * LOGOUT
+     */
+
+    logoutBtn.addEventListener(
+        "click",
+        async function () {
+
+            logoutBtn.disabled = true;
+            logoutBtn.textContent =
+                "Logging out...";
+
+
+            try {
+
+                await auth.signOut();
+
+                window.location.href =
+                    "login.html";
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+                logoutBtn.disabled = false;
+                logoutBtn.textContent =
+                    "Logout";
+
+                alert(
+                    "Unable to logout. Please try again."
+                );
+
+            }
+
+        }
+    );
+
+});
+
+</script>
+
+</body>
+</html>

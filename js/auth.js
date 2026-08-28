@@ -1,78 +1,32 @@
 /* =========================================================
-   SKILLEARN HUB - FIREBASE AUTHENTICATION
-   Login | Register | Google | Forgot Password | Logout
+   SkillEarn Hub
+   Authentication System
+   Firebase Compat SDK
    ========================================================= */
 
 
 /* =========================================================
    FIREBASE SERVICES
-   ========================================================= */
+========================================================= */
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
 
 /* =========================================================
-   CONFIG
-   ========================================================= */
+   DEFAULT REDIRECT
+========================================================= */
 
-const DASHBOARD_PAGE = "dashboard.html";
-const LOGIN_PAGE = "login.html";
-
-
-/* =========================================================
-   MESSAGE HELPER
-   ========================================================= */
-
-function showMessage(message, type = "error") {
-
-    const messageBox =
-        document.getElementById("authMessage") ||
-        document.getElementById("errorMessage");
-
-    if (!messageBox) {
-        alert(message);
-        return;
-    }
-
-    messageBox.textContent = message;
-
-    messageBox.style.display = "block";
-
-    messageBox.className =
-        "auth-message " +
-        (type === "success"
-            ? "success"
-            : type === "info"
-            ? "info"
-            : "error");
-}
+const DEFAULT_LOGIN_REDIRECT = "dashboard.html";
 
 
 /* =========================================================
-   HIDE MESSAGE
-   ========================================================= */
+   HELPERS
+========================================================= */
 
-function hideMessage() {
+function getUserFriendlyError(error) {
 
-    const messageBox =
-        document.getElementById("authMessage") ||
-        document.getElementById("errorMessage");
-
-    if (messageBox) {
-        messageBox.textContent = "";
-        messageBox.style.display = "none";
-    }
-}
-
-
-/* =========================================================
-   FIREBASE ERROR MESSAGE
-   ========================================================= */
-
-function getFirebaseErrorMessage(error) {
-
-    if (!error || !error.code) {
+    if (!error) {
         return "Something went wrong. Please try again.";
     }
 
@@ -85,11 +39,13 @@ function getFirebaseErrorMessage(error) {
             return "No account was found with this email.";
 
         case "auth/wrong-password":
+            return "Incorrect email or password.";
+
         case "auth/invalid-credential":
             return "Incorrect email or password.";
 
         case "auth/email-already-in-use":
-            return "This email is already registered. Please login.";
+            return "An account already exists with this email.";
 
         case "auth/weak-password":
             return "Password should be at least 6 characters.";
@@ -107,16 +63,13 @@ function getFirebaseErrorMessage(error) {
             return "Google login was cancelled.";
 
         case "auth/popup-blocked":
-            return "Your browser blocked the Google login popup.";
+            return "Google login popup was blocked by the browser.";
+
+        case "auth/account-exists-with-different-credential":
+            return "An account already exists with another login method.";
 
         case "auth/operation-not-allowed":
             return "This login method is not enabled in Firebase.";
-
-        case "auth/account-exists-with-different-credential":
-            return "An account already exists with this email using another login method.";
-
-        case "auth/requires-recent-login":
-            return "Please login again and try this action.";
 
         default:
             return error.message || "Authentication failed.";
@@ -125,80 +78,169 @@ function getFirebaseErrorMessage(error) {
 
 
 /* =========================================================
-   SET BUTTON LOADING
-   ========================================================= */
+   SAVE / CREATE USER PROFILE
+========================================================= */
 
-function setButtonLoading(button, loading, loadingText = "Please wait...") {
+async function createOrUpdateUserProfile(user, extraData = {}) {
 
-    if (!button) return;
-
-    if (loading) {
-
-        button.dataset.originalText =
-            button.innerHTML;
-
-        button.disabled = true;
-
-        button.innerHTML =
-            loadingText;
-
-    } else {
-
-        button.disabled = false;
-
-        if (button.dataset.originalText) {
-            button.innerHTML =
-                button.dataset.originalText;
-        }
+    if (!user) {
+        throw new Error("User is not available.");
     }
+
+    const userRef = db
+        .collection("users")
+        .doc(user.uid);
+
+    const snapshot = await userRef.get();
+
+    const existingData =
+        snapshot.exists
+            ? snapshot.data()
+            : {};
+
+    const userData = {
+
+        uid: user.uid,
+
+        name:
+            extraData.name ||
+            existingData.name ||
+            user.displayName ||
+            "Member",
+
+        email:
+            user.email ||
+            existingData.email ||
+            "",
+
+        photoURL:
+            user.photoURL ||
+            existingData.photoURL ||
+            "",
+
+        role:
+            existingData.role ||
+            "user",
+
+        status:
+            existingData.status ||
+            "active",
+
+        enrolledCourses:
+            Number(
+                existingData.enrolledCourses || 0
+            ),
+
+        referralCode:
+            existingData.referralCode ||
+            generateReferralCode(user.uid),
+
+        referredBy:
+            existingData.referredBy ||
+            extraData.referredBy ||
+            null,
+
+        updatedAt:
+            firebase.firestore.FieldValue.serverTimestamp()
+
+    };
+
+
+    if (!snapshot.exists) {
+
+        userData.createdAt =
+            firebase.firestore.FieldValue.serverTimestamp();
+    }
+
+
+    await userRef.set(
+        userData,
+        {
+            merge: true
+        }
+    );
+
+
+    return userData;
 }
 
 
 /* =========================================================
-   LOGIN
-   ========================================================= */
+   REFERRAL CODE
+========================================================= */
 
-async function loginUser(email, password) {
+function generateReferralCode(uid) {
 
-    hideMessage();
-
-    email = email.trim();
-
-    if (!email || !password) {
-
-        showMessage(
-            "Please enter your email and password."
-        );
-
-        return false;
+    if (!uid) {
+        return "";
     }
+
+    return "SEH-" +
+        uid
+            .replace(/[^a-zA-Z0-9]/g, "")
+            .substring(0, 8)
+            .toUpperCase();
+}
+
+
+/* =========================================================
+   EMAIL LOGIN
+========================================================= */
+
+async function loginUser(
+    email,
+    password,
+    redirectUrl = DEFAULT_LOGIN_REDIRECT
+) {
+
+    email =
+        String(email || "")
+            .trim()
+            .toLowerCase();
+
+    password =
+        String(password || "");
+
+
+    if (!email) {
+        throw new Error(
+            "Please enter your email address."
+        );
+    }
+
+    if (!password) {
+        throw new Error(
+            "Please enter your password."
+        );
+    }
+
 
     try {
 
-        const userCredential =
+        const result =
             await auth.signInWithEmailAndPassword(
                 email,
                 password
             );
 
-        console.log(
-            "Login successful:",
-            userCredential.user.uid
+
+        await createOrUpdateUserProfile(
+            result.user
         );
 
-        showMessage(
-            "Login successful. Redirecting...",
-            "success"
-        );
 
-        setTimeout(function () {
+        /*
+         * Redirect after successful login
+         */
+
+        if (redirectUrl) {
 
             window.location.href =
-                DASHBOARD_PAGE;
+                redirectUrl;
+        }
 
-        }, 500);
 
-        return true;
+        return result.user;
 
     } catch (error) {
 
@@ -207,151 +249,104 @@ async function loginUser(email, password) {
             error
         );
 
-        showMessage(
-            getFirebaseErrorMessage(error)
-        );
-
-        return false;
+        throw error;
     }
 }
 
 
 /* =========================================================
    REGISTER
-   ========================================================= */
+========================================================= */
 
 async function registerUser(
     name,
     email,
     password,
-    confirmPassword
+    referredBy = ""
 ) {
 
-    hideMessage();
+    name =
+        String(name || "")
+            .trim();
 
-    name = name.trim();
-    email = email.trim();
+    email =
+        String(email || "")
+            .trim()
+            .toLowerCase();
+
+    password =
+        String(password || "");
+
+    referredBy =
+        String(referredBy || "")
+            .trim();
+
 
     if (!name) {
 
-        showMessage(
-            "Please enter your full name."
+        throw new Error(
+            "Please enter your name."
         );
-
-        return false;
     }
+
 
     if (!email) {
 
-        showMessage(
-            "Please enter your email address."
+        throw new Error(
+            "Please enter your email."
         );
-
-        return false;
     }
+
+
+    if (!password) {
+
+        throw new Error(
+            "Please enter a password."
+        );
+    }
+
 
     if (password.length < 6) {
 
-        showMessage(
-            "Password must be at least 6 characters."
+        throw new Error(
+            "Password should be at least 6 characters."
         );
-
-        return false;
     }
 
-    if (password !== confirmPassword) {
-
-        showMessage(
-            "Passwords do not match."
-        );
-
-        return false;
-    }
 
     try {
 
-        /* Create Firebase account */
+        const result =
+            await auth
+                .createUserWithEmailAndPassword(
+                    email,
+                    password
+                );
 
-        const userCredential =
-            await auth.createUserWithEmailAndPassword(
-                email,
-                password
-            );
 
         const user =
-            userCredential.user;
+            result.user;
 
 
-        /* Update Firebase display name */
-
-        await user.updateProfile({
-
-            displayName: name
-
-        });
-
-
-        /* Save user profile in Firestore */
-
-        await db
-            .collection("users")
-            .doc(user.uid)
-            .set({
-
-                uid: user.uid,
-
-                name: name,
-
-                email: user.email,
-
-                photoURL: user.photoURL || "",
-
-                role: "user",
-
-                walletBalance: 0,
-
-                totalEarnings: 0,
-
-                referralEarnings: 0,
-
-                referralCount: 0,
-
-                coursesEnrolled: 0,
-
-                createdAt:
-                    firebase.firestore.FieldValue.serverTimestamp(),
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            }, {
-
-                merge: true
-
-            });
-
-
-        console.log(
-            "Registration successful:",
-            user.uid
+        await createOrUpdateUserProfile(
+            user,
+            {
+                name,
+                referredBy:
+                    referredBy || null
+            }
         );
 
 
-        showMessage(
-            "Account created successfully. Redirecting...",
-            "success"
-        );
+        /*
+         * Registration successful
+         */
+
+        window.location.href =
+            DEFAULT_LOGIN_REDIRECT;
 
 
-        setTimeout(function () {
-
-            window.location.href =
-                DASHBOARD_PAGE;
-
-        }, 700);
-
-
-        return true;
+        return user;
 
     } catch (error) {
 
@@ -360,141 +355,57 @@ async function registerUser(
             error
         );
 
-        showMessage(
-            getFirebaseErrorMessage(error)
-        );
-
-        return false;
+        throw error;
     }
 }
 
 
 /* =========================================================
-   GOOGLE LOGIN / SIGNUP
-   ========================================================= */
+   GOOGLE LOGIN
+========================================================= */
 
-async function googleLogin() {
+async function googleLogin(
+    redirectUrl = DEFAULT_LOGIN_REDIRECT
+) {
 
-    hideMessage();
+    const provider =
+        new firebase.auth.GoogleAuthProvider();
+
+
+    provider.setCustomParameters({
+        prompt: "select_account"
+    });
+
 
     try {
 
-        const provider =
-            new firebase.auth.GoogleAuthProvider();
-
-        provider.setCustomParameters({
-
-            prompt: "select_account"
-
-        });
-
-
         const result =
-            await auth.signInWithPopup(provider);
+            await auth.signInWithPopup(
+                provider
+            );
 
 
         const user =
             result.user;
 
 
-        /* Check whether user profile already exists */
-
-        const userRef =
-            db.collection("users")
-              .doc(user.uid);
-
-        const userDoc =
-            await userRef.get();
+        await createOrUpdateUserProfile(
+            user
+        );
 
 
-        /* Create profile for first-time Google user */
+        /*
+         * Redirect after Google login
+         */
 
-        if (!userDoc.exists) {
+        if (redirectUrl) {
 
-            await userRef.set({
-
-                uid: user.uid,
-
-                name:
-                    user.displayName ||
-                    "SkillEarn User",
-
-                email:
-                    user.email || "",
-
-                photoURL:
-                    user.photoURL || "",
-
-                role: "user",
-
-                walletBalance: 0,
-
-                totalEarnings: 0,
-
-                referralEarnings: 0,
-
-                referralCount: 0,
-
-                coursesEnrolled: 0,
-
-                provider: "google",
-
-                createdAt:
-                    firebase.firestore.FieldValue.serverTimestamp(),
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            });
-
-        } else {
-
-            await userRef.set({
-
-                name:
-                    user.displayName ||
-                    userDoc.data().name ||
-                    "SkillEarn User",
-
-                email:
-                    user.email || "",
-
-                photoURL:
-                    user.photoURL || "",
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            }, {
-
-                merge: true
-
-            });
-
+            window.location.href =
+                redirectUrl;
         }
 
 
-        console.log(
-            "Google authentication successful:",
-            user.uid
-        );
-
-
-        showMessage(
-            "Google login successful. Redirecting...",
-            "success"
-        );
-
-
-        setTimeout(function () {
-
-            window.location.href =
-                DASHBOARD_PAGE;
-
-        }, 500);
-
-
-        return true;
+        return user;
 
     } catch (error) {
 
@@ -503,56 +414,28 @@ async function googleLogin() {
             error
         );
 
-        showMessage(
-            getFirebaseErrorMessage(error)
-        );
-
-        return false;
+        throw error;
     }
 }
 
 
 /* =========================================================
    FORGOT PASSWORD
-   ========================================================= */
+========================================================= */
 
-async function forgotPassword() {
+async function forgotPassword(email) {
 
-    hideMessage();
-
-    let emailInput =
-        document.getElementById("loginEmail");
-
-
-    let email =
-        emailInput
-            ? emailInput.value.trim()
-            : "";
+    email =
+        String(email || "")
+            .trim()
+            .toLowerCase();
 
 
     if (!email) {
 
-        email =
-            prompt(
-                "Enter your registered email address:"
-            );
-
-        if (!email) {
-            return;
-        }
-
-        email =
-            email.trim();
-    }
-
-
-    if (!email) {
-
-        showMessage(
+        throw new Error(
             "Please enter your email address."
         );
-
-        return;
     }
 
 
@@ -562,12 +445,7 @@ async function forgotPassword() {
             email
         );
 
-
-        showMessage(
-            "Password reset email sent. Please check your inbox.",
-            "success"
-        );
-
+        return true;
 
     } catch (error) {
 
@@ -576,25 +454,30 @@ async function forgotPassword() {
             error
         );
 
-        showMessage(
-            getFirebaseErrorMessage(error)
-        );
+        throw error;
     }
 }
 
 
 /* =========================================================
    LOGOUT
-   ========================================================= */
+========================================================= */
 
-async function logoutUser() {
+async function logoutUser(
+    redirectUrl = "login.html"
+) {
 
     try {
 
         await auth.signOut();
 
-        window.location.href =
-            LOGIN_PAGE;
+
+        if (redirectUrl) {
+
+            window.location.href =
+                redirectUrl;
+        }
+
 
     } catch (error) {
 
@@ -603,258 +486,328 @@ async function logoutUser() {
             error
         );
 
-        showMessage(
-            getFirebaseErrorMessage(error)
+        throw error;
+    }
+}
+
+
+/* =========================================================
+   GET CURRENT USER
+========================================================= */
+
+function getCurrentUser() {
+
+    return auth.currentUser || null;
+}
+
+
+/* =========================================================
+   GET USER DATA
+========================================================= */
+
+async function getUserData(
+    uid = null
+) {
+
+    const user =
+        auth.currentUser;
+
+
+    const userId =
+        uid ||
+        (user ? user.uid : null);
+
+
+    if (!userId) {
+
+        return null;
+    }
+
+
+    try {
+
+        const snapshot =
+            await db
+                .collection("users")
+                .doc(userId)
+                .get();
+
+
+        if (!snapshot.exists) {
+
+            return null;
+        }
+
+
+        return {
+
+            id:
+                snapshot.id,
+
+            ...snapshot.data()
+
+        };
+
+    } catch (error) {
+
+        console.error(
+            "Get user data error:",
+            error
         );
+
+        throw error;
     }
 }
 
 
 /* =========================================================
-   AUTH STATE CHECK
-   ========================================================= */
+   REQUIRE LOGIN
+========================================================= */
 
-function requireAuth() {
+function requireLogin(
+    redirectUrl = "login.html"
+) {
 
-    auth.onAuthStateChanged(function(user) {
+    return new Promise(
+        (resolve) => {
 
-        if (!user) {
+            const unsubscribe =
+                auth.onAuthStateChanged(
+                    async (user) => {
 
-            window.location.href =
-                LOGIN_PAGE;
+                        unsubscribe();
 
-        }
 
-    });
-}
+                        if (!user) {
 
+                            if (
+                                redirectUrl
+                            ) {
 
-/* =========================================================
-   LOGIN FORM
-   ========================================================= */
+                                window.location.href =
+                                    redirectUrl;
+                            }
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
+                            resolve(null);
 
-        const loginForm =
-            document.getElementById(
-                "loginForm"
-            );
+                            return;
+                        }
 
 
-        if (loginForm) {
+                        try {
 
-            loginForm.addEventListener(
-                "submit",
-                async function(event) {
+                            const userData =
+                                await getUserData(
+                                    user.uid
+                                );
 
-                    event.preventDefault();
 
-                    const email =
-                        document.getElementById(
-                            "loginEmail"
-                        )?.value.trim();
+                            resolve({
 
+                                user,
+                                userData
 
-                    const password =
-                        document.getElementById(
-                            "loginPassword"
-                        )?.value;
+                            });
 
+                        } catch (error) {
 
-                    const submitButton =
-                        loginForm.querySelector(
-                            'button[type="submit"]'
-                        );
+                            console.error(
+                                error
+                            );
 
+                            resolve({
 
-                    setButtonLoading(
-                        submitButton,
-                        true,
-                        "Logging in..."
-                    );
+                                user,
+                                userData: null
 
-
-                    await loginUser(
-                        email,
-                        password
-                    );
-
-
-                    setButtonLoading(
-                        submitButton,
-                        false
-                    );
-
-                }
-            );
-
-        }
-
-
-        /* =====================================================
-           REGISTER FORM
-           ===================================================== */
-
-        const registerForm =
-            document.getElementById(
-                "registerForm"
-            );
-
-
-        if (registerForm) {
-
-            registerForm.addEventListener(
-                "submit",
-                async function(event) {
-
-                    event.preventDefault();
-
-
-                    const name =
-                        document.getElementById(
-                            "registerName"
-                        )?.value.trim();
-
-
-                    const email =
-                        document.getElementById(
-                            "registerEmail"
-                        )?.value.trim();
-
-
-                    const password =
-                        document.getElementById(
-                            "registerPassword"
-                        )?.value;
-
-
-                    const confirmPassword =
-                        document.getElementById(
-                            "registerConfirmPassword"
-                        )?.value;
-
-
-                    const submitButton =
-                        registerForm.querySelector(
-                            'button[type="submit"]'
-                        );
-
-
-                    setButtonLoading(
-                        submitButton,
-                        true,
-                        "Creating Account..."
-                    );
-
-
-                    await registerUser(
-                        name,
-                        email,
-                        password,
-                        confirmPassword
-                    );
-
-
-                    setButtonLoading(
-                        submitButton,
-                        false
-                    );
-
-                }
-            );
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   GOOGLE BUTTON SUPPORT
-   ========================================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function() {
-
-        const googleButtons =
-            document.querySelectorAll(
-                ".google-btn"
-            );
-
-
-        googleButtons.forEach(
-            function(button) {
-
-                button.addEventListener(
-                    "click",
-                    async function(event) {
-
-                        event.preventDefault();
-
-                        setButtonLoading(
-                            button,
-                            true,
-                            "Connecting..."
-                        );
-
-
-                        await googleLogin();
-
-
-                        setButtonLoading(
-                            button,
-                            false
-                        );
+                            });
+                        }
 
                     }
                 );
 
-            }
-        );
-
-    }
-);
-
-
-/* =========================================================
-   PROTECT DASHBOARD PAGES
-   ========================================================= */
-
-const protectedPages = [
-
-    "dashboard.html",
-    "profile.html",
-    "referral.html",
-    "affiliate.html",
-    "earn.html",
-    "payment.html"
-
-];
-
-
-const currentPage =
-    window.location.pathname
-        .split("/")
-        .pop();
-
-
-if (
-    protectedPages.includes(
-        currentPage
-    )
-) {
-
-    requireAuth();
-
+        }
+    );
 }
 
 
 /* =========================================================
-   EXPORT GLOBAL FUNCTIONS
-   ========================================================= */
+   REQUIRE ADMIN
+========================================================= */
+
+async function requireAdmin(
+    redirectUrl = "dashboard.html"
+) {
+
+    return new Promise(
+        (resolve) => {
+
+            const unsubscribe =
+                auth.onAuthStateChanged(
+                    async (user) => {
+
+                        unsubscribe();
+
+
+                        /*
+                         * Not logged in
+                         */
+
+                        if (!user) {
+
+                            window.location.href =
+                                "login.html";
+
+                            resolve(null);
+
+                            return;
+                        }
+
+
+                        try {
+
+                            const userData =
+                                await getUserData(
+                                    user.uid
+                                );
+
+
+                            /*
+                             * No profile
+                             */
+
+                            if (!userData) {
+
+                                await auth.signOut();
+
+                                alert(
+                                    "Admin profile not found."
+                                );
+
+                                window.location.href =
+                                    "login.html";
+
+                                resolve(null);
+
+                                return;
+                            }
+
+
+                            /*
+                             * Check role
+                             */
+
+                            if (
+                                String(
+                                    userData.role ||
+                                    ""
+                                ).toLowerCase()
+                                !== "admin"
+                            ) {
+
+                                alert(
+                                    "Access denied. Admin account required."
+                                );
+
+                                window.location.href =
+                                    redirectUrl;
+
+                                resolve(null);
+
+                                return;
+                            }
+
+
+                            /*
+                             * Admin verified
+                             */
+
+                            resolve({
+
+                                user,
+
+                                userData
+
+                            });
+
+                        } catch (error) {
+
+                            console.error(
+                                "Admin verification error:",
+                                error
+                            );
+
+                            alert(
+                                "Unable to verify admin access."
+                            );
+
+                            window.location.href =
+                                "login.html";
+
+                            resolve(null);
+                        }
+
+                    }
+                );
+
+        }
+    );
+}
+
+
+/* =========================================================
+   AUTH STATE LISTENER
+========================================================= */
+
+function onAuthChange(
+    callback
+) {
+
+    return auth.onAuthStateChanged(
+        callback
+    );
+}
+
+
+/* =========================================================
+   EXPORT GLOBAL API
+========================================================= */
+
+window.SkillEarnAuth = {
+
+    loginUser,
+
+    registerUser,
+
+    googleLogin,
+
+    forgotPassword,
+
+    logoutUser,
+
+    getCurrentUser,
+
+    getUserData,
+
+    requireLogin,
+
+    requireAdmin,
+
+    createOrUpdateUserProfile,
+
+    generateReferralCode,
+
+    onAuthChange,
+
+    getUserFriendlyError
+
+};
+
+
+/* =========================================================
+   GLOBAL FUNCTIONS
+   Compatibility with existing HTML files
+========================================================= */
 
 window.loginUser =
     loginUser;
@@ -871,10 +824,23 @@ window.forgotPassword =
 window.logoutUser =
     logoutUser;
 
-window.requireAuth =
-    requireAuth;
+window.getCurrentUser =
+    getCurrentUser;
+
+window.getUserData =
+    getUserData;
+
+window.requireLogin =
+    requireLogin;
+
+window.requireAdmin =
+    requireAdmin;
 
 
 /* =========================================================
-   END OF AUTH.JS
-   ========================================================= */
+   AUTH READY MESSAGE
+========================================================= */
+
+console.log(
+    "SkillEarn Hub Authentication initialized successfully."
+);

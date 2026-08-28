@@ -3,24 +3,69 @@
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<title>Create Account | SkillEarn Hub</title>
+    <meta
+        name="description"
+        content="Create your free SkillEarn Hub account and start your digital learning journey."
+    >
 
-<link rel="stylesheet" href="css/style.css">
+    <meta
+        name="theme-color"
+        content="#0f172a"
+    >
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <title>Create Account | SkillEarn Hub</title>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <!-- =====================================================
+         STYLESHEET
+    ====================================================== -->
 
-<script src="js/firebase-config.js"></script>
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
 
-<script src="js/auth.js"></script>
+
+    <!-- =====================================================
+         FIREBASE SDK
+         IMPORTANT: Keep this order.
+    ====================================================== -->
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+    </script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js">
+    </script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js">
+    </script>
+
+
+    <!-- =====================================================
+         FIREBASE CONFIG
+    ====================================================== -->
+
+    <script src="js/firebase-config.js"></script>
+
+
+    <!-- =====================================================
+         AUTHENTICATION
+    ====================================================== -->
+
+    <script
+        src="js/auth.js"
+        defer>
+    </script>
 
 </head>
 
@@ -28,160 +73,368 @@ content="width=device-width, initial-scale=1.0">
 <body class="auth-page">
 
 
-<header class="header">
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
 
-<a href="index.html" class="logo">
-SkillEarn <span>Hub</span>
-</a>
+    <header class="header">
 
-<a href="index.html" class="back-home">
-← Home
-</a>
-
-</header>
-
-
-<main class="auth-wrapper">
-
-
-<div class="auth-promo">
-
-<span class="promo-badge">
-🚀 JOIN SKILLEARN HUB
-</span>
-
-<h1>
-Start Your<br>
-<span>Digital Journey</span>
-Today.
-</h1>
-
-<p>
-Create your free account and start learning
-digital skills.
-</p>
-
-<div class="promo-features">
-
-<div>🎓 Access Courses</div>
-
-<div>💼 Explore Online Business</div>
-
-<div>📚 Digital Products</div>
-
-<div>📊 Personal Dashboard</div>
-
-</div>
-
-</div>
+        <a
+            href="index.html"
+            class="logo"
+            aria-label="SkillEarn Hub Home"
+        >
+            SkillEarn <span>Hub</span>
+        </a>
 
 
-<div class="auth-box">
+        <a
+            href="index.html"
+            class="back-home"
+        >
+            ← Home
+        </a>
 
-<div class="auth-icon">
-🚀
-</div>
-
-<h2>Create Account</h2>
-
-<p class="auth-subtitle">
-Join SkillEarn Hub for free
-</p>
+    </header>
 
 
-<form id="registerForm">
+
+    <!-- =====================================================
+         MAIN AUTH SECTION
+    ====================================================== -->
+
+    <main class="auth-wrapper">
 
 
-<label>Full Name</label>
+        <!-- =================================================
+             LEFT PROMOTIONAL SECTION
+        ================================================== -->
 
-<input
-type="text"
-id="registerName"
-placeholder="Enter your name"
-required
->
+        <section class="auth-promo">
 
-
-<label>Email Address</label>
-
-<input
-type="email"
-id="registerEmail"
-placeholder="Enter your email"
-required
->
+            <span class="promo-badge">
+                🚀 JOIN SKILLEARN HUB
+            </span>
 
 
-<label>Password</label>
+            <h1>
 
-<input
-type="password"
-id="registerPassword"
-placeholder="Minimum 6 characters"
-minlength="6"
-required
->
+                Start Your<br>
 
+                <span>
+                    Digital Journey
+                </span><br>
 
-<label>Confirm Password</label>
+                Today.
 
-<input
-type="password"
-id="registerConfirmPassword"
-placeholder="Confirm your password"
-required
->
+            </h1>
 
 
-<button type="submit" class="btn full">
-Create Free Account
-</button>
+            <p>
+
+                Create your free account and start learning
+                digital skills, exploring opportunities and
+                building your online journey.
+
+            </p>
 
 
-</form>
+            <!-- PROMO FEATURES -->
+
+            <div class="promo-features">
+
+                <div>
+                    🎓 Access Digital Courses
+                </div>
+
+                <div>
+                    💼 Explore Online Business
+                </div>
+
+                <div>
+                    📚 Discover Digital Products
+                </div>
+
+                <div>
+                    📊 Personal Dashboard
+                </div>
+
+                <div>
+                    🤝 Referral Opportunities
+                </div>
+
+            </div>
+
+        </section>
 
 
-<div class="divider">
-<span>OR</span>
-</div>
+
+        <!-- =================================================
+             REGISTER BOX
+        ================================================== -->
+
+        <section class="auth-box">
 
 
-<button class="google-btn" onclick="googleLogin()">
-🔵 Sign Up with Google
-</button>
+            <!-- ICON -->
+
+            <div class="auth-icon">
+                🚀
+            </div>
 
 
-<p class="auth-bottom">
+            <!-- TITLE -->
 
-Already have an account?
-
-<a href="login.html">
-Login
-</a>
-
-</p>
+            <h2>
+                Create Account
+            </h2>
 
 
-<p id="authMessage" class="auth-message"></p>
+            <p class="auth-subtitle">
+                Join SkillEarn Hub for free
+            </p>
 
 
-</div>
 
-</main>
+            <!-- =================================================
+                 REGISTER FORM
+            ================================================== -->
+
+            <form
+                id="registerForm"
+                autocomplete="on"
+            >
 
 
-<footer>
+                <!-- =========================================
+                     FULL NAME
+                ========================================== -->
 
-<div class="footer-logo">
-SkillEarn <span>Hub</span>
-</div>
+                <label for="registerName">
+                    Full Name
+                </label>
 
-<p>
-Learn Skills. Build Income. Grow Online.
-</p>
 
-</footer>
+                <input
+                    type="text"
+                    id="registerName"
+                    name="name"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                    maxlength="100"
+                    required
+                >
+
+
+
+                <!-- =========================================
+                     EMAIL
+                ========================================== -->
+
+                <label for="registerEmail">
+                    Email Address
+                </label>
+
+
+                <input
+                    type="email"
+                    id="registerEmail"
+                    name="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    maxlength="150"
+                    required
+                >
+
+
+
+                <!-- =========================================
+                     PASSWORD
+                ========================================== -->
+
+                <label for="registerPassword">
+                    Password
+                </label>
+
+
+                <input
+                    type="password"
+                    id="registerPassword"
+                    name="password"
+                    placeholder="Minimum 6 characters"
+                    autocomplete="new-password"
+                    minlength="6"
+                    maxlength="128"
+                    required
+                >
+
+
+
+                <!-- =========================================
+                     CONFIRM PASSWORD
+                ========================================== -->
+
+                <label for="registerConfirmPassword">
+                    Confirm Password
+                </label>
+
+
+                <input
+                    type="password"
+                    id="registerConfirmPassword"
+                    name="confirmPassword"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                    minlength="6"
+                    maxlength="128"
+                    required
+                >
+
+
+
+                <!-- =========================================
+                     TERMS
+                ========================================== -->
+
+                <div class="terms-row">
+
+                    <label class="checkbox-label">
+
+                        <input
+                            type="checkbox"
+                            id="termsCheckbox"
+                            required
+                        >
+
+                        <span>
+                            I agree to the
+                            <a
+                                href="terms.html"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                Terms & Conditions
+                            </a>
+                            and
+                            <a
+                                href="privacy.html"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                Privacy Policy
+                            </a>.
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+
+                <!-- =========================================
+                     CREATE ACCOUNT BUTTON
+                ========================================== -->
+
+                <button
+                    type="submit"
+                    class="btn full"
+                    id="registerSubmit"
+                >
+                    Create Free Account
+                </button>
+
+            </form>
+
+
+
+            <!-- =================================================
+                 DIVIDER
+            ================================================== -->
+
+            <div class="divider">
+
+                <span>
+                    OR
+                </span>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 GOOGLE SIGNUP
+            ================================================== -->
+
+            <button
+                type="button"
+                class="google-btn"
+            >
+                🔵 Sign Up with Google
+            </button>
+
+
+
+            <!-- =================================================
+                 LOGIN LINK
+            ================================================== -->
+
+            <p class="auth-bottom">
+
+                Already have an account?
+
+                <a href="login.html">
+                    Login
+                </a>
+
+            </p>
+
+
+
+            <!-- =================================================
+                 AUTH MESSAGE
+            ================================================== -->
+
+            <p
+                id="authMessage"
+                class="auth-message"
+                style="display: none;"
+                role="alert"
+                aria-live="polite"
+            ></p>
+
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+
+    <footer>
+
+        <div class="footer-logo">
+
+            SkillEarn <span>Hub</span>
+
+        </div>
+
+
+        <p>
+            Learn Skills. Build Income. Grow Online.
+        </p>
+
+
+        <p class="copyright">
+            © 2026 SkillEarn Hub. All Rights Reserved.
+        </p>
+
+    </footer>
+
 
 
 </body>
+
 </html>

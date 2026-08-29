@@ -1,1923 +1,836 @@
-<!DOCTYPE html>
-<html lang="en">
-
+<!DOCTYPE html><html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="SkillEarn Hub - Learn skills, grow your potential and build your future.">
+<meta name="theme-color" content="#0b1020">
 
-<meta charset="UTF-8">
+<title>SkillEarn Hub — Learn. Earn. Grow.</title>
 
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 
-<meta
-    name="description"
-    content="SkillEarn Hub - Learn digital skills, explore courses, digital products and build your online skills."
->
+<link rel="stylesheet" href="css/style.css">
 
-<title>SkillEarn Hub | Learn Skills. Build Your Future.</title>
-
-<link
-    rel="stylesheet"
-    href="css/style.css"
->
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-
-<script src="js/firebase-config.js"></script>
-
-</head>
-
-
-<body>
-
-
-<!-- =====================================================
+</head><body><!-- =========================
      HEADER
-===================================================== -->
+========================== -->
+<header class="site-header" id="siteHeader">
+    <div class="container nav-container">
 
-<header class="header">
+        <a href="#home" class="brand" aria-label="SkillEarn Hub Home">
+            <span class="brand-mark">
+                <span class="brand-mark-icon">S</span>
+            </span>
 
-    <a
-        href="index.html"
-        class="logo"
-    >
-        SkillEarn <span>Hub</span>
-    </a>
-
-
-    <nav class="nav-links">
-
-        <a
-            href="index.html"
-            class="active"
-        >
-            Home
+            <span class="brand-text">
+                <strong>SkillEarn</strong>
+                <small>HUB</small>
+            </span>
         </a>
 
-        <a href="courses.html">
-            Courses
-        </a>
+        <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+            <a href="#home" class="nav-link active">Home</a>
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#how-it-works" class="nav-link">How It Works</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#contact" class="nav-link">Contact</a>
+        </nav>
 
-        <a href="store.html">
-            Store
-        </a>
-
-        <a href="earn.html">
-            Earn
-        </a>
-
-        <a href="referral.html">
-            Referral
-        </a>
-
-        <a href="affiliate.html">
-            Affiliate
-        </a>
-
-    </nav>
-
-
-    <div class="header-actions">
-
-        <a
-            href="login.html"
-            id="loginButton"
-            class="login-button"
-        >
-            Login
-        </a>
-
-
-        <a
-            href="register.html"
-            id="registerButton"
-            class="signup-button"
-        >
-            Get Started
-        </a>
-
-
-        <div
-            id="userMenu"
-            class="user-menu"
-            style="display:none;"
-        >
-
-            <a
-                href="dashboard.html"
-                class="dashboard-button"
-            >
-                Dashboard
-            </a>
-
+        <div class="nav-actions">
+            <a href="#" class="btn btn-ghost">Login</a>
+            <a href="#" class="btn btn-primary">Get Started</a>
         </div>
 
-    </div>
+        <button
+            class="menu-toggle"
+            id="menuToggle"
+            type="button"
+            aria-label="Open navigation menu"
+            aria-expanded="false"
+            aria-controls="mainNav"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
 
+    </div>
 </header>
 
 
+<main>
 
-<!-- =====================================================
-     HERO
-===================================================== -->
+    <!-- =========================
+         HERO
+    ========================== -->
+    <section class="hero-section" id="home">
 
-<section class="hero">
+        <div class="hero-glow hero-glow-one"></div>
+        <div class="hero-glow hero-glow-two"></div>
 
-    <div class="hero-content">
+        <div class="container hero-grid">
 
+            <div class="hero-content">
 
-        <div class="hero-badge">
-            🚀 BUILD YOUR DIGITAL FUTURE
-        </div>
+                <div class="eyebrow">
+                    <span class="eyebrow-dot"></span>
+                    Your journey to a better future starts here
+                </div>
 
+                <h1>
+                    Learn Skills.
+                    <span>Build Your Future.</span>
+                </h1>
 
-        <h1>
+                <p class="hero-description">
+                    SkillEarn Hub is a modern platform designed to help you
+                    discover valuable skills, track your progress and build
+                    opportunities for your future.
+                </p>
 
-            Learn Skills.
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-primary btn-large">
+                        Start Your Journey
+                        <span class="btn-arrow">→</span>
+                    </a>
 
-            <span>
-                Build Your Future.
-            </span>
+                    <a href="#how-it-works" class="btn btn-outline btn-large">
+                        Explore Platform
+                    </a>
+                </div>
 
-            Grow Online.
+                <div class="hero-trust">
+                    <div class="trust-avatars">
+                        <span>SK</span>
+                        <span>AR</span>
+                        <span>MK</span>
+                        <span>+</span>
+                    </div>
 
-        </h1>
-
-
-        <p>
-
-            Learn practical digital skills, explore
-            online opportunities and build knowledge
-            for the digital world.
-
-        </p>
-
-
-        <div class="hero-buttons">
-
-            <a
-                href="courses.html"
-                class="primary-btn"
-            >
-                Explore Courses
-                →
-            </a>
-
-
-            <a
-                href="register.html"
-                class="secondary-btn"
-                id="heroSignup"
-            >
-                Create Free Account
-            </a>
-
-        </div>
-
-
-        <div class="hero-trust">
-
-            <div>
-                ✓ Practical Learning
-            </div>
-
-            <div>
-                ✓ Beginner Friendly
-            </div>
-
-            <div>
-                ✓ Learn At Your Pace
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- HERO CARD -->
-
-    <div class="hero-card">
-
-        <div class="hero-card-top">
-
-            <span>
-                📊
-            </span>
-
-            <span class="live-badge">
-                LIVE
-            </span>
-
-        </div>
-
-
-        <h3>
-            Your Digital Learning Journey
-        </h3>
-
-
-        <p>
-            Learn skills and track your progress
-            from one simple dashboard.
-        </p>
-
-
-        <div class="progress-box">
-
-            <div class="progress-header">
-
-                <span>
-                    Learning Progress
-                </span>
-
-                <strong>
-                    72%
-                </strong>
+                    <div class="trust-text">
+                        <strong>Built for ambitious learners</strong>
+                        <small>Learn • Grow • Achieve</small>
+                    </div>
+                </div>
 
             </div>
 
 
-            <div class="progress-bar">
+            <!-- Hero visual -->
+            <div class="hero-visual">
 
-                <div></div>
+                <div class="dashboard-orbit orbit-one"></div>
+                <div class="dashboard-orbit orbit-two"></div>
+
+                <div class="floating-card floating-card-top">
+                    <div class="mini-icon purple">
+                        ↗
+                    </div>
+
+                    <div>
+                        <small>Learning Progress</small>
+                        <strong>+24.8%</strong>
+                    </div>
+                </div>
+
+
+                <div class="dashboard-card">
+
+                    <div class="dashboard-top">
+                        <div>
+                            <span class="dashboard-label">Welcome back</span>
+                            <h3>Your Overview</h3>
+                        </div>
+
+                        <div class="dashboard-profile">
+                            <span>U</span>
+                        </div>
+                    </div>
+
+
+                    <div class="balance-card">
+                        <div class="balance-heading">
+                            <span>Available Balance</span>
+                            <button type="button" aria-label="Balance visibility">•••</button>
+                        </div>
+
+                        <strong class="balance-value">₹24,850</strong>
+
+                        <div class="balance-meta">
+                            <span class="positive">
+                                ↑ 12.6%
+                            </span>
+                            <span>this month</span>
+                        </div>
+
+                        <div class="balance-line">
+                            <span></span>
+                        </div>
+                    </div>
+
+
+                    <div class="dashboard-stats">
+
+                        <div class="stat-box">
+                            <div class="stat-icon blue">↗</div>
+                            <span>Total Earned</span>
+                            <strong>₹48.2K</strong>
+                        </div>
+
+                        <div class="stat-box">
+                            <div class="stat-icon green">✓</div>
+                            <span>Completed</span>
+                            <strong>18 Tasks</strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="activity-section">
+                        <div class="activity-heading">
+                            <h4>Recent Activity</h4>
+                            <a href="#">View all</a>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon blue">S</div>
+
+                            <div class="activity-info">
+                                <strong>Skill Progress</strong>
+                                <span>UI/UX Design course</span>
+                            </div>
+
+                            <strong class="activity-value">+15%</strong>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-icon purple">✦</div>
+
+                            <div class="activity-info">
+                                <strong>Achievement</strong>
+                                <span>Weekly milestone reached</span>
+                            </div>
+
+                            <strong class="activity-status">Done</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card floating-card-bottom">
+
+                    <div class="success-check">✓</div>
+
+                    <div>
+                        <strong>Milestone reached!</strong>
+                        <small>Keep going — you're doing great.</small>
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
+    </section>
 
 
-        <div class="hero-mini-grid">
+    <!-- =========================
+         BRAND STRIP
+    ========================== -->
+    <section class="brand-strip">
+        <div class="container">
 
-            <div>
-
-                <strong>
-                    06
-                </strong>
-
-                <span>
-                    Courses
-                </span>
-
-            </div>
-
-
-            <div>
-
-                <strong>
-                    24
-                </strong>
-
-                <span>
-                    Lessons
-                </span>
-
-            </div>
-
-
-            <div>
-
-                <strong>
-                    ⭐
-                </strong>
-
-                <span>
-                    Skills
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     STATS
-===================================================== -->
-
-<section class="stats-section">
-
-    <div class="stats-container">
-
-
-        <div class="stat">
-
-            <strong>
-                6+
-            </strong>
-
-            <span>
-                Learning Courses
-            </span>
-
-        </div>
-
-
-        <div class="stat">
-
-            <strong>
-                20+
-            </strong>
-
-            <span>
-                Digital Resources
-            </span>
-
-        </div>
-
-
-        <div class="stat">
-
-            <strong>
-                100%
-            </strong>
-
-            <span>
-                Beginner Friendly
-            </span>
-
-        </div>
-
-
-        <div class="stat">
-
-            <strong>
-                24/7
-            </strong>
-
-            <span>
-                Learn Anytime
-            </span>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     FEATURES
-===================================================== -->
-
-<section class="features-section">
-
-    <div class="section-heading">
-
-        <span>
-            WHY SKILLEARN HUB
-        </span>
-
-        <h2>
-            Everything You Need to
-            <span>Keep Learning</span>
-        </h2>
-
-        <p>
-            A simple platform for learning digital skills,
-            exploring resources and tracking your progress.
-        </p>
-
-    </div>
-
-
-    <div class="features-grid">
-
-
-        <div class="feature-card">
-
-            <div class="feature-icon">
-                🎓
-            </div>
-
-            <h3>
-                Practical Courses
-            </h3>
-
-            <p>
-                Learn useful digital skills through
-                structured, beginner-friendly courses.
+            <p class="brand-strip-title">
+                Everything you need to learn, grow and move forward
             </p>
 
-            <a href="courses.html">
-                Explore Courses →
-            </a>
+            <div class="brand-items">
+                <span>LEARN</span>
+                <span>BUILD</span>
+                <span>CREATE</span>
+                <span>GROW</span>
+                <span>ACHIEVE</span>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         FEATURES
+    ========================== -->
+    <section class="section features-section" id="features">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <div class="section-tag">
+                    <span></span>
+                    Platform Features
+                </div>
+
+                <h2>
+                    Everything in one
+                    <span>powerful hub.</span>
+                </h2>
+
+                <p>
+                    A clean and modern platform experience designed around
+                    your learning journey and future goals.
+                </p>
+
+            </div>
+
+
+            <div class="feature-grid">
+
+                <article class="feature-card feature-card-large">
+
+                    <div class="feature-icon blue-gradient">
+                        ✦
+                    </div>
+
+                    <div class="feature-content">
+                        <h3>Learn Valuable Skills</h3>
+
+                        <p>
+                            Discover structured learning opportunities and
+                            build practical skills that can help you grow.
+                        </p>
+
+                        <a href="#" class="feature-link">
+                            Explore learning
+                            <span>→</span>
+                        </a>
+                    </div>
+
+                    <div class="feature-decoration">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+
+                </article>
+
+
+                <article class="feature-card">
+
+                    <div class="feature-icon purple-gradient">
+                        ↗
+                    </div>
+
+                    <h3>Track Your Progress</h3>
+
+                    <p>
+                        Keep an eye on your achievements and monitor your
+                        journey from one simple dashboard.
+                    </p>
+
+                    <div class="feature-chart">
+                        <span style="height: 38%"></span>
+                        <span style="height: 58%"></span>
+                        <span style="height: 48%"></span>
+                        <span style="height: 72%"></span>
+                        <span style="height: 64%"></span>
+                        <span style="height: 88%"></span>
+                        <span style="height: 76%"></span>
+                    </div>
+
+                </article>
+
+
+                <article class="feature-card">
+
+                    <div class="feature-icon green-gradient">
+                        ✓
+                    </div>
+
+                    <h3>Reach Your Goals</h3>
+
+                    <p>
+                        Set meaningful milestones and turn consistent effort
+                        into measurable progress.
+                    </p>
+
+                    <div class="goal-progress">
+                        <div class="goal-progress-top">
+                            <span>Monthly goal</span>
+                            <strong>78%</strong>
+                        </div>
+
+                        <div class="progress-track">
+                            <span style="width: 78%"></span>
+                        </div>
+                    </div>
+
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         HOW IT WORKS
+    ========================== -->
+    <section class="section process-section" id="how-it-works">
+
+        <div class="container">
+
+            <div class="section-heading centered">
+
+                <div class="section-tag">
+                    <span></span>
+                    Simple Process
+                </div>
+
+                <h2>
+                    Start in three
+                    <span>simple steps.</span>
+                </h2>
+
+                <p>
+                    Getting started is simple. Create your account,
+                    build your skills and keep moving forward.
+                </p>
+
+            </div>
+
+
+            <div class="process-grid">
+
+                <div class="process-line"></div>
+
+                <article class="process-card">
+
+                    <div class="process-number">01</div>
+
+                    <div class="process-icon">◎</div>
+
+                    <h3>Create Your Account</h3>
+
+                    <p>
+                        Join SkillEarn Hub and create your personal profile
+                        in a few simple steps.
+                    </p>
+
+                </article>
+
+
+                <article class="process-card">
+
+                    <div class="process-number">02</div>
+
+                    <div class="process-icon">◆</div>
+
+                    <h3>Build Your Skills</h3>
+
+                    <p>
+                        Explore learning opportunities and work consistently
+                        toward your personal goals.
+                    </p>
+
+                </article>
+
+
+                <article class="process-card">
+
+                    <div class="process-number">03</div>
+
+                    <div class="process-icon">↗</div>
+
+                    <h3>Grow & Achieve</h3>
+
+                    <p>
+                        Track your progress, complete milestones and keep
+                        building toward your future.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         ABOUT
+    ========================== -->
+    <section class="section about-section" id="about">
+
+        <div class="container about-grid">
+
+            <div class="about-visual">
+
+                <div class="about-main-card">
+
+                    <div class="about-card-header">
+                        <span>Growth Overview</span>
+                        <span class="about-period">This year</span>
+                    </div>
+
+                    <div class="growth-number">
+                        <strong>84.6%</strong>
+                        <span>↑ 18.4%</span>
+                    </div>
+
+                    <div class="large-chart">
+
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+                        <div class="chart-grid-line"></div>
+
+                        <svg viewBox="0 0 500 180" preserveAspectRatio="none" aria-hidden="true">
+                            <defs>
+                                <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-opacity="0.35"/>
+                                    <stop offset="100%" stop-opacity="0"/>
+                                </linearGradient>
+                            </defs>
+
+                            <path
+                                d="M0,145 C55,135 70,115 115,125 C155,135 165,85 210,95 C250,105 275,65 315,75 C355,85 365,40 405,52 C440,63 455,25 500,35 L500,180 L0,180 Z"
+                                fill="url(#chartFill)"
+                            />
+
+                            <path
+                                d="M0,145 C55,135 70,115 115,125 C155,135 165,85 210,95 C250,105 275,65 315,75 C355,85 365,40 405,52 C440,63 455,25 500,35"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="4"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+
+                        <div class="chart-months">
+                            <span>Jan</span>
+                            <span>Mar</span>
+                            <span>May</span>
+                            <span>Jul</span>
+                            <span>Sep</span>
+                            <span>Nov</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="about-floating">
+                    <div class="about-floating-icon">✓</div>
+                    <div>
+                        <strong>Consistent Growth</strong>
+                        <small>Keep building every day</small>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="about-content">
+
+                <div class="section-tag">
+                    <span></span>
+                    Why SkillEarn Hub
+                </div>
+
+                <h2>
+                    Built for people who
+                    <span>want to grow.</span>
+                </h2>
+
+                <p>
+                    We believe meaningful progress comes from learning,
+                    consistency and having the right tools around you.
+                    SkillEarn Hub brings those elements together in one
+                    simple experience.
+                </p>
+
+                <div class="about-list">
+
+                    <div class="about-list-item">
+                        <div class="list-check">✓</div>
+                        <div>
+                            <strong>Simple experience</strong>
+                            <span>Clean tools without unnecessary complexity.</span>
+                        </div>
+                    </div>
+
+                    <div class="about-list-item">
+                        <div class="list-check">✓</div>
+                        <div>
+                            <strong>Progress focused</strong>
+                            <span>Stay focused on milestones that matter to you.</span>
+                        </div>
+                    </div>
+
+                    <div class="about-list-item">
+                        <div class="list-check">✓</div>
+                        <div>
+                            <strong>Built to scale</strong>
+                            <span>A foundation designed for future platform features.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <a href="#" class="btn btn-primary">
+                    Learn More
+                    <span class="btn-arrow">→</span>
+                </a>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         CTA
+    ========================== -->
+    <section class="cta-section">
+
+        <div class="cta-pattern"></div>
+
+        <div class="container">
+
+            <div class="cta-content">
+
+                <div class="cta-badge">
+                    <span></span>
+                    Your next chapter starts today
+                </div>
+
+                <h2>
+                    Ready to build
+                    <span>something better?</span>
+                </h2>
+
+                <p>
+                    Take the first step toward learning, growing and
+                    creating new opportunities for yourself.
+                </p>
+
+                <div class="cta-buttons">
+                    <a href="#" class="btn btn-white btn-large">
+                        Get Started
+                        <span>→</span>
+                    </a>
+
+                    <a href="#contact" class="btn btn-transparent btn-large">
+                        Contact Us
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- =========================
+         CONTACT
+    ========================== -->
+    <section class="section contact-section" id="contact">
+
+        <div class="container contact-grid">
+
+            <div class="contact-content">
+
+                <div class="section-tag">
+                    <span></span>
+                    Get In Touch
+                </div>
+
+                <h2>
+                    Let's build your
+                    <span>next step.</span>
+                </h2>
+
+                <p>
+                    Have a question or want to know more about SkillEarn Hub?
+                    We'd love to hear from you.
+                </p>
+
+                <div class="contact-info">
+
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon">✉</div>
+                        <div>
+                            <span>Email</span>
+                            <strong>support@skillearnhub.com</strong>
+                        </div>
+                    </div>
+
+                    <div class="contact-info-item">
+                        <div class="contact-info-icon">⌂</div>
+                        <div>
+                            <span>Platform</span>
+                            <strong>Online • Available Worldwide</strong>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <form class="contact-form" action="#" method="post">
+
+                <div class="form-row">
+
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Enter your name"
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="you@example.com"
+                            autocomplete="email"
+                        >
+                    </div>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message</label>
+
+                    <textarea
+                        id="message"
+                        name="message"
+                        rows="5"
+                        placeholder="How can we help?"
+                    ></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Send Message
+                    <span>→</span>
+                </button>
+
+            </form>
 
         </div>
 
+    </section>
 
-        <div class="feature-card">
+</main>
 
-            <div class="feature-icon">
-                🛍️
-            </div>
 
-            <h3>
-                Digital Store
-            </h3>
-
-            <p>
-                Discover useful e-books, templates,
-                guides and digital resources.
-            </p>
-
-            <a href="store.html">
-                Visit Store →
-            </a>
-
-        </div>
-
-
-        <div class="feature-card">
-
-            <div class="feature-icon">
-                📈
-            </div>
-
-            <h3>
-                Track Progress
-            </h3>
-
-            <p>
-                Keep your learning activities organized
-                through your personal dashboard.
-            </p>
-
-            <a href="dashboard.html">
-                Open Dashboard →
-            </a>
-
-        </div>
-
-
-        <div class="feature-card">
-
-            <div class="feature-icon">
-                🤝
-            </div>
-
-            <h3>
-                Referral Program
-            </h3>
-
-            <p>
-                Share your referral link and understand
-                how referral programs work.
-            </p>
-
-            <a href="referral.html">
-                Learn More →
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     COURSES PREVIEW
-===================================================== -->
-
-<section class="courses-preview">
-
-    <div class="section-heading">
-
-        <span>
-            START LEARNING
-        </span>
-
-        <h2>
-            Popular Courses
-        </h2>
-
-        <p>
-            Start with practical skills designed
-            for beginners.
-        </p>
-
-    </div>
-
-
-    <div class="preview-grid">
-
-
-        <article class="preview-card">
-
-            <div class="preview-icon">
-                📣
-            </div>
-
-            <span>
-                MARKETING
-            </span>
-
-            <h3>
-                Digital Marketing
-            </h3>
-
-            <p>
-                Understand the fundamentals of
-                digital marketing and online promotion.
-            </p>
-
-            <a
-                href="course-details.html?id=digital-marketing"
-            >
-                View Course →
-            </a>
-
-        </article>
-
-
-
-        <article class="preview-card">
-
-            <div class="preview-icon">
-                💼
-            </div>
-
-            <span>
-                FREELANCING
-            </span>
-
-            <h3>
-                Freelancing Basics
-            </h3>
-
-            <p>
-                Learn the fundamentals of professional
-                freelancing and online work.
-            </p>
-
-            <a
-                href="course-details.html?id=freelancing"
-            >
-                View Course →
-            </a>
-
-        </article>
-
-
-
-        <article class="preview-card">
-
-            <div class="preview-icon">
-                📱
-            </div>
-
-            <span>
-                DIGITAL SKILLS
-            </span>
-
-            <h3>
-                Social Media Skills
-            </h3>
-
-            <p>
-                Learn the basics of planning and
-                creating useful social media content.
-            </p>
-
-            <a
-                href="course-details.html?id=social-media"
-            >
-                View Course →
-            </a>
-
-        </article>
-
-    </div>
-
-
-    <div class="center-button">
-
-        <a
-            href="courses.html"
-            class="outline-btn"
-        >
-            View All Courses →
-        </a>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     HOW IT WORKS
-===================================================== -->
-
-<section class="how-section">
-
-    <div class="section-heading">
-
-        <span>
-            HOW IT WORKS
-        </span>
-
-        <h2>
-            Start Your Journey in
-            <span>3 Simple Steps</span>
-        </h2>
-
-    </div>
-
-
-    <div class="steps-grid">
-
-
-        <div class="step">
-
-            <div class="step-number">
-                01
-            </div>
-
-            <div class="step-icon">
-                👤
-            </div>
-
-            <h3>
-                Create Account
-            </h3>
-
-            <p>
-                Register for a free SkillEarn Hub
-                account.
-            </p>
-
-        </div>
-
-
-
-        <div class="step">
-
-            <div class="step-number">
-                02
-            </div>
-
-            <div class="step-icon">
-                📚
-            </div>
-
-            <h3>
-                Choose a Course
-            </h3>
-
-            <p>
-                Explore courses and select the
-                learning path you want.
-            </p>
-
-        </div>
-
-
-
-        <div class="step">
-
-            <div class="step-number">
-                03
-            </div>
-
-            <div class="step-icon">
-                🚀
-            </div>
-
-            <h3>
-                Start Learning
-            </h3>
-
-            <p>
-                Complete your enrollment and
-                continue learning.
-            </p>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
-     CTA
-===================================================== -->
-
-<section class="cta-section">
-
-    <div class="cta-content">
-
-        <span>
-            🚀 READY TO START?
-        </span>
-
-        <h2>
-            Build Skills for
-            Your Digital Future
-        </h2>
-
-        <p>
-            Create your free account and start
-            exploring SkillEarn Hub.
-        </p>
-
-
-        <div class="cta-buttons">
-
-            <a
-                href="register.html"
-                class="cta-primary"
-                id="ctaRegister"
-            >
-                Create Free Account
-            </a>
-
-            <a
-                href="courses.html"
-                class="cta-secondary"
-            >
-                Browse Courses
-            </a>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- =====================================================
+<!-- =========================
      FOOTER
-===================================================== -->
+========================== -->
+<footer class="site-footer">
 
-<footer>
+    <div class="container">
 
-    <div class="footer-main">
+        <div class="footer-top">
 
+            <div class="footer-brand">
 
-        <div class="footer-about">
+                <a href="#home" class="brand">
 
-            <div class="footer-logo">
-                SkillEarn <span>Hub</span>
+                    <span class="brand-mark">
+                        <span class="brand-mark-icon">S</span>
+                    </span>
+
+                    <span class="brand-text">
+                        <strong>SkillEarn</strong>
+                        <small>HUB</small>
+                    </span>
+
+                </a>
+
+                <p>
+                    Learn skills. Build your future.
+                </p>
+
             </div>
 
-            <p>
-                Learn Skills. Build Your Future.
-                Grow Online.
-            </p>
+
+            <div class="footer-links-column">
+                <h4>Platform</h4>
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#about">About</a>
+            </div>
+
+
+            <div class="footer-links-column">
+                <h4>Support</h4>
+                <a href="#contact">Contact</a>
+                <a href="#">Help Center</a>
+                <a href="#">Privacy</a>
+            </div>
+
+
+            <div class="footer-links-column">
+                <h4>Account</h4>
+                <a href="#">Login</a>
+                <a href="#">Register</a>
+                <a href="#">Dashboard</a>
+            </div>
 
         </div>
 
 
-        <div class="footer-column">
+        <div class="footer-bottom">
 
-            <h4>
-                Platform
-            </h4>
+            <span>
+                © 2026 SkillEarn Hub. All rights reserved.
+            </span>
 
-            <a href="courses.html">
-                Courses
-            </a>
-
-            <a href="store.html">
-                Digital Store
-            </a>
-
-            <a href="dashboard.html">
-                Dashboard
-            </a>
+            <div class="footer-bottom-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms</a>
+            </div>
 
         </div>
-
-
-        <div class="footer-column">
-
-            <h4>
-                Opportunities
-            </h4>
-
-            <a href="earn.html">
-                Earn
-            </a>
-
-            <a href="referral.html">
-                Referral
-            </a>
-
-            <a href="affiliate.html">
-                Affiliate
-            </a>
-
-        </div>
-
-
-        <div class="footer-column">
-
-            <h4>
-                Account
-            </h4>
-
-            <a href="login.html">
-                Login
-            </a>
-
-            <a href="register.html">
-                Register
-            </a>
-
-            <a href="profile.html">
-                Profile
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <div class="footer-bottom">
-
-        <span>
-            © 2026 SkillEarn Hub. All Rights Reserved.
-        </span>
-
-        <span>
-            Learn • Build • Grow
-        </span>
 
     </div>
 
 </footer>
 
 
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
-
+<!-- =========================
+     MOBILE NAV SCRIPT
+========================== -->
 <script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
-
-
-        /* =================================================
-           FIREBASE CHECK
-        ================================================= */
-
-        if (
-            typeof firebase === "undefined"
-        ) {
-
-            console.error(
-                "Firebase SDK not loaded."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            typeof firebaseConfig === "undefined"
-        ) {
-
-            console.error(
-                "firebaseConfig not found."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            !firebase.apps.length
-        ) {
-
-            firebase.initializeApp(
-                firebaseConfig
-            );
-
-        }
-
-
-        const auth =
-            firebase.auth();
-
-
-        /* =================================================
-           AUTH STATE
-        ================================================= */
-
-        auth.onAuthStateChanged(
-            function (user) {
-
-                const loginButton =
-                    document.getElementById(
-                        "loginButton"
-                    );
-
-
-                const registerButton =
-                    document.getElementById(
-                        "registerButton"
-                    );
-
-
-                const userMenu =
-                    document.getElementById(
-                        "userMenu"
-                    );
-
-
-                const heroSignup =
-                    document.getElementById(
-                        "heroSignup"
-                    );
-
-
-                const ctaRegister =
-                    document.getElementById(
-                        "ctaRegister"
-                    );
-
-
-                if (user) {
-
-                    /*
-                     * Logged-in user
-                     */
-
-                    if (loginButton) {
-
-                        loginButton.style.display =
-                            "none";
-
-                    }
-
-
-                    if (registerButton) {
-
-                        registerButton.style.display =
-                            "none";
-
-                    }
-
-
-                    if (userMenu) {
-
-                        userMenu.style.display =
-                            "block";
-
-                    }
-
-
-                    if (heroSignup) {
-
-                        heroSignup.href =
-                            "dashboard.html";
-
-                        heroSignup.textContent =
-                            "Go to Dashboard →";
-
-                    }
-
-
-                    if (ctaRegister) {
-
-                        ctaRegister.href =
-                            "dashboard.html";
-
-                        ctaRegister.textContent =
-                            "Open Dashboard";
-
-                    }
-
-                } else {
-
-                    /*
-                     * Guest user
-                     */
-
-                    if (loginButton) {
-
-                        loginButton.style.display =
-                            "inline-block";
-
-                    }
-
-
-                    if (registerButton) {
-
-                        registerButton.style.display =
-                            "inline-block";
-
-                    }
-
-
-                    if (userMenu) {
-
-                        userMenu.style.display =
-                            "none";
-
-                    }
-
-
-                    if (heroSignup) {
-
-                        heroSignup.href =
-                            "register.html";
-
-                        heroSignup.textContent =
-                            "Create Free Account";
-
-                    }
-
-
-                    if (ctaRegister) {
-
-                        ctaRegister.href =
-                            "register.html";
-
-                        ctaRegister.textContent =
-                            "Create Free Account";
-
-                    }
-
-                }
-
-            }
-        );
-
-    }
-
-);
-
+    const menuToggle = document.getElementById("menuToggle");
+    const mainNav = document.getElementById("mainNav");
+
+    menuToggle.addEventListener("click", () => {
+        const isOpen = mainNav.classList.toggle("open");
+
+        menuToggle.classList.toggle("open", isOpen);
+        menuToggle.setAttribute("aria-expanded", isOpen);
+    });
+
+    document.querySelectorAll(".nav-link").forEach(link => {
+        link.addEventListener("click", () => {
+            mainNav.classList.remove("open");
+            menuToggle.classList.remove("open");
+            menuToggle.setAttribute("aria-expanded", "false");
+        });
+    });
 </script>
-
-
-
-<!-- =====================================================
-     PAGE CSS
-===================================================== -->
-
-<style>
-
-/* RESET */
-
-* {
-    box-sizing: border-box;
-}
-
-
-body {
-    margin: 0;
-    background: #f7f9fc;
-    color: #172033;
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-}
-
-
-/* HEADER */
-
-.header {
-    min-height: 72px;
-    padding: 0 5%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 25px;
-    background: #ffffff;
-    border-bottom: 1px solid #edf0f4;
-}
-
-
-.logo,
-.footer-logo {
-    color: #172033;
-    text-decoration: none;
-    font-size: 22px;
-    font-weight: 900;
-    white-space: nowrap;
-}
-
-
-.logo span,
-.footer-logo span {
-    color: #2563eb;
-}
-
-
-.nav-links {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-}
-
-
-.nav-links a {
-    color: #687386;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-
-.nav-links a:hover,
-.nav-links a.active {
-    color: #2563eb;
-}
-
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-
-.login-button {
-    color: #334155;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-
-.signup-button,
-.dashboard-button {
-    padding: 11px 16px;
-    border-radius: 10px;
-    background: #2563eb;
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-
-/* HERO */
-
-.hero {
-    width: min(1180px, 90%);
-    min-height: 570px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: 1.1fr .9fr;
-    align-items: center;
-    gap: 70px;
-}
-
-
-.hero-badge {
-    display: inline-block;
-    padding: 8px 13px;
-    border-radius: 30px;
-    background: #eef4ff;
-    color: #2563eb;
-    font-size: 10px;
-    font-weight: 900;
-}
-
-
-.hero h1 {
-    max-width: 700px;
-    margin: 18px 0;
-    font-size: 52px;
-    line-height: 1.08;
-    letter-spacing: -1.5px;
-}
-
-
-.hero h1 span {
-    color: #2563eb;
-}
-
-
-.hero-content > p {
-    max-width: 620px;
-    color: #697586;
-    line-height: 1.75;
-    font-size: 15px;
-}
-
-
-.hero-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 28px;
-}
-
-
-.primary-btn,
-.secondary-btn,
-.outline-btn,
-.cta-primary,
-.cta-secondary {
-    display: inline-block;
-    padding: 13px 19px;
-    border-radius: 11px;
-    text-decoration: none;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-
-.primary-btn,
-.cta-primary {
-    background: #2563eb;
-    color: #ffffff;
-}
-
-
-.secondary-btn,
-.cta-secondary,
-.outline-btn {
-    background: #ffffff;
-    color: #2563eb;
-    border: 1px solid #dbe3f0;
-}
-
-
-.hero-trust {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin-top: 25px;
-    color: #7a8494;
-    font-size: 11px;
-}
-
-
-/* HERO CARD */
-
-.hero-card {
-    padding: 30px;
-    background: #ffffff;
-    border: 1px solid #e7ebf2;
-    border-radius: 24px;
-    box-shadow:
-        0 20px 55px rgba(0,0,0,.07);
-}
-
-
-.hero-card-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 28px;
-}
-
-
-.live-badge {
-    height: fit-content;
-    padding: 5px 9px;
-    border-radius: 20px;
-    background: #eaf8ef;
-    color: #198754;
-    font-size: 9px;
-    font-weight: 900;
-}
-
-
-.hero-card h3 {
-    margin: 25px 0 8px;
-    font-size: 21px;
-}
-
-
-.hero-card p {
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-
-.progress-box {
-    margin-top: 25px;
-}
-
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    color: #697586;
-    font-size: 11px;
-}
-
-
-.progress-header strong {
-    color: #2563eb;
-}
-
-
-.progress-bar {
-    height: 9px;
-    overflow: hidden;
-    border-radius: 20px;
-    background: #e9eef7;
-}
-
-
-.progress-bar div {
-    width: 72%;
-    height: 100%;
-    background: #2563eb;
-    border-radius: inherit;
-}
-
-
-.hero-mini-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 25px;
-}
-
-
-.hero-mini-grid div {
-    padding: 15px 8px;
-    background: #f7f9fc;
-    border-radius: 12px;
-    text-align: center;
-}
-
-
-.hero-mini-grid strong,
-.hero-mini-grid span {
-    display: block;
-}
-
-
-.hero-mini-grid strong {
-    font-size: 18px;
-}
-
-
-.hero-mini-grid span {
-    margin-top: 4px;
-    color: #89919e;
-    font-size: 9px;
-}
-
-
-/* STATS */
-
-.stats-section {
-    background: #ffffff;
-    border-top: 1px solid #edf0f4;
-    border-bottom: 1px solid #edf0f4;
-}
-
-
-.stats-container {
-    width: min(1100px, 90%);
-    margin: auto;
-    display: grid;
-    grid-template-columns:
-        repeat(4, 1fr);
-}
-
-
-.stat {
-    padding: 27px 15px;
-    text-align: center;
-    border-right: 1px solid #edf0f4;
-}
-
-
-.stat:last-child {
-    border: 0;
-}
-
-
-.stat strong,
-.stat span {
-    display: block;
-}
-
-
-.stat strong {
-    color: #2563eb;
-    font-size: 25px;
-}
-
-
-.stat span {
-    margin-top: 5px;
-    color: #7b8492;
-    font-size: 11px;
-}
-
-
-/* SECTION */
-
-.features-section,
-.courses-preview,
-.how-section {
-    width: min(1100px, 90%);
-    margin: 90px auto;
-}
-
-
-.section-heading {
-    max-width: 680px;
-    margin: 0 auto 38px;
-    text-align: center;
-}
-
-
-.section-heading > span {
-    color: #2563eb;
-    font-size: 10px;
-    font-weight: 900;
-}
-
-
-.section-heading h2 {
-    margin: 10px 0;
-    font-size: 34px;
-}
-
-
-.section-heading h2 span {
-    color: #2563eb;
-}
-
-
-.section-heading p {
-    color: #788293;
-    line-height: 1.7;
-    font-size: 13px;
-}
-
-
-/* FEATURES */
-
-.features-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(4, 1fr);
-    gap: 18px;
-}
-
-
-.feature-card {
-    padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e9edf3;
-    border-radius: 18px;
-    transition: .2s;
-}
-
-
-.feature-card:hover,
-.preview-card:hover {
-    transform: translateY(-4px);
-    box-shadow:
-        0 15px 35px rgba(0,0,0,.06);
-}
-
-
-.feature-icon {
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 13px;
-    background: #eef4ff;
-    font-size: 23px;
-}
-
-
-.feature-card h3 {
-    margin: 18px 0 8px;
-    font-size: 17px;
-}
-
-
-.feature-card p {
-    min-height: 75px;
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-
-.feature-card a,
-.preview-card a {
-    color: #2563eb;
-    text-decoration: none;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-
-/* COURSE PREVIEW */
-
-.courses-preview {
-    padding: 70px 0;
-}
-
-
-.preview-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(3, 1fr);
-    gap: 20px;
-}
-
-
-.preview-card {
-    padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e9edf3;
-    border-radius: 18px;
-    transition: .2s;
-}
-
-
-.preview-icon {
-    font-size: 42px;
-    margin-bottom: 20px;
-}
-
-
-.preview-card > span {
-    color: #2563eb;
-    font-size: 9px;
-    font-weight: 900;
-}
-
-
-.preview-card h3 {
-    margin: 8px 0;
-}
-
-
-.preview-card p {
-    min-height: 58px;
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-
-.center-button {
-    margin-top: 30px;
-    text-align: center;
-}
-
-
-/* HOW */
-
-.steps-grid {
-    display: grid;
-    grid-template-columns:
-        repeat(3, 1fr);
-    gap: 25px;
-}
-
-
-.step {
-    position: relative;
-    padding: 30px;
-    text-align: center;
-    background: #ffffff;
-    border: 1px solid #e9edf3;
-    border-radius: 18px;
-}
-
-
-.step-number {
-    color: #dbe5fa;
-    font-size: 32px;
-    font-weight: 900;
-}
-
-
-.step-icon {
-    margin: 10px;
-    font-size: 35px;
-}
-
-
-.step h3 {
-    margin: 8px 0;
-}
-
-
-.step p {
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-
-/* CTA */
-
-.cta-section {
-    width: min(1100px, 90%);
-    margin: 90px auto;
-    padding: 70px 30px;
-    border-radius: 25px;
-    background: #172033;
-    text-align: center;
-}
-
-
-.cta-content {
-    max-width: 700px;
-    margin: auto;
-}
-
-
-.cta-content > span {
-    color: #8fb3ff;
-    font-size: 10px;
-    font-weight: 900;
-}
-
-
-.cta-content h2 {
-    margin: 13px 0;
-    color: #ffffff;
-    font-size: 38px;
-}
-
-
-.cta-content p {
-    color: #aeb8ca;
-    font-size: 13px;
-}
-
-
-.cta-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 25px;
-}
-
-
-.cta-primary {
-    background: #ffffff;
-    color: #2563eb;
-}
-
-
-.cta-secondary {
-    background: transparent;
-    border-color: #526078;
-    color: #ffffff;
-}
-
-
-/* FOOTER */
-
-footer {
-    background: #ffffff;
-    border-top: 1px solid #e9edf3;
-}
-
-
-.footer-main {
-    width: min(1100px, 90%);
-    margin: auto;
-    padding: 55px 0;
-    display: grid;
-    grid-template-columns:
-        2fr 1fr 1fr 1fr;
-    gap: 40px;
-}
-
-
-.footer-about p {
-    max-width: 280px;
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.6;
-}
-
-
-.footer-column {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-
-.footer-column h4 {
-    margin: 0 0 7px;
-    font-size: 13px;
-}
-
-
-.footer-column a {
-    color: #788293;
-    text-decoration: none;
-    font-size: 11px;
-}
-
-
-.footer-column a:hover {
-    color: #2563eb;
-}
-
-
-.footer-bottom {
-    width: min(1100px, 90%);
-    margin: auto;
-    padding: 18px 0;
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    border-top: 1px solid #edf0f4;
-    color: #929baa;
-    font-size: 10px;
-}
-
-
-/* RESPONSIVE */
-
-@media (max-width: 950px) {
-
-    .nav-links {
-        display: none;
-    }
-
-
-    .hero {
-        grid-template-columns: 1fr;
-        gap: 30px;
-        padding: 60px 0;
-    }
-
-
-    .hero h1 {
-        font-size: 44px;
-    }
-
-
-    .features-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-
-    .preview-grid {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-}
-
-
-@media (max-width: 650px) {
-
-    .header {
-        min-height: 65px;
-    }
-
-
-    .header-actions .login-button {
-        display: none;
-    }
-
-
-    .hero {
-        width: 90%;
-        padding: 45px 0;
-    }
-
-
-    .hero h1 {
-        font-size: 36px;
-    }
-
-
-    .hero-buttons {
-        flex-direction: column;
-    }
-
-
-    .hero-buttons a {
-        text-align: center;
-    }
-
-
-    .stats-container {
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-
-    .stat {
-        border-bottom: 1px solid #edf0f4;
-    }
-
-
-    .features-section,
-    .courses-preview,
-    .how-section {
-        margin: 65px auto;
-    }
-
-
-    .features-grid,
-    .preview-grid,
-    .steps-grid {
-        grid-template-columns: 1fr;
-    }
-
-
-    .section-heading h2 {
-        font-size: 28px;
-    }
-
-
-    .cta-content h2 {
-        font-size: 30px;
-    }
-
-
-    .cta-buttons {
-        flex-direction: column;
-    }
-
-
-    .footer-main {
-        grid-template-columns:
-            1fr 1fr;
-    }
-
-
-    .footer-bottom {
-        flex-direction: column;
-    }
-
-}
-
-
-@media (max-width: 420px) {
-
-    .header {
-        padding: 0 4%;
-    }
-
-
-    .logo {
-        font-size: 19px;
-    }
-
-
-    .signup-button,
-    .dashboard-button {
-        padding: 9px 11px;
-        font-size: 10px;
-    }
-
-
-    .hero h1 {
-        font-size: 31px;
-    }
-
-
-    .hero-card {
-        padding: 22px;
-    }
-
-
-    .footer-main {
-        grid-template-columns: 1fr;
-    }
-
-}
-
-</style>
-
 
 </body>
 </html>

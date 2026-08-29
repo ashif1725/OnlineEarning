@@ -1,70 +1,829 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <meta
-        name="description"
-        content="Login to your SkillEarn Hub account."
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Login | SkillEarn Hub</title>
 
+    <link rel="stylesheet" href="css/style.css">
 
-    <!-- Main CSS -->
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <!-- =====================================================
+         FIREBASE COMPAT SDK
+    ====================================================== -->
 
-
-    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
-
-    <!-- Firebase Config -->
+    <!-- Firebase Configuration -->
     <script src="js/firebase-config.js"></script>
 
-
     <!-- Authentication -->
-    <script src="js/auth.js" defer></script>
+    <script src="js/auth.js"></script>
+
+
+    <style>
+
+        /* =====================================================
+           RESET
+        ====================================================== */
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+
+        /* =====================================================
+           HEADER
+        ====================================================== */
+
+        .site-header {
+
+            height: 72px;
+
+            background: #ffffff;
+
+            border-bottom:
+                1px solid #e7ebf2;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding:
+                0 6%;
+
+        }
+
+
+        .logo {
+
+            text-decoration: none;
+
+            color: #172033;
+
+            font-size: 24px;
+
+            font-weight: 800;
+
+        }
+
+
+        .logo span {
+            color: #2463eb;
+        }
+
+
+        .home-link {
+
+            text-decoration: none;
+
+            color: #526074;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+        }
+
+
+        .home-link:hover {
+            color: #2463eb;
+        }
+
+
+        /* =====================================================
+           MAIN
+        ====================================================== */
+
+        .login-wrapper {
+
+            min-height:
+                calc(100vh - 72px);
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            align-items: center;
+
+            gap: 55px;
+
+            max-width: 1150px;
+
+            margin: auto;
+
+            padding:
+                55px 25px;
+
+        }
+
+
+        /* =====================================================
+           LEFT CONTENT
+        ====================================================== */
+
+        .login-info {
+            padding: 20px;
+        }
+
+
+        .badge {
+
+            display: inline-block;
+
+            padding:
+                8px 14px;
+
+            border-radius: 50px;
+
+            background: #eaf2ff;
+
+            color: #2463eb;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+            letter-spacing: .3px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .login-info h1 {
+
+            margin: 0;
+
+            font-size: 48px;
+
+            line-height: 1.1;
+
+            letter-spacing: -1px;
+
+        }
+
+
+        .login-info h1 span {
+            color: #2463eb;
+        }
+
+
+        .login-info p {
+
+            max-width: 530px;
+
+            margin:
+                20px 0;
+
+            color: #707b8d;
+
+            font-size: 17px;
+
+            line-height: 1.7;
+
+        }
+
+
+        /* =====================================================
+           FEATURES
+        ====================================================== */
+
+        .features {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 13px;
+
+            margin-top: 25px;
+
+        }
+
+
+        .feature {
+
+            background: #ffffff;
+
+            border:
+                1px solid #e7ebf2;
+
+            border-radius: 13px;
+
+            padding: 15px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+            box-shadow:
+                0 5px 20px
+                rgba(20, 40, 80, .04);
+
+        }
+
+
+        /* =====================================================
+           LOGIN CARD
+        ====================================================== */
+
+        .login-card {
+
+            width: 100%;
+
+            max-width: 460px;
+
+            margin: auto;
+
+            background: #ffffff;
+
+            border:
+                1px solid #e5eaf1;
+
+            border-radius: 22px;
+
+            padding: 35px;
+
+            box-shadow:
+                0 18px 50px
+                rgba(20, 40, 80, .10);
+
+        }
+
+
+        .login-icon {
+
+            width: 55px;
+
+            height: 55px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #edf4ff;
+
+            border-radius: 15px;
+
+            font-size: 25px;
+
+            margin-bottom: 17px;
+
+        }
+
+
+        .login-card h2 {
+
+            margin:
+                0 0 7px;
+
+            font-size: 29px;
+
+        }
+
+
+        .login-subtitle {
+
+            margin:
+                0 0 25px;
+
+            color: #7b8595;
+
+            font-size: 14px;
+
+        }
+
+
+        /* =====================================================
+           FORM
+        ====================================================== */
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+
+        .form-group label {
+
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 14px;
+
+            font-weight: 700;
+
+        }
+
+
+        .form-group input {
+
+            width: 100%;
+
+            padding:
+                14px 15px;
+
+            border:
+                1px solid #d8dee8;
+
+            border-radius: 11px;
+
+            outline: none;
+
+            background: #ffffff;
+
+            color: #172033;
+
+            font-size: 15px;
+
+            transition:
+                border-color .2s,
+                box-shadow .2s;
+
+        }
+
+
+        .form-group input:focus {
+
+            border-color: #2463eb;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(36, 99, 235, .10);
+
+        }
+
+
+        /* =====================================================
+           PASSWORD ROW
+        ====================================================== */
+
+        .password-row {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            margin-bottom: 7px;
+
+        }
+
+
+        .password-row label {
+            margin: 0;
+        }
+
+
+        .forgot-btn {
+
+            border: 0;
+
+            padding: 0;
+
+            background: transparent;
+
+            color: #2463eb;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+        }
+
+
+        .forgot-btn:hover {
+            text-decoration: underline;
+        }
+
+
+        /* =====================================================
+           LOGIN BUTTON
+        ====================================================== */
+
+        .login-btn {
+
+            width: 100%;
+
+            border: 0;
+
+            border-radius: 11px;
+
+            padding:
+                14px 18px;
+
+            background: #2463eb;
+
+            color: #ffffff;
+
+            font-size: 16px;
+
+            font-weight: 800;
+
+            cursor: pointer;
+
+            transition:
+                background .2s,
+                transform .1s;
+
+        }
+
+
+        .login-btn:hover {
+            background: #1854d4;
+        }
+
+
+        .login-btn:active {
+            transform: scale(.99);
+        }
+
+
+        .login-btn:disabled {
+
+            opacity: .6;
+
+            cursor: not-allowed;
+
+        }
+
+
+        /* =====================================================
+           DIVIDER
+        ====================================================== */
+
+        .divider {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            margin:
+                23px 0;
+
+        }
+
+
+        .divider::before,
+        .divider::after {
+
+            content: "";
+
+            height: 1px;
+
+            flex: 1;
+
+            background: #e3e7ee;
+
+        }
+
+
+        .divider span {
+
+            color: #929baa;
+
+            font-size: 12px;
+
+            font-weight: 800;
+
+        }
+
+
+        /* =====================================================
+           GOOGLE BUTTON
+        ====================================================== */
+
+        .google-btn {
+
+            width: 100%;
+
+            border:
+                1px solid #dce2eb;
+
+            border-radius: 11px;
+
+            padding:
+                13px 15px;
+
+            background: #ffffff;
+
+            color: #263143;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+        }
+
+
+        .google-btn:hover {
+
+            background: #f7f9fc;
+
+            border-color: #cbd3df;
+
+        }
+
+
+        .google-btn:disabled {
+
+            opacity: .6;
+
+            cursor: not-allowed;
+
+        }
+
+
+        /* =====================================================
+           REGISTER
+        ====================================================== */
+
+        .register-text {
+
+            text-align: center;
+
+            margin:
+                22px 0 0;
+
+            color: #737e8f;
+
+            font-size: 14px;
+
+        }
+
+
+        .register-text a {
+
+            color: #2463eb;
+
+            text-decoration: none;
+
+            font-weight: 800;
+
+        }
+
+
+        .register-text a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* =====================================================
+           MESSAGE
+        ====================================================== */
+
+        .message {
+
+            display: none;
+
+            margin-top: 16px;
+
+            padding:
+                12px 14px;
+
+            border-radius: 10px;
+
+            font-size: 14px;
+
+            line-height: 1.5;
+
+        }
+
+
+        .message.error {
+
+            display: block;
+
+            background: #fff0f0;
+
+            color: #c62828;
+
+        }
+
+
+        .message.success {
+
+            display: block;
+
+            background: #edfff4;
+
+            color: #168044;
+
+        }
+
+
+        .message.info {
+
+            display: block;
+
+            background: #edf4ff;
+
+            color: #2463eb;
+
+        }
+
+
+        /* =====================================================
+           FOOTER
+        ====================================================== */
+
+        .footer {
+
+            background: #ffffff;
+
+            border-top:
+                1px solid #e7ebf2;
+
+            text-align: center;
+
+            padding:
+                28px 20px;
+
+        }
+
+
+        .footer-logo {
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+        }
+
+
+        .footer-logo span {
+            color: #2463eb;
+        }
+
+
+        .footer p {
+
+            margin:
+                7px 0;
+
+            color: #7c8798;
+
+            font-size: 13px;
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ====================================================== */
+
+        @media (max-width: 850px) {
+
+            .login-wrapper {
+
+                grid-template-columns: 1fr;
+
+                gap: 20px;
+
+                padding:
+                    35px 18px;
+
+            }
+
+
+            .login-info {
+
+                text-align: center;
+
+                padding: 5px;
+
+            }
+
+
+            .login-info p {
+
+                margin-left: auto;
+
+                margin-right: auto;
+
+            }
+
+
+            .login-card {
+
+                max-width: 520px;
+
+            }
+
+        }
+
+
+        @media (max-width: 520px) {
+
+            .site-header {
+
+                padding:
+                    0 15px;
+
+            }
+
+
+            .logo {
+                font-size: 21px;
+            }
+
+
+            .home-link {
+                font-size: 13px;
+            }
+
+
+            .login-info h1 {
+
+                font-size: 34px;
+
+            }
+
+
+            .features {
+
+                grid-template-columns: 1fr;
+
+                text-align: left;
+
+            }
+
+
+            .login-card {
+
+                padding:
+                    25px 20px;
+
+                border-radius: 17px;
+
+            }
+
+        }
+
+    </style>
 
 </head>
 
 
-<body class="auth-page">
+<body>
 
 
 <!-- =====================================================
      HEADER
-===================================================== -->
+====================================================== -->
 
-<header class="header">
+<header class="site-header">
 
     <a
         href="index.html"
-        class="logo"
-    >
+        class="logo">
+
         SkillEarn <span>Hub</span>
+
     </a>
 
 
     <a
         href="index.html"
-        class="back-home"
-    >
-        ← Home
+        class="home-link">
+
+        ← Back to Home
+
     </a>
 
 </header>
@@ -73,20 +832,20 @@
 
 <!-- =====================================================
      MAIN
-===================================================== -->
+====================================================== -->
 
-<main class="auth-wrapper">
+<main class="login-wrapper">
 
 
     <!-- =================================================
-         LEFT PROMO
+         LEFT SIDE
     ================================================== -->
 
-    <section class="auth-promo">
+    <section class="login-info">
 
-        <span class="promo-badge">
+        <div class="badge">
             🚀 SKILLEARN HUB
-        </span>
+        </div>
 
 
         <h1>
@@ -94,36 +853,38 @@
             Learn Skills.<br>
 
             <span>
-                Build Income.
-            </span><br>
-
-            Grow Online.
+                Grow Your Future.
+            </span>
 
         </h1>
 
 
         <p>
+
             Login to your SkillEarn Hub account
-            and continue your digital learning journey.
+            and continue your learning journey,
+            courses, digital products and other
+            platform features.
+
         </p>
 
 
-        <div class="promo-features">
+        <div class="features">
 
-            <div>
-                🎓 Learn Digital Skills
+            <div class="feature">
+                🎓 Digital Courses
             </div>
 
-            <div>
-                💼 Explore Online Opportunities
+            <div class="feature">
+                💼 Skill Learning
             </div>
 
-            <div>
-                🛒 Discover Digital Products
+            <div class="feature">
+                🛍️ Digital Store
             </div>
 
-            <div>
-                📊 Track Your Progress
+            <div class="feature">
+                🤝 Referral Program
             </div>
 
         </div>
@@ -133,13 +894,13 @@
 
 
     <!-- =================================================
-         LOGIN BOX
+         LOGIN CARD
     ================================================== -->
 
-    <section class="auth-box">
+    <section class="login-card">
 
 
-        <div class="auth-icon">
+        <div class="login-icon">
             🔐
         </div>
 
@@ -149,87 +910,72 @@
         </h2>
 
 
-        <p class="auth-subtitle">
+        <p class="login-subtitle">
             Login to your SkillEarn Hub account
         </p>
 
 
 
-        <!-- =================================================
-             MESSAGE
-        ================================================== -->
-
-        <div
-            id="authMessage"
-            class="auth-message"
-            role="alert"
-            aria-live="polite"
-            style="display:none;"
-        ></div>
-
-
-
-        <!-- =================================================
+        <!-- =============================================
              LOGIN FORM
-        ================================================== -->
+        ============================================== -->
 
-        <form
-            id="loginForm"
-            novalidate
-        >
+        <form id="loginForm">
 
 
             <!-- EMAIL -->
 
-            <label
-                for="loginEmail"
-            >
-                Email Address
-            </label>
+            <div class="form-group">
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
 
 
-            <input
-                type="email"
-                id="loginEmail"
-                name="email"
-                placeholder="Enter your email"
-                autocomplete="email"
-                required
-            >
+                <input
+                    type="email"
+                    id="loginEmail"
+                    name="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                >
+
+            </div>
 
 
 
             <!-- PASSWORD -->
 
-            <label
-                for="loginPassword"
-            >
-                Password
-            </label>
+            <div class="form-group">
+
+                <div class="password-row">
+
+                    <label for="loginPassword">
+                        Password
+                    </label>
 
 
-            <input
-                type="password"
-                id="loginPassword"
-                name="password"
-                placeholder="Enter your password"
-                autocomplete="current-password"
-                required
-            >
+                    <button
+                        type="button"
+                        id="forgotPasswordBtn"
+                        class="forgot-btn">
+
+                        Forgot Password?
+
+                    </button>
+
+                </div>
 
 
-
-            <!-- FORGOT PASSWORD -->
-
-            <div class="forgot-row">
-
-                <button
-                    type="button"
-                    id="forgotPasswordBtn"
-                    class="forgot-button"
+                <input
+                    type="password"
+                    id="loginPassword"
+                    name="password"
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
                 >
-                    Forgot Password?
-                </button>
 
             </div>
 
@@ -239,10 +985,11 @@
 
             <button
                 type="submit"
-                id="loginSubmitBtn"
-                class="btn full"
-            >
+                id="loginButton"
+                class="login-btn">
+
                 Login to Account
+
             </button>
 
 
@@ -250,9 +997,9 @@
 
 
 
-        <!-- =================================================
+        <!-- =============================================
              DIVIDER
-        ================================================== -->
+        ============================================== -->
 
         <div class="divider">
 
@@ -264,30 +1011,26 @@
 
 
 
-        <!-- =================================================
+        <!-- =============================================
              GOOGLE LOGIN
-        ================================================== -->
+        ============================================== -->
 
         <button
             type="button"
             id="googleLogin"
-            class="google-btn"
-        >
-            <span>
-                🔵
-            </span>
+            class="google-btn">
 
-            Continue with Google
+            🔵 Continue with Google
 
         </button>
 
 
 
-        <!-- =================================================
+        <!-- =============================================
              REGISTER
-        ================================================== -->
+        ============================================== -->
 
-        <p class="auth-bottom">
+        <p class="register-text">
 
             Don't have an account?
 
@@ -298,6 +1041,17 @@
         </p>
 
 
+
+        <!-- =============================================
+             MESSAGE
+        ============================================== -->
+
+        <div
+            id="authMessage"
+            class="message">
+        </div>
+
+
     </section>
 
 </main>
@@ -306,23 +1060,19 @@
 
 <!-- =====================================================
      FOOTER
-===================================================== -->
+====================================================== -->
 
-<footer>
+<footer class="footer">
 
     <div class="footer-logo">
-
         SkillEarn <span>Hub</span>
-
     </div>
 
-
     <p>
-        Learn Skills. Build Income. Grow Online.
+        Learn Skills. Build Your Future.
     </p>
 
-
-    <p class="copyright">
+    <p>
         © 2026 SkillEarn Hub. All Rights Reserved.
     </p>
 
@@ -331,938 +1081,435 @@
 
 
 <!-- =====================================================
-     LOGIN PAGE CSS
-===================================================== -->
+     LOGIN PAGE JAVASCRIPT
+====================================================== -->
 
-<style>
+<script>
 
-* {
-    box-sizing: border-box;
-}
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
 
-body.auth-page {
+        /* =================================================
+           ELEMENTS
+        ================================================== */
 
-    margin: 0;
+        const loginForm =
+            document.getElementById(
+                "loginForm"
+            );
 
-    min-height: 100vh;
 
-    background:
-        linear-gradient(
-            135deg,
-            #f7faff 0%,
-            #eef4ff 100%
+        const emailInput =
+            document.getElementById(
+                "loginEmail"
+            );
+
+
+        const passwordInput =
+            document.getElementById(
+                "loginPassword"
+            );
+
+
+        const loginButton =
+            document.getElementById(
+                "loginButton"
+            );
+
+
+        const googleButton =
+            document.getElementById(
+                "googleLogin"
+            );
+
+
+        const forgotButton =
+            document.getElementById(
+                "forgotPasswordBtn"
+            );
+
+
+        /* =================================================
+           SHOW MESSAGE
+        ================================================== */
+
+        function showMessage(
+            text,
+            type = "error"
+        ) {
+
+            const message =
+                document.getElementById(
+                    "authMessage"
+                );
+
+
+            message.textContent =
+                text;
+
+
+            message.className =
+                "message " + type;
+
+
+            message.style.display =
+                "block";
+
+        }
+
+
+        /* =================================================
+           FIREBASE ERROR MESSAGE
+        ================================================== */
+
+        function firebaseErrorMessage(
+            error
+        ) {
+
+            if (!error) {
+                return "Something went wrong.";
+            }
+
+
+            switch (error.code) {
+
+                case "auth/invalid-email":
+
+                    return "Please enter a valid email address.";
+
+
+                case "auth/user-not-found":
+
+                    return "No account was found with this email.";
+
+
+                case "auth/wrong-password":
+
+                    return "Incorrect email or password.";
+
+
+                case "auth/invalid-credential":
+
+                    return "Incorrect email or password.";
+
+
+                case "auth/user-disabled":
+
+                    return "This account has been disabled.";
+
+
+                case "auth/too-many-requests":
+
+                    return "Too many attempts. Please try again later.";
+
+
+                case "auth/network-request-failed":
+
+                    return "Network error. Please check your internet connection.";
+
+
+                case "auth/popup-blocked":
+
+                    return "Google login popup was blocked by your browser.";
+
+
+                case "auth/popup-closed-by-user":
+
+                    return "Google login was cancelled.";
+
+
+                case "auth/operation-not-allowed":
+
+                    return "This login method is not enabled in Firebase.";
+
+
+                default:
+
+                    return (
+                        error.message ||
+                        "Login failed. Please try again."
+                    );
+
+            }
+
+        }
+
+
+        /* =================================================
+           EMAIL LOGIN
+        ================================================== */
+
+        loginForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                const email =
+                    emailInput.value
+                        .trim()
+                        .toLowerCase();
+
+
+                const password =
+                    passwordInput.value;
+
+
+                if (!email) {
+
+                    showMessage(
+                        "Please enter your email address.",
+                        "error"
+                    );
+
+                    emailInput.focus();
+
+                    return;
+                }
+
+
+                if (!password) {
+
+                    showMessage(
+                        "Please enter your password.",
+                        "error"
+                    );
+
+                    passwordInput.focus();
+
+                    return;
+                }
+
+
+                loginButton.disabled =
+                    true;
+
+                googleButton.disabled =
+                    true;
+
+                loginButton.textContent =
+                    "Logging in...";
+
+
+                try {
+
+                    /*
+                     * auth.js ke loginUser()
+                     * function ko call karta hai.
+                     */
+
+                    await window.loginUser(
+                        email,
+                        password,
+                        "dashboard.html"
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Login error:",
+                        error
+                    );
+
+
+                    showMessage(
+                        firebaseErrorMessage(
+                            error
+                        ),
+                        "error"
+                    );
+
+
+                } finally {
+
+                    loginButton.disabled =
+                        false;
+
+                    googleButton.disabled =
+                        false;
+
+                    loginButton.textContent =
+                        "Login to Account";
+
+                }
+
+            }
         );
 
-    color: #172033;
 
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+        /* =================================================
+           GOOGLE LOGIN
+        ================================================== */
 
-}
+        googleButton.addEventListener(
+            "click",
+            async function () {
 
 
-/* =====================================================
-   HEADER
-===================================================== */
+                googleButton.disabled =
+                    true;
 
-.auth-page .header {
+                loginButton.disabled =
+                    true;
 
-    min-height: 72px;
+                googleButton.textContent =
+                    "Connecting to Google...";
 
-    padding:
-        0 5%;
 
-    display: flex;
+                try {
 
-    align-items: center;
+                    await window.googleLogin(
+                        "dashboard.html"
+                    );
 
-    justify-content: space-between;
 
-    background: #ffffff;
+                } catch (error) {
 
-    border-bottom:
-        1px solid #e8edf5;
+                    console.error(
+                        "Google login error:",
+                        error
+                    );
 
-}
 
+                    showMessage(
+                        firebaseErrorMessage(
+                            error
+                        ),
+                        "error"
+                    );
 
-.auth-page .logo {
 
-    color: #172033;
+                } finally {
 
-    text-decoration: none;
+                    googleButton.disabled =
+                        false;
 
-    font-size: 22px;
+                    loginButton.disabled =
+                        false;
 
-    font-weight: 900;
+                    googleButton.textContent =
+                        "🔵 Continue with Google";
 
-}
+                }
 
+            }
+        );
 
-.auth-page .logo span {
 
-    color: #2563eb;
+        /* =================================================
+           FORGOT PASSWORD
+        ================================================== */
 
-}
+        forgotButton.addEventListener(
+            "click",
+            async function () {
 
 
-.back-home {
+                const email =
+                    emailInput.value
+                        .trim()
+                        .toLowerCase();
 
-    color: #5f6b7d;
 
-    text-decoration: none;
+                if (!email) {
 
-    font-size: 13px;
+                    showMessage(
+                        "Enter your email address first.",
+                        "error"
+                    );
 
-    font-weight: 700;
+                    emailInput.focus();
 
-}
+                    return;
+                }
 
 
-.back-home:hover {
+                forgotButton.disabled =
+                    true;
 
-    color: #2563eb;
+                forgotButton.textContent =
+                    "Sending...";
 
-}
 
+                try {
 
+                    await window.forgotPassword(
+                        email
+                    );
 
-/* =====================================================
-   MAIN WRAPPER
-===================================================== */
 
-.auth-wrapper {
+                    showMessage(
+                        "Password reset email has been sent. Please check your inbox.",
+                        "success"
+                    );
 
-    width:
-        min(1100px, 92%);
 
-    min-height:
-        calc(100vh - 150px);
+                } catch (error) {
 
-    margin:
-        0 auto;
+                    console.error(
+                        "Password reset error:",
+                        error
+                    );
 
-    padding:
-        65px 0;
 
-    display: grid;
+                    showMessage(
+                        firebaseErrorMessage(
+                            error
+                        ),
+                        "error"
+                    );
 
-    grid-template-columns:
-        1fr 440px;
 
-    align-items: center;
+                } finally {
 
-    gap: 80px;
+                    forgotButton.disabled =
+                        false;
 
-}
+                    forgotButton.textContent =
+                        "Forgot Password?";
 
+                }
 
+            }
+        );
 
-/* =====================================================
-   PROMO
-===================================================== */
 
-.auth-promo {
+        /* =================================================
+           ALREADY LOGGED IN
+        ================================================== */
 
-    padding:
-        20px 0;
+        if (
+            window.firebase &&
+            firebase.auth
+        ) {
 
-}
+            firebase
+                .auth()
+                .onAuthStateChanged(
+                    function (user) {
 
+                        if (user) {
 
-.promo-badge {
+                            console.log(
+                                "User already logged in:",
+                                user.email
+                            );
 
-    display: inline-block;
+                        }
 
-    padding:
-        8px 13px;
+                    }
+                );
 
-    border-radius:
-        30px;
+        }
 
-    background:
-        #eaf1ff;
 
-    color:
-        #2563eb;
+    });
 
-    font-size:
-        10px;
-
-    font-weight:
-        900;
-
-    letter-spacing:
-        .5px;
-
-}
-
-
-.auth-promo h1 {
-
-    margin:
-        20px 0 18px;
-
-    font-size:
-        50px;
-
-    line-height:
-        1.08;
-
-    letter-spacing:
-        -1.5px;
-
-}
-
-
-.auth-promo h1 span {
-
-    color:
-        #2563eb;
-
-}
-
-
-.auth-promo > p {
-
-    max-width:
-        570px;
-
-    color:
-        #6e798a;
-
-    font-size:
-        15px;
-
-    line-height:
-        1.7;
-
-}
-
-
-.promo-features {
-
-    display:
-        grid;
-
-    grid-template-columns:
-        repeat(2, 1fr);
-
-    gap:
-        12px;
-
-    margin-top:
-        30px;
-
-}
-
-
-.promo-features div {
-
-    padding:
-        14px;
-
-    background:
-        rgba(255,255,255,.8);
-
-    border:
-        1px solid #e3e9f3;
-
-    border-radius:
-        12px;
-
-    color:
-        #536074;
-
-    font-size:
-        12px;
-
-    font-weight:
-        700;
-
-}
-
-
-
-/* =====================================================
-   AUTH BOX
-===================================================== */
-
-.auth-box {
-
-    padding:
-        35px;
-
-    background:
-        #ffffff;
-
-    border:
-        1px solid #e5eaf2;
-
-    border-radius:
-        22px;
-
-    box-shadow:
-        0 20px 60px rgba(32,54,90,.10);
-
-}
-
-
-.auth-icon {
-
-    width:
-        58px;
-
-    height:
-        58px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    margin:
-        0 auto 18px;
-
-    border-radius:
-        16px;
-
-    background:
-        #eef4ff;
-
-    font-size:
-        27px;
-
-}
-
-
-.auth-box h2 {
-
-    margin:
-        0;
-
-    text-align:
-        center;
-
-    font-size:
-        27px;
-
-}
-
-
-.auth-subtitle {
-
-    margin:
-        8px 0 28px;
-
-    color:
-        #7a8494;
-
-    text-align:
-        center;
-
-    font-size:
-        12px;
-
-}
-
-
-
-/* =====================================================
-   MESSAGE
-===================================================== */
-
-.auth-message {
-
-    margin-bottom:
-        17px;
-
-    padding:
-        12px 14px;
-
-    border-radius:
-        10px;
-
-    background:
-        #fff4f4;
-
-    border:
-        1px solid #ffd6d6;
-
-    color:
-        #c62828;
-
-    font-size:
-        12px;
-
-    line-height:
-        1.5;
-
-}
-
-
-
-/* =====================================================
-   FORM
-===================================================== */
-
-#loginForm label {
-
-    display:
-        block;
-
-    margin:
-        0 0 7px;
-
-    color:
-        #344054;
-
-    font-size:
-        12px;
-
-    font-weight:
-        800;
-
-}
-
-
-#loginForm input {
-
-    width:
-        100%;
-
-    height:
-        48px;
-
-    margin-bottom:
-        18px;
-
-    padding:
-        0 14px;
-
-    border:
-        1px solid #dce2eb;
-
-    border-radius:
-        10px;
-
-    outline:
-        none;
-
-    background:
-        #ffffff;
-
-    color:
-        #172033;
-
-    font-size:
-        13px;
-
-    transition:
-        .2s;
-
-}
-
-
-#loginForm input:focus {
-
-    border-color:
-        #2563eb;
-
-    box-shadow:
-        0 0 0 3px rgba(37,99,235,.10);
-
-}
-
-
-#loginForm input::placeholder {
-
-    color:
-        #a0a8b5;
-
-}
-
-
-
-/* =====================================================
-   FORGOT
-===================================================== */
-
-.forgot-row {
-
-    display:
-        flex;
-
-    justify-content:
-        flex-end;
-
-    margin:
-        -7px 0 18px;
-
-}
-
-
-.forgot-button {
-
-    padding:
-        0;
-
-    border:
-        0;
-
-    background:
-        transparent;
-
-    color:
-        #2563eb;
-
-    cursor:
-        pointer;
-
-    font-size:
-        11px;
-
-    font-weight:
-        700;
-
-}
-
-
-.forgot-button:hover {
-
-    text-decoration:
-        underline;
-
-}
-
-
-
-/* =====================================================
-   BUTTON
-===================================================== */
-
-.btn.full {
-
-    width:
-        100%;
-
-    min-height:
-        48px;
-
-    border:
-        0;
-
-    border-radius:
-        10px;
-
-    background:
-        #2563eb;
-
-    color:
-        #ffffff;
-
-    cursor:
-        pointer;
-
-    font-size:
-        13px;
-
-    font-weight:
-        800;
-
-    transition:
-        .2s;
-
-}
-
-
-.btn.full:hover {
-
-    background:
-        #1d4ed8;
-
-}
-
-
-.btn.full:disabled {
-
-    opacity:
-        .65;
-
-    cursor:
-        not-allowed;
-
-}
-
-
-
-/* =====================================================
-   DIVIDER
-===================================================== */
-
-.divider {
-
-    position:
-        relative;
-
-    margin:
-        25px 0;
-
-    text-align:
-        center;
-
-}
-
-
-.divider::before {
-
-    content:
-        "";
-
-    position:
-        absolute;
-
-    top:
-        50%;
-
-    left:
-        0;
-
-    right:
-        0;
-
-    height:
-        1px;
-
-    background:
-        #e8ecf2;
-
-}
-
-
-.divider span {
-
-    position:
-        relative;
-
-    padding:
-        0 12px;
-
-    background:
-        #ffffff;
-
-    color:
-        #9aa3b1;
-
-    font-size:
-        10px;
-
-    font-weight:
-        800;
-
-}
-
-
-
-/* =====================================================
-   GOOGLE
-===================================================== */
-
-.google-btn {
-
-    width:
-        100%;
-
-    min-height:
-        48px;
-
-    display:
-        flex;
-
-    align-items:
-        center;
-
-    justify-content:
-        center;
-
-    gap:
-        9px;
-
-    border:
-        1px solid #dce2eb;
-
-    border-radius:
-        10px;
-
-    background:
-        #ffffff;
-
-    color:
-        #344054;
-
-    cursor:
-        pointer;
-
-    font-size:
-        12px;
-
-    font-weight:
-        800;
-
-    transition:
-        .2s;
-
-}
-
-
-.google-btn:hover {
-
-    background:
-        #f8fafc;
-
-    border-color:
-        #cbd5e1;
-
-}
-
-
-.google-btn:disabled {
-
-    opacity:
-        .65;
-
-    cursor:
-        not-allowed;
-
-}
-
-
-
-/* =====================================================
-   BOTTOM
-===================================================== */
-
-.auth-bottom {
-
-    margin:
-        25px 0 0;
-
-    text-align:
-        center;
-
-    color:
-        #7a8494;
-
-    font-size:
-        12px;
-
-}
-
-
-.auth-bottom a {
-
-    color:
-        #2563eb;
-
-    text-decoration:
-        none;
-
-    font-weight:
-        800;
-
-}
-
-
-.auth-bottom a:hover {
-
-    text-decoration:
-        underline;
-
-}
-
-
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
-.auth-page footer {
-
-    padding:
-        25px 20px;
-
-    background:
-        #ffffff;
-
-    border-top:
-        1px solid #e8edf5;
-
-    text-align:
-        center;
-
-}
-
-
-.footer-logo {
-
-    color:
-        #172033;
-
-    font-size:
-        18px;
-
-    font-weight:
-        900;
-
-}
-
-
-.footer-logo span {
-
-    color:
-        #2563eb;
-
-}
-
-
-.auth-page footer p {
-
-    margin:
-        7px 0;
-
-    color:
-        #7a8494;
-
-    font-size:
-        11px;
-
-}
-
-
-.auth-page footer .copyright {
-
-    color:
-        #9aa3b1;
-
-    font-size:
-        10px;
-
-}
-
-
-
-/* =====================================================
-   MOBILE
-===================================================== */
-
-@media (max-width: 850px) {
-
-    .auth-wrapper {
-
-        grid-template-columns:
-            1fr;
-
-        gap:
-            30px;
-
-        padding:
-            45px 0;
-
-    }
-
-
-    .auth-promo {
-
-        text-align:
-            center;
-
-    }
-
-
-    .auth-promo > p {
-
-        margin-left:
-            auto;
-
-        margin-right:
-            auto;
-
-    }
-
-
-    .promo-features {
-
-        max-width:
-            600px;
-
-        margin-left:
-            auto;
-
-        margin-right:
-            auto;
-
-    }
-
-
-    .auth-box {
-
-        width:
-            min(440px, 100%);
-
-        margin:
-            auto;
-
-    }
-
-}
-
-
-@media (max-width: 550px) {
-
-    .auth-page .header {
-
-        padding:
-            0 20px;
-
-    }
-
-
-    .auth-promo h1 {
-
-        font-size:
-            37px;
-
-    }
-
-
-    .promo-features {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-
-    .auth-box {
-
-        padding:
-            25px 20px;
-
-        border-radius:
-            18px;
-
-    }
-
-}
-
-</style>
+</script>
 
 
 </body>

@@ -1,219 +1,205 @@
-
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Create your SkillEarn Hub account.">
-<meta name="theme-color" content="#070b16">
 
-<title>Create Account — SkillEarn Hub</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta
+        name="description"
+        content="Create your SkillEarn Hub account."
+    >
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>Create Account | SkillEarn Hub</title>
 
-<link rel="stylesheet" href="../css/style.css">
-<link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/register.css">
+</head>
 
-</head><body class="auth-page"><div class="auth-background">
-    <div class="auth-glow auth-glow-one"></div>
-    <div class="auth-glow auth-glow-two"></div>
-    <div class="auth-grid"></div>
-</div>
+<body>
 
-<main class="auth-wrapper auth-wrapper-register">
+    <main class="auth-page">
 
-    <a href="../index.html" class="auth-brand">
-        <span class="brand-mark">
-            <span class="brand-mark-icon">S</span>
-        </span>
+        <section class="auth-card">
 
-        <span class="brand-text">
-            <strong>SkillEarn</strong>
-            <small>HUB</small>
-        </span>
-    </a>
+            <div class="brand">
+                <div class="brand-logo">S</div>
 
-    <section class="auth-card">
-
-        <div class="auth-heading">
-            <div class="auth-icon">✦</div>
-
-            <h1>Create your account</h1>
-
-            <p>
-                Start your SkillEarn Hub journey today.
-            </p>
-        </div>
-
-        <div class="auth-alert" id="registerAlert" role="alert"></div>
-
-        <form id="registerForm" class="auth-form" novalidate>
-
-            <div class="form-row">
-
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-
-                    <div class="input-wrapper">
-                        <span class="input-icon">●</span>
-
-                        <input
-                            type="text"
-                            id="firstName"
-                            name="firstName"
-                            placeholder="First name"
-                            autocomplete="given-name"
-                            maxlength="50"
-                            required
-                        >
-                    </div>
+                <div>
+                    <h1>SkillEarn Hub</h1>
+                    <p>Create your account</p>
                 </div>
-
-                <div class="form-group">
-                    <label for="lastName">Last Name</label>
-
-                    <div class="input-wrapper">
-                        <span class="input-icon">●</span>
-
-                        <input
-                            type="text"
-                            id="lastName"
-                            name="lastName"
-                            placeholder="Last name"
-                            autocomplete="family-name"
-                            maxlength="50"
-                            required
-                        >
-                    </div>
-                </div>
-
             </div>
 
-            <div class="form-group">
-                <label for="registerEmail">Email Address</label>
+            <div class="auth-heading">
+                <span class="eyebrow">WELCOME</span>
 
-                <div class="input-wrapper">
-                    <span class="input-icon">✉</span>
+                <h2>Create Account</h2>
+
+                <p>
+                    Register to access your SkillEarn Hub account.
+                </p>
+            </div>
+
+            <div
+                id="registerMessage"
+                class="auth-message"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+            <form id="registerForm" novalidate>
+
+                <div class="form-group">
+                    <label for="fullName">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        placeholder="Enter your full name"
+                        autocomplete="name"
+                        maxlength="80"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="email">
+                        Email Address
+                    </label>
 
                     <input
                         type="email"
-                        id="registerEmail"
+                        id="email"
                         name="email"
                         placeholder="you@example.com"
                         autocomplete="email"
+                        maxlength="120"
                         required
                     >
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="registerPassword">Password</label>
+                <div class="form-group">
+                    <label for="password">
+                        Password
+                    </label>
 
-                <div class="input-wrapper">
-                    <span class="input-icon">●</span>
+                    <div class="password-field">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Create a strong password"
+                            autocomplete="new-password"
+                            minlength="6"
+                            maxlength="128"
+                            required
+                        >
 
-                    <input
-                        type="password"
-                        id="registerPassword"
-                        name="password"
-                        placeholder="Create a strong password"
-                        autocomplete="new-password"
-                        minlength="8"
-                        required
-                    >
-
-                    <button
-                        type="button"
-                        class="password-toggle"
-                        data-target="registerPassword"
-                        aria-label="Show password"
-                    >
-                        Show
-                    </button>
-                </div>
-
-                <div class="password-strength">
-                    <div class="strength-bars">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="password"
+                            aria-label="Show password"
+                        >
+                            Show
+                        </button>
                     </div>
-
-                    <small id="passwordStrengthText">
-                        Use 8+ characters with a mix of letters and numbers.
-                    </small>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        Confirm Password
+                    </label>
 
-                <div class="input-wrapper">
-                    <span class="input-icon">●</span>
+                    <div class="password-field">
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            placeholder="Re-enter your password"
+                            autocomplete="new-password"
+                            minlength="6"
+                            maxlength="128"
+                            required
+                        >
 
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            data-target="confirmPassword"
+                            aria-label="Show password"
+                        >
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <label class="terms-row">
                     <input
-                        type="password"
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        placeholder="Repeat your password"
-                        autocomplete="new-password"
-                        minlength="8"
+                        type="checkbox"
+                        id="terms"
+                        name="terms"
                         required
                     >
 
-                    <button
-                        type="button"
-                        class="password-toggle"
-                        data-target="confirmPassword"
-                        aria-label="Show password"
-                    >
-                        Show
-                    </button>
-                </div>
+                    <span>
+                        I agree to the
+                        <a href="#" aria-label="Terms and Conditions">
+                            Terms &amp; Conditions
+                        </a>
+                        and
+                        <a href="#" aria-label="Privacy Policy">
+                            Privacy Policy
+                        </a>.
+                    </span>
+                </label>
+
+                <button
+                    type="submit"
+                    id="registerButton"
+                    class="primary-button"
+                >
+                    <span id="registerButtonText">
+                        Create Account
+                    </span>
+
+                    <span
+                        id="registerLoader"
+                        class="button-loader"
+                        aria-hidden="true"
+                    ></span>
+                </button>
+
+            </form>
+
+            <div class="auth-divider">
+                <span>Already registered?</span>
             </div>
 
-            <label class="terms-row">
-                <input type="checkbox" id="acceptTerms" required>
-                <span class="custom-checkbox"></span>
+            <a
+                href="./login.html"
+                class="secondary-button"
+            >
+                Login to Account
+            </a>
 
-                <span>
-                    I agree to the
-                    <a href="#">Terms of Service</a>
-                    and
-                    <a href="#">Privacy Policy</a>.
-                </span>
-            </label>
+            <p class="security-note">
+                Your account credentials are securely handled through
+                Firebase Authentication.
+            </p>
 
-            <button type="submit" class="btn btn-primary auth-submit">
-                <span>Create Account</span>
-                <span>→</span>
-            </button>
+        </section>
 
-        </form>
+    </main>
 
-        <div class="secure-note">
-            <span>✓</span>
-            <p>We never store passwords in this frontend.</p>
-        </div>
-
-        <p class="auth-switch">
-            Already have an account?
-            <a href="login.html">Sign in</a>
-        </p>
-
-    </section>
-
-    <p class="auth-footer">
-        © 2026 SkillEarn Hub ·
-        <a href="#">Privacy</a> ·
-        <a href="#">Terms</a>
-    </p>
-
-</main>
-
-<script src="../js/auth.js"></script>
+    <script type="module" src="./js/register.js"></script>
 
 </body>
 </html>

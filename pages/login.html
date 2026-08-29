@@ -1,0 +1,142 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="Login to your SkillEarn Hub account.">
+<meta name="theme-color" content="#070b16">
+
+<title>Login — SkillEarn Hub</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/auth.css">
+
+</head><body class="auth-page"><div class="auth-background">
+    <div class="auth-glow auth-glow-one"></div>
+    <div class="auth-glow auth-glow-two"></div>
+    <div class="auth-grid"></div>
+</div>
+
+<main class="auth-wrapper">
+
+    <a href="../index.html" class="auth-brand">
+        <span class="brand-mark">
+            <span class="brand-mark-icon">S</span>
+        </span>
+
+        <span class="brand-text">
+            <strong>SkillEarn</strong>
+            <small>HUB</small>
+        </span>
+    </a>
+
+    <section class="auth-card">
+
+        <div class="auth-heading">
+            <div class="auth-icon">↗</div>
+
+            <h1>Welcome back</h1>
+
+            <p>
+                Sign in to continue your SkillEarn Hub journey.
+            </p>
+        </div>
+
+        <div class="auth-alert" id="loginAlert" role="alert"></div>
+
+        <form id="loginForm" class="auth-form" novalidate>
+
+            <div class="form-group">
+                <label for="loginEmail">Email Address</label>
+
+                <div class="input-wrapper">
+                    <span class="input-icon">✉</span>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        name="email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="label-row">
+                    <label for="loginPassword">Password</label>
+
+                    <a href="forgot-password.html">
+                        Forgot password?
+                    </a>
+                </div>
+
+                <div class="input-wrapper">
+                    <span class="input-icon">●</span>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        minlength="8"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="password-toggle"
+                        data-target="loginPassword"
+                        aria-label="Show password"
+                    >
+                        Show
+                    </button>
+                </div>
+            </div>
+
+            <label class="remember-row">
+                <input type="checkbox" id="rememberMe">
+                <span class="custom-checkbox"></span>
+                <span>Remember me</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary auth-submit">
+                <span>Sign In</span>
+                <span>→</span>
+            </button>
+
+        </form>
+
+        <div class="auth-divider">
+            <span>OR</span>
+        </div>
+
+        <div class="secure-note">
+            <span>✓</span>
+            <p>Your account information is protected.</p>
+        </div>
+
+        <p class="auth-switch">
+            Don't have an account?
+            <a href="register.html">Create an account</a>
+        </p>
+
+    </section>
+
+    <p class="auth-footer">
+        © 2026 SkillEarn Hub ·
+        <a href="#">Privacy</a> ·
+        <a href="#">Terms</a>
+    </p>
+
+</main>
+
+<script src="../js/auth.js"></script>
+
+</body>
+</html>

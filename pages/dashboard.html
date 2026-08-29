@@ -1,0 +1,617 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="description" content="SkillEarn Hub user dashboard.">
+<meta name="theme-color" content="#070b16">
+
+<title>Dashboard — SkillEarn Hub</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+
+</head><body class="dashboard-page"><!-- =========================
+     MOBILE OVERLAY
+     ========================= -->
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+
+<!-- =========================
+     SIDEBAR
+     ========================= -->
+
+<aside class="dashboard-sidebar" id="dashboardSidebar">
+
+    <div class="sidebar-header">
+
+        <a href="../index.html" class="dashboard-brand">
+
+            <span class="brand-mark">
+                <span class="brand-mark-icon">S</span>
+            </span>
+
+            <span class="brand-text">
+                <strong>SkillEarn</strong>
+                <small>HUB</small>
+            </span>
+
+        </a>
+
+        <button
+            class="sidebar-close"
+            id="sidebarClose"
+            type="button"
+            aria-label="Close menu"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <!-- USER MINI PROFILE -->
+
+    <div class="sidebar-user">
+
+        <div class="user-avatar" id="sidebarAvatar">
+            A
+        </div>
+
+        <div class="sidebar-user-info">
+            <strong id="sidebarUserName">Welcome User</strong>
+            <span>Member Account</span>
+        </div>
+
+        <span class="online-dot"></span>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="dashboard-nav" aria-label="Dashboard navigation">
+
+        <p class="nav-label">MAIN</p>
+
+        <a href="dashboard.html" class="nav-item active">
+            <span class="nav-icon">⌂</span>
+            <span>Overview</span>
+        </a>
+
+        <a href="wallet.html" class="nav-item">
+            <span class="nav-icon">◈</span>
+            <span>Wallet</span>
+            <span class="nav-arrow">›</span>
+        </a>
+
+        <a href="transactions.html" class="nav-item">
+            <span class="nav-icon">↔</span>
+            <span>Transactions</span>
+        </a>
+
+        <p class="nav-label">ACCOUNT</p>
+
+        <a href="profile.html" class="nav-item">
+            <span class="nav-icon">♙</span>
+            <span>My Profile</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙</span>
+            <span>Settings</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="nav-icon">?</span>
+            <span>Help Center</span>
+        </a>
+
+    </nav>
+
+
+    <!-- SIDEBAR BOTTOM -->
+
+    <div class="sidebar-bottom">
+
+        <div class="sidebar-security">
+            <span class="security-icon">✓</span>
+
+            <div>
+                <strong>Secure Account</strong>
+                <small>Your account is protected</small>
+            </div>
+        </div>
+
+        <button
+            type="button"
+            class="logout-button"
+            id="logoutButton"
+        >
+            <span>↪</span>
+            Sign Out
+        </button>
+
+    </div>
+
+</aside>
+
+
+<!-- =========================
+     MAIN
+     ========================= -->
+
+<main class="dashboard-main">
+
+    <!-- TOP BAR -->
+
+    <header class="dashboard-topbar">
+
+        <button
+            type="button"
+            class="mobile-menu-button"
+            id="mobileMenuButton"
+            aria-label="Open menu"
+        >
+            ☰
+        </button>
+
+        <div class="topbar-title">
+
+            <span>USER DASHBOARD</span>
+
+            <h1 id="dashboardGreeting">
+                Welcome back
+            </h1>
+
+        </div>
+
+
+        <div class="topbar-actions">
+
+            <button
+                type="button"
+                class="notification-button"
+                aria-label="Notifications"
+            >
+                <span>♢</span>
+                <i></i>
+            </button>
+
+            <div class="topbar-divider"></div>
+
+            <button
+                type="button"
+                class="topbar-profile"
+                id="topbarProfile"
+            >
+
+                <span class="topbar-avatar" id="topbarAvatar">
+                    A
+                </span>
+
+                <span class="topbar-user">
+                    <strong id="topbarUserName">Account</strong>
+                    <small>Member</small>
+                </span>
+
+                <span class="topbar-chevron">⌄</span>
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+
+    <div class="dashboard-content">
+
+        <!-- WELCOME -->
+
+        <section class="welcome-banner">
+
+            <div class="welcome-copy">
+
+                <span class="eyebrow">
+                    YOUR PERSONAL HUB
+                </span>
+
+                <h2>
+                    Build skills.
+                    <br>
+                    <span>Grow your journey.</span>
+                </h2>
+
+                <p>
+                    Manage your account, explore your activity
+                    and keep your SkillEarn Hub journey organized.
+                </p>
+
+            </div>
+
+            <div class="welcome-decoration">
+
+                <div class="orbit orbit-one"></div>
+                <div class="orbit orbit-two"></div>
+
+                <div class="welcome-symbol">
+                    S
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- STAT CARDS -->
+
+        <section class="dashboard-stats">
+
+            <article class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-icon purple">
+                        ◈
+                    </span>
+
+                    <span class="stat-badge neutral">
+                        ACCOUNT
+                    </span>
+
+                </div>
+
+                <span class="stat-label">
+                    Account Status
+                </span>
+
+                <strong class="stat-value">
+                    Active
+                </strong>
+
+                <p class="stat-note">
+                    Your account is currently active.
+                </p>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-icon green">
+                        ✓
+                    </span>
+
+                    <span class="stat-badge positive">
+                        VERIFIED
+                    </span>
+
+                </div>
+
+                <span class="stat-label">
+                    Profile Status
+                </span>
+
+                <strong class="stat-value">
+                    Getting Started
+                </strong>
+
+                <p class="stat-note">
+                    Complete your profile to continue.
+                </p>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-icon blue">
+                        ↗
+                    </span>
+
+                    <span class="stat-badge neutral">
+                        ACTIVITY
+                    </span>
+
+                </div>
+
+                <span class="stat-label">
+                    Recent Activity
+                </span>
+
+                <strong class="stat-value">
+                    0
+                </strong>
+
+                <p class="stat-note">
+                    No recent activity yet.
+                </p>
+
+            </article>
+
+
+            <article class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-icon orange">
+                        ★
+                    </span>
+
+                    <span class="stat-badge neutral">
+                        MEMBER
+                    </span>
+
+                </div>
+
+                <span class="stat-label">
+                    Membership
+                </span>
+
+                <strong class="stat-value">
+                    Standard
+                </strong>
+
+                <p class="stat-note">
+                    Welcome to SkillEarn Hub.
+                </p>
+
+            </article>
+
+        </section>
+
+
+        <!-- TWO COLUMN AREA -->
+
+        <section class="dashboard-grid">
+
+
+            <!-- PROFILE COMPLETION -->
+
+            <article class="dashboard-panel profile-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <span class="panel-eyebrow">
+                            ACCOUNT
+                        </span>
+
+                        <h3>
+                            Profile completion
+                        </h3>
+                    </div>
+
+                    <span class="completion-number">
+                        40%
+                    </span>
+
+                </div>
+
+
+                <div class="progress-track">
+                    <div
+                        class="progress-bar"
+                        style="width: 40%"
+                    ></div>
+                </div>
+
+
+                <p class="panel-description">
+                    Complete your basic profile information
+                    to improve your account setup.
+                </p>
+
+
+                <div class="profile-checklist">
+
+                    <div class="check-item completed">
+                        <span>✓</span>
+                        <p>
+                            <strong>Account created</strong>
+                            <small>Your SkillEarn account is ready.</small>
+                        </p>
+                    </div>
+
+                    <div class="check-item">
+                        <span>2</span>
+                        <p>
+                            <strong>Complete your profile</strong>
+                            <small>Add your basic account information.</small>
+                        </p>
+                    </div>
+
+                    <div class="check-item">
+                        <span>3</span>
+                        <p>
+                            <strong>Explore SkillEarn Hub</strong>
+                            <small>Discover available features.</small>
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <a href="profile.html" class="panel-action">
+                    Complete Profile
+                    <span>→</span>
+                </a>
+
+            </article>
+
+
+            <!-- QUICK ACTIONS -->
+
+            <article class="dashboard-panel quick-panel">
+
+                <div class="panel-heading">
+
+                    <div>
+                        <span class="panel-eyebrow">
+                            QUICK ACCESS
+                        </span>
+
+                        <h3>
+                            Quick actions
+                        </h3>
+                    </div>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+                    <a href="profile.html" class="quick-action">
+
+                        <span class="quick-action-icon purple">
+                            ♙
+                        </span>
+
+                        <span>
+                            <strong>My Profile</strong>
+                            <small>Manage your account</small>
+                        </span>
+
+                        <b>›</b>
+
+                    </a>
+
+
+                    <a href="wallet.html" class="quick-action">
+
+                        <span class="quick-action-icon green">
+                            ◈
+                        </span>
+
+                        <span>
+                            <strong>Wallet</strong>
+                            <small>Wallet features</small>
+                        </span>
+
+                        <b>›</b>
+
+                    </a>
+
+
+                    <a href="transactions.html" class="quick-action">
+
+                        <span class="quick-action-icon blue">
+                            ↔
+                        </span>
+
+                        <span>
+                            <strong>Transactions</strong>
+                            <small>View account activity</small>
+                        </span>
+
+                        <b>›</b>
+
+                    </a>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <!-- ACTIVITY -->
+
+        <section class="dashboard-panel activity-panel">
+
+            <div class="panel-heading">
+
+                <div>
+                    <span class="panel-eyebrow">
+                        ACCOUNT ACTIVITY
+                    </span>
+
+                    <h3>
+                        Recent activity
+                    </h3>
+                </div>
+
+                <a href="transactions.html" class="view-all">
+                    View all →
+                </a>
+
+            </div>
+
+
+            <div class="empty-activity">
+
+                <div class="empty-icon">
+                    ◌
+                </div>
+
+                <h4>
+                    No activity yet
+                </h4>
+
+                <p>
+                    Your account activity will appear here
+                    once you start using the platform.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- SECURITY -->
+
+        <section class="security-banner">
+
+            <div class="security-banner-icon">
+                ✓
+            </div>
+
+            <div>
+                <strong>
+                    Keep your account secure
+                </strong>
+
+                <p>
+                    Never share your password, OTP or
+                    authentication information with anyone.
+                </p>
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <footer class="dashboard-footer">
+
+        <span>
+            © 2026 SkillEarn Hub
+        </span>
+
+        <div>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Support</a>
+        </div>
+
+    </footer>
+
+</main>
+
+
+<script src="../js/dashboard.js"></script>
+
+</body>
+</html>

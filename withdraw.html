@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Withdraw | SkillEarn Hub</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+    <script src="js/firebase-config.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            color: #172033;
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+        }
+
+        .withdraw-page {
+            min-height: 100vh;
+            padding: 25px 15px 50px;
+        }
+
+        .withdraw-container {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .withdraw-header {
+            background: white;
+            border-radius: 22px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e6eaf0;
+            box-shadow: 0 8px 30px rgba(30, 50, 90, .06);
+        }
+
+        .back-btn {
+            display: inline-block;
+            text-decoration: none;
+            color: #2463eb;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .withdraw-header h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .withdraw-header p {
+            margin: 0;
+            color: #7c8798;
+        }
+
+        .wallet-card {
+            margin-top: 20px;
+            background: linear-gradient(
+                135deg,
+                #2463eb,
+                #164bc0
+            );
+            color: white;
+            border-radius: 18px;
+            padding: 22px;
+        }
+
+        .wallet-label {
+            opacity: .85;
+            font-size: 14px;
+        }
+
+        .wallet-balance {
+            font-size: 34px;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #e6eaf0;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 30px rgba(30, 50, 90, .05);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 21px;
+        }
+
+        .method-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .method-option {
+            border: 2px solid #e2e7ef;
+            border-radius: 15px;
+            padding: 18px;
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .method-option:hover {
+            border-color: #2463eb;
+        }
+
+        .method-option.selected {
+            border-color: #2463eb;
+            background: #edf4ff;
+        }
+
+        .method-option input {
+            margin-right: 8px;
+        }
+
+        .method-title {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .method-description {
+            display: block;
+            color: #7d8798;
+            font-size: 13px;
+            margin-top: 7px;
+        }
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d9dfe8;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #2463eb;
+            box-shadow:
+                0 0 0 3px rgba(36, 99, 235, .10);
+        }
+
+        .help-text {
+            color: #7d8798;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .verify-box {
+            display: none;
+            padding: 15px;
+            border-radius: 12px;
+            background: #fff8df;
+            color: #775d00;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .verify-box.success {
+            background: #eafaf0;
+            color: #168044;
+        }
+
+        .verify-btn {
+            width: 100%;
+            border: 1px solid #2463eb;
+            background: white;
+            color: #2463eb;
+            padding: 13px;
+            border-radius: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-bottom: 18px;
+        }
+
+        .withdraw-btn {
+            width: 100%;
+            border: 0;
+            background: #2463eb;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .withdraw-btn:hover {
+            background: #1854d4;
+        }
+
+        .withdraw-btn:disabled,
+        .verify-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            padding: 13px;
+            border-radius: 11px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .message.success {
+            display: block;
+            background: #eafaf0;
+            color: #168044;
+        }
+
+        .withdrawal-item {
+            border: 1px solid #e5e9f0;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .withdrawal-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .withdrawal-amount {
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .withdrawal-status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 50px;
+            background: #fff8df;
+            color: #8b6a00;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .withdrawal-status.approved,
+        .withdrawal-status.completed {
+            background: #eafaf0;
+            color: #168044;
+        }
+
+        .withdrawal-status.rejected {
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .withdrawal-meta {
+            margin-top: 9px;
+            color: #7d8798;
+            font-size: 13px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8791a1;
+            padding: 25px;
+        }
+
+        @media (max-width: 600px) {
+
+            .withdraw-page {
+                padding: 12px 10px 35px;
+            }
+
+            .withdraw-header,
+            .card {
+                padding: 18px;
+                border-radius: 16px;
+            }
+
+            .withdraw-header h1 {
+                font-size: 26px;
+            }
+
+            .method-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wallet-balance {
+                font-size: 30px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="withdraw-page">
+
+    <div class="withdraw-container">
+
+        <!-- HEADER -->
+
+        <div class="withdraw-header">
+
+            <a
+                href="dashboard.html"
+                class="back-btn"
+            >
+                ← Back to Dashboard
+            </a>
+
+            <h1>Withdraw Money</h1>
+
+            <p>
+                Withdraw your available wallet balance
+                using UPI or Bank Account.
+            </p>
+
+            <div class="wallet-card">
+
+                <div class="wallet-label">
+                    Available Wallet Balance
+                </div>
+
+                <div
+                    class="wallet-balance"
+                    id="walletBalance"
+                >
+                    ₹0
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- WITHDRAW FORM -->
+
+        <div class="card">
+
+            <h2>Withdrawal Details</h2>
+
+            <div
+                id="withdrawMessage"
+                class="message"
+            ></div>
+
+
+            <!-- METHOD -->
+
+            <div class="method-grid">
+
+                <label
+                    class="method-option selected"
+                    id="upiOption"
+                >
+
+                    <input
+                        type="radio"
+                        name="withdrawMethod"
+                        value="upi"
+                        checked
+                    >
+
+                    <span class="method-title">
+                        📱 UPI
+                    </span>
+
+                    <span class="method-description">
+                        Withdraw to your UPI ID
+                    </span>
+
+                </label>
+
+
+                <label
+                    class="method-option"
+                    id="bankOption"
+                >
+
+                    <input
+                        type="radio"
+                        name="withdrawMethod"
+                        value="bank"
+                    >
+
+                    <span class="method-title">
+                        🏦 Bank Account
+                    </span>
+
+                    <span class="method-description">
+                        Withdraw directly to bank
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <!-- UPI FORM -->
+
+            <div id="upiForm">
+
+                <div class="form-group">
+
+                    <label for="upiId">
+                        UPI ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="upiId"
+                        placeholder="example@upi"
+                        autocomplete="off"
+                    >
+
+                    <div class="help-text">
+                        Enter the UPI ID where you want
+                        to receive the withdrawal.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BANK FORM -->
+
+            <div
+                id="bankForm"
+                style="display:none;"
+            >
+
+                <div class="form-group">
+
+                    <label for="accountName">
+                        Account Holder Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="accountName"
+                        placeholder="Name as per bank account"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="accountNumber">
+                        Bank Account Number
+                    </label>
+
+                    <input
+                        type="password"
+                        id="accountNumber"
+                        placeholder="Enter account number"
+                        inputmode="numeric"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="confirmAccountNumber">
+                        Confirm Account Number
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirmAccountNumber"
+                        placeholder="Re-enter account number"
+                        inputmode="numeric"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="ifsc">
+                        IFSC Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="ifsc"
+                        placeholder="ABCD0123456"
+                        maxlength="11"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- VERIFICATION -->
+
+            <div
+                id="verificationBox"
+                class="verify-box"
+            >
+                Verification will be performed by
+                your authorized payment provider.
+            </div>
+
+            <button
+                type="button"
+                id="verifyBtn"
+                class="verify-btn"
+            >
+                Verify Withdrawal Details
+            </button>
+
+
+            <!-- AMOUNT -->
+
+            <div class="form-group">
+
+                <label for="withdrawAmount">
+                    Withdrawal Amount
+                </label>
+
+                <input
+                    type="number"
+                    id="withdrawAmount"
+                    placeholder="Enter amount"
+                    min="1"
+                    step="1"
+                    inputmode="decimal"
+                >
+
+                <div class="help-text">
+                    Enter an amount within your available
+                    wallet balance.
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="withdrawBtn"
+                class="withdraw-btn"
+                disabled
+            >
+                Submit Withdrawal Request
+            </button>
+
+        </div>
+
+
+        <!-- HISTORY -->
+
+        <div class="card">
+
+            <h2>Withdrawal History</h2>
+
+            <div id="withdrawalHistory">
+
+                <div class="empty">
+                    Loading withdrawal history...
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script src="js/withdraw.js"></script>
+
+</body>
+</html>

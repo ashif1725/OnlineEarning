@@ -1,238 +1,142 @@
-/* =========================================================
-   SKILLEARN HUB
-   LOGIN
-   Firebase JS SDK - COMPAT
-   ========================================================= */
-
 "use strict";
 
 const loginForm = document.getElementById("loginForm");
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
-
 const loginButton = document.getElementById("loginButton");
 const loginButtonText = document.getElementById("loginButtonText");
+const loginLoader = document.getElementById("loginLoader");
 const loginMessage = document.getElementById("loginMessage");
 
-
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showLoginMessage(message, type = "error") {
-
+function showMessage(message, type = "error") {
     if (!loginMessage) return;
 
     loginMessage.textContent = message;
-
-    loginMessage.className =
-        `auth-message show ${type}`;
+    loginMessage.className = `auth-message show ${type}`;
 }
 
-
-function clearLoginMessage() {
-
-    if (!loginMessage) return;
-
-    loginMessage.textContent = "";
-
-    loginMessage.className =
-        "auth-message";
-}
-
-
-/* =========================================================
-   LOADING
-========================================================= */
-
-function setLoginLoading(loading) {
-
-    if (!loginButton) return;
-
-    loginButton.disabled = loading;
+function setLoading(loading) {
+    if (loginButton) {
+        loginButton.disabled = loading;
+    }
 
     if (loginButtonText) {
-
-        loginButtonText.textContent =
-            loading
-                ? "Signing In..."
-                : "Login";
-
+        loginButtonText.textContent = loading
+            ? "Signing in..."
+            : "Login";
     }
 
-}
-
-
-/* =========================================================
-   FIREBASE ERROR
-========================================================= */
-
-function getLoginErrorMessage(error) {
-
-    console.error(
-        "SkillEarn Hub login error:",
-        error
-    );
-
-
-    switch (error.code) {
-
-        case "auth/invalid-email":
-            return "Please enter a valid email address.";
-
-        case "auth/user-not-found":
-            return "No account was found with this email.";
-
-        case "auth/wrong-password":
-            return "Incorrect email or password.";
-
-        case "auth/invalid-credential":
-            return "Incorrect email or password.";
-
-        case "auth/user-disabled":
-            return "This account has been disabled.";
-
-        case "auth/too-many-requests":
-            return "Too many login attempts. Please try again later.";
-
-        case "auth/network-request-failed":
-            return "Network error. Please check your internet connection.";
-
-        case "auth/operation-not-allowed":
-            return "Email/Password authentication is not enabled.";
-
-        default:
-            return (
-                error.message ||
-                "Login failed. Please try again."
-            );
+    if (loginLoader) {
+        loginLoader.style.display = loading
+            ? "inline-block"
+            : "none";
     }
 }
 
-
-/* =========================================================
-   LOGIN
-========================================================= */
 
 if (loginForm) {
 
-    loginForm.addEventListener(
-        "submit",
-        async function (event) {
+    loginForm.addEventListener("submit", async function (event) {
 
-            event.preventDefault();
+        event.preventDefault();
+        event.stopPropagation();
 
-            clearLoginMessage();
+        const emailInput =
+            document.getElementById("email");
 
+        const passwordInput =
+            document.getElementById("password");
 
-            const email =
-                emailInput.value.trim().toLowerCase();
+        const email =
+            emailInput.value.trim();
 
-            const password =
-                passwordInput.value;
+        const password =
+            passwordInput.value;
 
+        if (!email) {
+            showMessage("Please enter your email address.");
+            emailInput.focus();
+            return;
+        }
 
-            if (!email) {
+        if (!password) {
+            showMessage("Please enter your password.");
+            passwordInput.focus();
+            return;
+        }
 
-                showLoginMessage(
-                    "Please enter your email address."
+        setLoading(true);
+        showMessage("");
+
+        try {
+
+            await firebase
+                .auth()
+                .signInWithEmailAndPassword(
+                    email,
+                    password
                 );
 
-                return;
+            /*
+             * IMPORTANT:
+             * GitHub Pages project URL
+             */
+            window.location.replace(
+                "../dashboard.html"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+            let message =
+                "Unable to login. Please try again.";
+
+            switch (error.code) {
+
+                case "auth/invalid-email":
+                    message =
+                        "Please enter a valid email address.";
+                    break;
+
+                case "auth/user-not-found":
+                    message =
+                        "No account was found with this email.";
+                    break;
+
+                case "auth/wrong-password":
+                case "auth/invalid-credential":
+                    message =
+                        "Incorrect email or password.";
+                    break;
+
+                case "auth/too-many-requests":
+                    message =
+                        "Too many login attempts. Please try again later.";
+                    break;
+
+                case "auth/network-request-failed":
+                    message =
+                        "Network error. Please check your internet connection.";
+                    break;
+
             }
 
+            showMessage(message);
 
-            if (!password) {
-
-                showLoginMessage(
-                    "Please enter your password."
-                );
-
-                return;
-            }
-
-
-            setLoginLoading(true);
-
-
-            try {
-
-                /* =========================================
-                   FIREBASE LOGIN
-                ========================================= */
-
-                const userCredential =
-                    await firebase
-                        .auth()
-                        .signInWithEmailAndPassword(
-                            email,
-                            password
-                        );
-
-
-                const user =
-                    userCredential.user;
-
-
-                if (!user) {
-
-                    throw new Error(
-                        "Unable to authenticate user."
-                    );
-
-                }
-
-
-                /* =========================================
-                   SUCCESS
-                ========================================= */
-
-                showLoginMessage(
-                    "Login successful. Redirecting...",
-                    "success"
-                );
-
-
-                /*
-                   Temporary dashboard redirect.
-
-                   जब dashboard.html तैयार हो जाए,
-                   इसे dashboard.html कर देना।
-                */
-
-                setTimeout(
-                    function () {
-
-                        window.location.href =
-                            "../dashboard.html";
-
-                    },
-                    800
-                );
-
-
-            } catch (error) {
-
-                showLoginMessage(
-                    getLoginErrorMessage(error),
-                    "error"
-                );
-
-            } finally {
-
-                setLoginLoading(false);
-
-            }
+            setLoading(false);
 
         }
-    );
+
+    });
 
 }
 
 
-/* =========================================================
-   PASSWORD SHOW / HIDE
-========================================================= */
+/* =================================================
+   SHOW / HIDE PASSWORD
+================================================= */
 
 document
     .querySelectorAll(".password-toggle")
@@ -246,11 +150,11 @@ document
                     button.dataset.target;
 
                 const input =
-                    document.getElementById(targetId);
-
+                    document.getElementById(
+                        targetId
+                    );
 
                 if (!input) return;
-
 
                 if (input.type === "password") {
 
@@ -259,6 +163,11 @@ document
                     button.textContent =
                         "Hide";
 
+                    button.setAttribute(
+                        "aria-label",
+                        "Hide password"
+                    );
+
                 } else {
 
                     input.type = "password";
@@ -266,14 +175,14 @@ document
                     button.textContent =
                         "Show";
 
+                    button.setAttribute(
+                        "aria-label",
+                        "Show password"
+                    );
+
                 }
 
             }
         );
 
     });
-
-
-console.log(
-    "SkillEarn Hub Login JS loaded."
-);

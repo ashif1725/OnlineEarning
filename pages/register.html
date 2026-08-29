@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <!-- =========================================
+         BASIC META
+         ========================================= -->
+
     <meta charset="UTF-8">
 
     <meta
@@ -13,36 +18,101 @@
         content="Create your SkillEarn Hub account."
     >
 
+    <meta
+        name="theme-color"
+        content="#315efb"
+    >
+
     <title>Create Account | SkillEarn Hub</title>
 
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/register.css">
+
+    <!-- =========================================
+         MAIN WEBSITE CSS
+         ========================================= -->
+
+    <link
+        rel="stylesheet"
+        href="./css/style.css"
+    >
+
+    <!-- =========================================
+         REGISTER PAGE CSS
+         ========================================= -->
+
+    <link
+        rel="stylesheet"
+        href="./css/register.css"
+    >
+
 </head>
+
 
 <body>
 
+    <!-- =========================================
+         AUTH PAGE
+         ========================================= -->
+
     <main class="auth-page">
 
-        <section class="auth-card">
+        <section
+            class="auth-card"
+            aria-labelledby="registerTitle"
+        >
+
+            <!-- =====================================
+                 BRAND
+                 ===================================== -->
 
             <div class="brand">
-                <div class="brand-logo">S</div>
 
-                <div>
-                    <h1>SkillEarn Hub</h1>
-                    <p>Create your account</p>
+                <div
+                    class="brand-logo"
+                    aria-hidden="true"
+                >
+                    S
                 </div>
+
+                <div class="brand-info">
+
+                    <h1>
+                        SkillEarn Hub
+                    </h1>
+
+                    <p>
+                        Learn. Earn. Grow.
+                    </p>
+
+                </div>
+
             </div>
+
+
+            <!-- =====================================
+                 HEADING
+                 ===================================== -->
 
             <div class="auth-heading">
-                <span class="eyebrow">WELCOME</span>
 
-                <h2>Create Account</h2>
+                <span class="eyebrow">
+                    GET STARTED
+                </span>
+
+                <h2 id="registerTitle">
+                    Create Account
+                </h2>
 
                 <p>
-                    Register to access your SkillEarn Hub account.
+                    Create your account and start using
+                    SkillEarn Hub.
                 </p>
+
             </div>
+
+
+            <!-- =====================================
+                 MESSAGE
+                 ===================================== -->
 
             <div
                 id="registerMessage"
@@ -51,9 +121,22 @@
                 aria-live="polite"
             ></div>
 
-            <form id="registerForm" novalidate>
+
+            <!-- =====================================
+                 REGISTER FORM
+                 ===================================== -->
+
+            <form
+                id="registerForm"
+                novalidate
+            >
+
+                <!-- =================================
+                     FULL NAME
+                     ================================= -->
 
                 <div class="form-group">
+
                     <label for="fullName">
                         Full Name
                     </label>
@@ -67,9 +150,16 @@
                         maxlength="80"
                         required
                     >
+
                 </div>
 
+
+                <!-- =================================
+                     EMAIL
+                     ================================= -->
+
                 <div class="form-group">
+
                     <label for="email">
                         Email Address
                     </label>
@@ -83,19 +173,27 @@
                         maxlength="120"
                         required
                     >
+
                 </div>
 
+
+                <!-- =================================
+                     PASSWORD
+                     ================================= -->
+
                 <div class="form-group">
+
                     <label for="password">
                         Password
                     </label>
 
                     <div class="password-field">
+
                         <input
                             type="password"
                             id="password"
                             name="password"
-                            placeholder="Create a strong password"
+                            placeholder="Create a password"
                             autocomplete="new-password"
                             minlength="6"
                             maxlength="128"
@@ -110,20 +208,29 @@
                         >
                             Show
                         </button>
+
                     </div>
+
                 </div>
 
+
+                <!-- =================================
+                     CONFIRM PASSWORD
+                     ================================= -->
+
                 <div class="form-group">
+
                     <label for="confirmPassword">
                         Confirm Password
                     </label>
 
                     <div class="password-field">
+
                         <input
                             type="password"
                             id="confirmPassword"
                             name="confirmPassword"
-                            placeholder="Re-enter your password"
+                            placeholder="Confirm your password"
                             autocomplete="new-password"
                             minlength="6"
                             maxlength="128"
@@ -138,10 +245,18 @@
                         >
                             Show
                         </button>
+
                     </div>
+
                 </div>
 
+
+                <!-- =================================
+                     TERMS
+                     ================================= -->
+
                 <label class="terms-row">
+
                     <input
                         type="checkbox"
                         id="terms"
@@ -150,22 +265,40 @@
                     >
 
                     <span>
+
                         I agree to the
-                        <a href="#" aria-label="Terms and Conditions">
+
+                        <a
+                            href="#"
+                            onclick="return false;"
+                        >
                             Terms &amp; Conditions
                         </a>
+
                         and
-                        <a href="#" aria-label="Privacy Policy">
+
+                        <a
+                            href="#"
+                            onclick="return false;"
+                        >
                             Privacy Policy
                         </a>.
+
                     </span>
+
                 </label>
+
+
+                <!-- =================================
+                     REGISTER BUTTON
+                     ================================= -->
 
                 <button
                     type="submit"
                     id="registerButton"
                     class="primary-button"
                 >
+
                     <span id="registerButtonText">
                         Create Account
                     </span>
@@ -175,13 +308,28 @@
                         class="button-loader"
                         aria-hidden="true"
                     ></span>
+
                 </button>
 
             </form>
 
+
+            <!-- =====================================
+                 LOGIN DIVIDER
+                 ===================================== -->
+
             <div class="auth-divider">
-                <span>Already registered?</span>
+
+                <span>
+                    Already have an account?
+                </span>
+
             </div>
+
+
+            <!-- =====================================
+                 LOGIN BUTTON
+                 ===================================== -->
 
             <a
                 href="./login.html"
@@ -190,16 +338,57 @@
                 Login to Account
             </a>
 
+
+            <!-- =====================================
+                 SECURITY NOTE
+                 ===================================== -->
+
             <p class="security-note">
-                Your account credentials are securely handled through
-                Firebase Authentication.
+
+                Your authentication is securely handled
+                through Firebase Authentication.
+
             </p>
 
         </section>
 
     </main>
 
-    <script type="module" src="./js/register.js"></script>
+
+    <!-- =========================================
+         FIREBASE COMPAT SDK
+         IMPORTANT:
+         These MUST load before firebase-config.js
+         ========================================= -->
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"
+    ></script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"
+    ></script>
+
+    <script
+        src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"
+    ></script>
+
+
+    <!-- =========================================
+         FIREBASE CONFIG
+         ========================================= -->
+
+    <script src="./js/firebase-config.js"></script>
+
+
+    <!-- =========================================
+         REGISTER LOGIC
+         IMPORTANT:
+         NOT type="module"
+         ========================================= -->
+
+    <script src="./js/register.js"></script>
+
 
 </body>
 </html>

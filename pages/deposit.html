@@ -1,0 +1,628 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<meta
+    name="description"
+    content="Submit a deposit request to SkillEarn Hub."
+>
+
+<title>Deposit — SkillEarn Hub</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+    rel="stylesheet"
+>
+
+<link
+    rel="stylesheet"
+    href="../css/style.css"
+>
+
+<link
+    rel="stylesheet"
+    href="../css/deposit.css"
+>
+
+</head><body class="deposit-page"><div class="dashboard-layout"><!-- =====================================================
+     SIDEBAR
+     ===================================================== -->
+
+<aside
+    class="dashboard-sidebar"
+    id="dashboardSidebar"
+>
+
+    <div class="sidebar-top">
+
+        <a
+            href="../index.html"
+            class="dashboard-brand"
+        >
+
+            <span class="brand-mark">
+                S
+            </span>
+
+            <span class="brand-text">
+                SkillEarn
+                <small>HUB</small>
+            </span>
+
+        </a>
+
+        <button
+            type="button"
+            class="mobile-close"
+            id="closeSidebar"
+            aria-label="Close menu"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <nav class="dashboard-nav">
+
+        <span class="nav-section-title">
+            OVERVIEW
+        </span>
+
+        <a
+            href="dashboard.html"
+            class="nav-link"
+        >
+            <span class="nav-icon">▦</span>
+            Dashboard
+        </a>
+
+
+        <span class="nav-section-title">
+            WALLET
+        </span>
+
+        <a
+            href="deposit.html"
+            class="nav-link active"
+        >
+            <span class="nav-icon">+</span>
+            Deposit
+        </a>
+
+        <a
+            href="withdraw.html"
+            class="nav-link"
+        >
+            <span class="nav-icon">↗</span>
+            Withdraw
+        </a>
+
+        <a
+            href="transactions.html"
+            class="nav-link"
+        >
+            <span class="nav-icon">≡</span>
+            Transactions
+        </a>
+
+
+        <span class="nav-section-title">
+            ACCOUNT
+        </span>
+
+        <a
+            href="profile.html"
+            class="nav-link"
+        >
+            <span class="nav-icon">○</span>
+            Profile
+        </a>
+
+    </nav>
+
+
+    <div class="sidebar-bottom">
+
+        <div class="security-card">
+
+            <span class="security-icon">
+                ✓
+            </span>
+
+            <div>
+                <strong>Account secured</strong>
+                <small>Your session is protected.</small>
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="logout-button"
+            id="logoutButton"
+        >
+            <span>↪</span>
+            Sign out
+        </button>
+
+    </div>
+
+</aside>
+
+
+
+<!-- =====================================================
+     MAIN
+     ===================================================== -->
+
+<main class="dashboard-main">
+
+
+    <header class="dashboard-header">
+
+        <button
+            type="button"
+            class="menu-button"
+            id="openSidebar"
+            aria-label="Open menu"
+        >
+            ☰
+        </button>
+
+        <div class="header-spacer"></div>
+
+        <div class="header-user">
+
+            <div class="header-user-info">
+
+                <strong id="headerUserName">
+                    Member
+                </strong>
+
+                <span>
+                    Member account
+                </span>
+
+            </div>
+
+            <div
+                class="user-avatar"
+                id="userAvatar"
+            >
+                M
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <div class="deposit-content">
+
+
+        <!-- PAGE HEADER -->
+
+        <section class="page-heading">
+
+            <span class="dashboard-eyebrow">
+                WALLET
+            </span>
+
+            <h1>
+                Deposit funds
+            </h1>
+
+            <p>
+                Submit your payment reference for admin verification.
+            </p>
+
+        </section>
+
+
+
+        <!-- SECURITY NOTICE -->
+
+        <div class="deposit-notice">
+
+            <span class="notice-icon">
+                i
+            </span>
+
+            <div>
+
+                <strong>
+                    Important
+                </strong>
+
+                <p>
+                    Only make a payment using the payment details
+                    currently shown on this page. Your wallet is
+                    credited only after the request is verified.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="deposit-layout">
+
+
+            <!-- =================================================
+                 PAYMENT DETAILS
+                 ================================================= -->
+
+            <section class="deposit-panel payment-panel">
+
+
+                <div class="panel-title">
+
+                    <div>
+
+                        <span class="panel-eyebrow">
+                            STEP 01
+                        </span>
+
+                        <h2>
+                            Payment details
+                        </h2>
+
+                    </div>
+
+                    <span class="live-badge">
+                        ADMIN CONFIGURED
+                    </span>
+
+                </div>
+
+
+                <div class="payment-method">
+
+
+                    <div class="payment-method-header">
+
+                        <span class="upi-icon">
+                            U
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                UPI Payment
+                            </strong>
+
+                            <small>
+                                Use the UPI ID or QR shown below.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="upi-box">
+
+                        <span>
+                            UPI ID
+                        </span>
+
+                        <strong
+                            id="upiId"
+                        >
+                            Loading...
+                        </strong>
+
+                        <button
+                            type="button"
+                            id="copyUpiButton"
+                            class="copy-button"
+                        >
+                            Copy
+                        </button>
+
+                    </div>
+
+
+                    <div class="qr-wrapper">
+
+                        <div
+                            class="qr-loading"
+                            id="qrLoading"
+                        >
+                            Loading QR...
+                        </div>
+
+                        <img
+                            id="paymentQr"
+                            class="payment-qr"
+                            src=""
+                            alt="Payment QR code"
+                            hidden
+                        >
+
+                        <div
+                            id="qrUnavailable"
+                            class="qr-unavailable"
+                            hidden
+                        >
+                            QR unavailable
+                        </div>
+
+                    </div>
+
+
+                    <p class="payment-help">
+                        Scan the QR code with your supported payment
+                        application, complete the payment, then enter
+                        the transaction reference below.
+                    </p>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================================
+                 REQUEST FORM
+                 ================================================= -->
+
+            <section class="deposit-panel form-panel">
+
+
+                <div class="panel-title">
+
+                    <div>
+
+                        <span class="panel-eyebrow">
+                            STEP 02
+                        </span>
+
+                        <h2>
+                            Submit deposit
+                        </h2>
+
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="depositForm"
+                    novalidate
+                >
+
+
+                    <div class="form-group">
+
+                        <label for="amount">
+                            Deposit amount
+                        </label>
+
+                        <div class="input-money">
+
+                            <span>
+                                ₹
+                            </span>
+
+                            <input
+                                id="amount"
+                                name="amount"
+                                type="number"
+                                inputmode="decimal"
+                                min="1"
+                                step="0.01"
+                                placeholder="Enter amount"
+                                autocomplete="off"
+                                required
+                            >
+
+                        </div>
+
+                        <small
+                            class="field-help"
+                            id="amountHelp"
+                        >
+                            Loading deposit limits...
+                        </small>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="utr">
+                            UTR / Transaction reference
+                        </label>
+
+                        <input
+                            id="utr"
+                            name="utr"
+                            type="text"
+                            maxlength="64"
+                            placeholder="Enter transaction reference"
+                            autocomplete="off"
+                            required
+                        >
+
+                        <small class="field-help">
+                            Enter the reference exactly as shown
+                            by your payment provider.
+                        </small>
+
+                    </div>
+
+
+
+                    <div class="form-group">
+
+                        <label for="note">
+                            Note
+                            <span>
+                                Optional
+                            </span>
+                        </label>
+
+                        <textarea
+                            id="note"
+                            name="note"
+                            maxlength="250"
+                            rows="3"
+                            placeholder="Optional note for admin"
+                        ></textarea>
+
+                    </div>
+
+
+
+                    <div
+                        class="form-error"
+                        id="formError"
+                        hidden
+                    ></div>
+
+
+                    <div
+                        class="form-success"
+                        id="formSuccess"
+                        hidden
+                    >
+
+                        <span class="success-icon">
+                            ✓
+                        </span>
+
+                        <div>
+
+                            <strong>
+                                Request submitted
+                            </strong>
+
+                            <p>
+                                Your deposit request is pending
+                                admin verification.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <button
+                        type="submit"
+                        class="submit-button"
+                        id="submitDeposit"
+                    >
+                        Submit deposit request
+                    </button>
+
+
+                </form>
+
+
+                <div class="process-note">
+
+                    <span>
+                        ✓
+                    </span>
+
+                    <p>
+                        Deposits are manually reviewed. Do not
+                        submit the same transaction reference more
+                        than once.
+                    </p>
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+
+        <!-- =====================================================
+             RECENT REQUESTS
+             ===================================================== -->
+
+        <section class="deposit-panel requests-panel">
+
+
+            <div class="panel-title">
+
+                <div>
+
+                    <span class="panel-eyebrow">
+                        ACTIVITY
+                    </span>
+
+                    <h2>
+                        Recent deposit requests
+                    </h2>
+
+                </div>
+
+                <a
+                    href="transactions.html"
+                    class="view-all"
+                >
+                    View all →
+                </a>
+
+            </div>
+
+
+            <div
+                id="depositRequests"
+                class="deposit-requests"
+            >
+
+                <div class="requests-empty">
+
+                    <span>
+                        ≡
+                    </span>
+
+                    <strong>
+                        No deposit requests
+                    </strong>
+
+                    <p>
+                        Your submitted requests will appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </section>
+
+
+    </div>
+
+</main>
+
+</div><div
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+></div><script
+    type="module"
+    src="../js/deposit.js"
+></script></body>
+</html>

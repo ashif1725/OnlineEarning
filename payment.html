@@ -1,385 +1,554 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Secure Payment | SkillEarn Hub</title>
+    <title>Add Money | SkillEarn Hub</title>
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+    <link rel="stylesheet" href="css/style.css">
 
-    <!-- Firebase -->
+    <!-- Firebase Compat -->
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-
     <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
     <script src="js/firebase-config.js"></script>
 
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: auto;
+            padding: 24px 16px 50px;
+        }
+
+        /* HEADER */
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e7ebf2;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .topbar-inner {
+            max-width: 1100px;
+            margin: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .brand {
+            font-size: 23px;
+            font-weight: 800;
+            text-decoration: none;
+            color: #172033;
+        }
+
+        .brand span {
+            color: #2563eb;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        /* WALLET */
+
+        .wallet-card {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(37, 99, 235, .20);
+        }
+
+        .wallet-label {
+            opacity: .85;
+            font-size: 14px;
+        }
+
+        .wallet-balance {
+            font-size: 38px;
+            font-weight: 800;
+            margin: 8px 0;
+        }
+
+        .wallet-email {
+            opacity: .85;
+            font-size: 13px;
+        }
+
+        /* GRID */
+
+        .payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e6eaf0;
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 8px 25px rgba(20, 30, 60, .05);
+        }
+
+        .card h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .muted {
+            color: #7b8495;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* UPI */
+
+        .upi-box {
+            background: #f6f8ff;
+            border: 1px dashed #b9c8f5;
+            border-radius: 15px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .upi-label {
+            color: #778197;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .upi-id {
+            font-size: 19px;
+            font-weight: 800;
+            color: #2563eb;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            margin-top: 10px;
+            border: 0;
+            background: #2563eb;
+            color: #fff;
+            padding: 9px 14px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .qr-wrapper {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-wrapper img {
+            width: 220px;
+            max-width: 100%;
+            border-radius: 15px;
+            border: 8px solid #fff;
+            box-shadow: 0 8px 25px rgba(0,0,0,.10);
+        }
+
+        /* FORM */
+
+        .form-group {
+            margin-bottom: 17px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #dce1ea;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.10);
+        }
+
+        .amount-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 17px;
+        }
+
+        .amount-btn {
+            border: 1px solid #dce1ea;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .amount-btn:hover {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+
+        .submit-btn {
+            width: 100%;
+            border: 0;
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .submit-btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .message.success {
+            display: block;
+            background: #eafaf0;
+            color: #167443;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .message.info {
+            display: block;
+            background: #edf4ff;
+            color: #2457b9;
+        }
+
+        /* HISTORY */
+
+        .history {
+            margin-top: 25px;
+        }
+
+        .payment-item {
+            border: 1px solid #e8ebf1;
+            border-radius: 14px;
+            padding: 15px;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .payment-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .payment-info small {
+            color: #818b9b;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: capitalize;
+        }
+
+        .status.pending {
+            background: #fff7db;
+            color: #967000;
+        }
+
+        .status.success {
+            background: #eafaf0;
+            color: #167443;
+        }
+
+        .status.failed,
+        .status.rejected {
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .empty {
+            text-align: center;
+            color: #8791a1;
+            padding: 25px;
+        }
+
+        @media (max-width: 750px) {
+            .payment-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .wallet-balance {
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 450px) {
+            .amount-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card,
+            .wallet-card {
+                padding: 19px;
+            }
+        }
+    </style>
 </head>
 
+<body>
 
-<body class="payment-page">
+<header class="topbar">
+    <div class="topbar-inner">
 
+        <a href="index.html" class="brand">
+            SkillEarn <span>Hub</span>
+        </a>
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
+        <a href="dashboard.html" class="back-btn">
+            ← Dashboard
+        </a>
 
-<header class="header">
-
-    <a
-        href="index.html"
-        class="logo"
-    >
-        SkillEarn <span>Hub</span>
-    </a>
-
-
-    <a
-        href="courses.html"
-        class="back-home"
-    >
-        ← Courses
-    </a>
-
+    </div>
 </header>
 
 
+<main class="page">
 
-<!-- =====================================================
-     LOADING
-===================================================== -->
+    <!-- WALLET -->
 
-<section
-    id="loading"
-    class="payment-loading"
->
+    <section class="wallet-card">
 
-    <div class="loading-icon">
-        ⏳
-    </div>
+        <div class="wallet-label">
+            Available Wallet Balance
+        </div>
 
-    <h2>
-        Preparing Secure Checkout...
-    </h2>
+        <div class="wallet-balance" id="walletBalance">
+            ₹0
+        </div>
 
-    <p>
-        Please wait.
-    </p>
+        <div class="wallet-email" id="userEmail">
+            Loading account...
+        </div>
 
-</section>
+    </section>
 
-
-
-<!-- =====================================================
-     LOGIN REQUIRED
-===================================================== -->
-
-<section
-    id="loginRequired"
-    class="payment-message"
-    style="display:none;"
->
-
-    <div class="message-icon">
-        🔐
-    </div>
-
-    <h2>
-        Login Required
-    </h2>
-
-    <p>
-        You must login before making a course payment.
-    </p>
-
-    <a
-        href="login.html"
-        class="btn"
-    >
-        Login to Continue
-    </a>
-
-</section>
-
-
-
-<!-- =====================================================
-     PAYMENT CONTENT
-===================================================== -->
-
-<main
-    id="paymentContent"
-    class="payment-container"
-    style="display:none;"
->
-
-
-    <!-- =================================================
-         HEADER
-    ================================================== -->
-
-    <div class="payment-heading">
-
-        <span class="secure-badge">
-            🔒 SECURE CHECKOUT
-        </span>
-
-        <h1>
-            Complete Your
-            <span>Enrollment</span>
-        </h1>
-
-        <p>
-            Review your course details and continue
-            to the secure payment gateway.
-        </p>
-
-    </div>
-
-
-
-    <!-- =================================================
-         PAYMENT GRID
-    ================================================== -->
 
     <div class="payment-grid">
 
+        <!-- PAYMENT INSTRUCTIONS -->
 
-        <!-- =============================================
-             COURSE SUMMARY
-        ============================================== -->
+        <section class="card">
 
-        <section class="payment-card">
+            <h2>💳 Add Money</h2>
 
-            <div class="card-title">
+            <p class="muted">
+                Pay using UPI and submit your transaction details.
+                Your wallet will be credited only after payment
+                verification.
+            </p>
 
-                <div>
-                    📚
+            <div class="upi-box">
+
+                <div class="upi-label">
+                    UPI ID
                 </div>
 
-                <div>
-
-                    <h2>
-                        Course Summary
-                    </h2>
-
-                    <p>
-                        Review your purchase
-                    </p>
-
+                <!-- CHANGE THIS -->
+                <div class="upi-id" id="merchantUpi">
+                    YOUR-UPI-ID@bank
                 </div>
 
-            </div>
-
-
-            <div class="course-summary">
-
-                <div
-                    id="courseIcon"
-                    class="course-icon"
+                <button
+                    class="copy-btn"
+                    type="button"
+                    onclick="copyUPI()"
                 >
-                    🎓
-                </div>
-
-
-                <div>
-
-                    <h3 id="courseTitle">
-                        Course
-                    </h3>
-
-                    <p id="courseDescription">
-                        Loading course information...
-                    </p>
-
-                </div>
+                    Copy UPI ID
+                </button>
 
             </div>
 
 
-            <div class="summary-row">
+            <div class="qr-wrapper">
 
-                <span>
-                    Course Fee
-                </span>
+                <!-- CHANGE THIS QR PATH -->
+                <img
+                    src="assets/upi-qr.png"
+                    alt="UPI QR Code"
+                    onerror="this.style.display='none'"
+                >
 
-                <strong id="coursePrice">
-                    ₹0
-                </strong>
-
-            </div>
-
-
-            <div class="summary-row">
-
-                <span>
-                    Platform Fee
-                </span>
-
-                <strong>
-                    ₹0
-                </strong>
-
-            </div>
-
-
-            <div class="summary-total">
-
-                <span>
-                    Total Amount
-                </span>
-
-                <strong id="totalAmount">
-                    ₹0
-                </strong>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =============================================
-             PAYMENT CARD
-        ============================================== -->
-
-        <section class="payment-card">
-
-            <div class="card-title">
-
-                <div>
-                    💳
-                </div>
-
-                <div>
-
-                    <h2>
-                        Payment
-                    </h2>
-
-                    <p>
-                        Secure payment processing
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <div class="secure-box">
-
-                <div>
-                    🔐
-                </div>
-
-                <div>
-
-                    <strong>
-                        Secure Checkout
-                    </strong>
-
-                    <p>
-                        Your payment should be processed
-                        through an approved payment gateway.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <!-- PAYMENT BUTTON -->
-
-            <button
-                type="button"
-                id="payButton"
-                class="pay-button"
-            >
-
-                <span>
-                    🔒
-                </span>
-
-                Pay
-                <span id="payAmount">
-                    ₹0
-                </span>
-
-            </button>
-
-
-            <p
-                id="paymentMessage"
-                class="payment-message-small"
-            ></p>
-
-
-            <div class="payment-methods">
-
-                <span>
-                    Accepted through secure gateway
-                </span>
-
-            </div>
-
-
-            <div class="payment-note">
-
-                <strong>
-                    Important
-                </strong>
-
-                <p>
-                    Enrollment is activated only after
-                    the payment gateway confirms the
-                    transaction on the server.
+                <p class="muted">
+                    Scan the QR code using any supported UPI app.
                 </p>
 
             </div>
 
         </section>
 
+
+        <!-- PAYMENT FORM -->
+
+        <section class="card">
+
+            <h2>Submit Payment</h2>
+
+            <p class="muted">
+                Enter the exact amount and UTR/transaction ID
+                received from your UPI payment.
+            </p>
+
+            <form id="paymentForm">
+
+                <div class="form-group">
+
+                    <label for="amount">
+                        Payment Amount
+                    </label>
+
+                    <input
+                        type="number"
+                        id="amount"
+                        min="1"
+                        step="0.01"
+                        placeholder="Enter amount"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="amount-row">
+
+                    <button
+                        type="button"
+                        class="amount-btn"
+                        data-amount="100"
+                    >
+                        ₹100
+                    </button>
+
+                    <button
+                        type="button"
+                        class="amount-btn"
+                        data-amount="200"
+                    >
+                        ₹200
+                    </button>
+
+                    <button
+                        type="button"
+                        class="amount-btn"
+                        data-amount="500"
+                    >
+                        ₹500
+                    </button>
+
+                    <button
+                        type="button"
+                        class="amount-btn"
+                        data-amount="1000"
+                    >
+                        ₹1000
+                    </button>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="utr">
+                        UTR / Transaction ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="utr"
+                        maxlength="100"
+                        placeholder="Enter UTR / Transaction ID"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="submit-btn"
+                    id="submitPayment"
+                >
+                    Submit Payment
+                </button>
+
+            </form>
+
+
+            <div id="paymentMessage" class="message"></div>
+
+        </section>
+
     </div>
 
 
+    <!-- PAYMENT HISTORY -->
 
-    <!-- =================================================
-         TRUST
-    ================================================== -->
+    <section class="card history">
 
-    <section class="payment-trust">
+        <h2>Payment History</h2>
 
-        <div>
-            🔒
-            <strong>
-                Secure Checkout
-            </strong>
-        </div>
-
-        <div>
-            ✓
-            <strong>
-                Verified Payment
-            </strong>
-        </div>
-
-        <div>
-            📚
-            <strong>
-                Course Enrollment
-            </strong>
+        <div id="paymentHistory">
+            <div class="empty">
+                Loading payment history...
+            </div>
         </div>
 
     </section>
@@ -387,1048 +556,527 @@
 </main>
 
 
-
-<!-- =====================================================
-     FOOTER
-===================================================== -->
-
-<footer>
-
-    <div class="footer-logo">
-        SkillEarn <span>Hub</span>
-    </div>
-
-    <p>
-        Learn Skills. Build Income. Grow Online.
-    </p>
-
-    <p class="copyright">
-        © 2026 SkillEarn Hub. All Rights Reserved.
-    </p>
-
-</footer>
-
-
-
 <script>
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+    /*
+    ============================================================
+    CONFIG
+    ============================================================
+    */
+
+    const MERCHANT_UPI = "YOUR-UPI-ID@bank";
 
 
-        /* =================================================
-           FIREBASE
-        ================================================= */
+    /*
+    ============================================================
+    FIREBASE
+    ============================================================
+    */
 
-        if (
-            typeof firebase === "undefined"
-        ) {
+    const paymentAuth = firebase.auth();
+    const paymentDb = firebase.firestore();
 
-            showError(
-                "Firebase could not be loaded."
-            );
+
+    /*
+    ============================================================
+    DOM
+    ============================================================
+    */
+
+    const amountInput =
+        document.getElementById("amount");
+
+    const utrInput =
+        document.getElementById("utr");
+
+    const paymentForm =
+        document.getElementById("paymentForm");
+
+    const submitButton =
+        document.getElementById("submitPayment");
+
+    const messageBox =
+        document.getElementById("paymentMessage");
+
+
+    /*
+    ============================================================
+    INITIALIZE UPI
+    ============================================================
+    */
+
+    document.getElementById("merchantUpi")
+        .textContent = MERCHANT_UPI;
+
+
+    /*
+    ============================================================
+    AMOUNT BUTTONS
+    ============================================================
+    */
+
+    document.querySelectorAll(".amount-btn")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                amountInput.value =
+                    button.dataset.amount;
+
+            });
+
+        });
+
+
+    /*
+    ============================================================
+    AUTH
+    ============================================================
+    */
+
+    paymentAuth.onAuthStateChanged(async user => {
+
+        if (!user) {
+
+            window.location.href =
+                "login.html";
 
             return;
-
         }
 
+        document.getElementById("userEmail")
+            .textContent =
+            user.email || "Logged-in user";
 
-        if (
-            !firebase.apps.length
-        ) {
+        await loadWallet(user.uid);
 
-            firebase.initializeApp(
-                firebaseConfig
-            );
+        await loadPaymentHistory(user.uid);
 
-        }
+    });
 
 
-        const auth =
-            firebase.auth();
+    /*
+    ============================================================
+    LOAD WALLET
+    ============================================================
+    */
 
+    async function loadWallet(uid) {
 
-        const db =
-            firebase.firestore();
+        try {
 
+            const walletRef =
+                paymentDb
+                .collection("wallets")
+                .doc(uid);
 
+            const walletDoc =
+                await walletRef.get();
 
-        /* =================================================
-           ELEMENTS
-        ================================================= */
+            let balance = 0;
 
-        const loading =
-            document.getElementById(
-                "loading"
-            );
+            if (walletDoc.exists) {
 
+                const data =
+                    walletDoc.data();
 
-        const loginRequired =
-            document.getElementById(
-                "loginRequired"
-            );
-
-
-        const paymentContent =
-            document.getElementById(
-                "paymentContent"
-            );
-
-
-        const payButton =
-            document.getElementById(
-                "payButton"
-            );
-
-
-        const paymentMessage =
-            document.getElementById(
-                "paymentMessage"
-            );
-
-
-
-        /* =================================================
-           COURSE ID
-        ================================================= */
-
-        const params =
-            new URLSearchParams(
-                window.location.search
-            );
-
-
-        const courseId =
-            params.get("id") ||
-            params.get("courseId");
-
-
-
-        /* =================================================
-           COURSE DATA
-        ================================================= */
-
-        const defaultCourses = {
-
-            "digital-marketing": {
-
-                title:
-                    "Digital Marketing",
-
-                description:
-                    "Learn the fundamentals of digital marketing, content and online promotion.",
-
-                price:
-                    499,
-
-                icon:
-                    "📣"
-
-            },
-
-
-            "freelancing": {
-
-                title:
-                    "Freelancing Basics",
-
-                description:
-                    "Understand freelancing fundamentals, profiles, clients and professional work.",
-
-                price:
-                    399,
-
-                icon:
-                    "💼"
-
-            },
-
-
-            "social-media": {
-
-                title:
-                    "Social Media Skills",
-
-                description:
-                    "Learn the fundamentals of creating useful social media content.",
-
-                price:
-                    349,
-
-                icon:
-                    "📱"
-
-            },
-
-
-            "online-business": {
-
-                title:
-                    "Online Business Fundamentals",
-
-                description:
-                    "Learn the basics of creating and managing an online business.",
-
-                price:
-                    699,
-
-                icon:
-                    "🚀"
-
-            },
-
-
-            "content-creation": {
-
-                title:
-                    "Content Creation",
-
-                description:
-                    "Learn the fundamentals of creating digital content.",
-
-                price:
-                    399,
-
-                icon:
-                    "🎬"
-
-            },
-
-
-            "affiliate-basics": {
-
-                title:
-                    "Affiliate Marketing Basics",
-
-                description:
-                    "Understand affiliate marketing concepts and ethical promotion.",
-
-                price:
-                    549,
-
-                icon:
-                    "🔗"
+                balance =
+                    Number(data.balance || 0);
 
             }
 
-        };
+            document.getElementById("walletBalance")
+                .textContent =
+                "₹" +
+                balance.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2
+                });
+
+        } catch (error) {
+
+            console.error(
+                "Wallet error:",
+                error
+            );
+
+            document.getElementById("walletBalance")
+                .textContent =
+                "₹0";
+
+        }
+
+    }
 
 
+    /*
+    ============================================================
+    SUBMIT PAYMENT
+    ============================================================
+    */
 
-        let selectedCourse =
-            null;
+    paymentForm.addEventListener(
+        "submit",
+        async event => {
 
+            event.preventDefault();
 
+            const user =
+                paymentAuth.currentUser;
 
-        /* =================================================
-           AUTH CHECK
-        ================================================= */
+            if (!user) {
 
-        auth.onAuthStateChanged(
-            async function (user) {
+                showMessage(
+                    "Please login first.",
+                    "error"
+                );
 
-
-                if (!user) {
-
-                    loading.style.display =
-                        "none";
-
-                    paymentContent.style.display =
-                        "none";
-
-                    loginRequired.style.display =
-                        "block";
-
-                    return;
-
-                }
-
-
-                if (!courseId) {
-
-                    loading.style.display =
-                        "none";
-
-                    showError(
-                        "Course was not selected."
-                    );
-
-                    return;
-
-                }
-
-
-                try {
-
-                    selectedCourse =
-                        await getCourse(
-                            courseId
-                        );
-
-
-                    if (!selectedCourse) {
-
-                        throw new Error(
-                            "Course not found."
-                        );
-
-                    }
-
-
-                    displayCourse(
-                        selectedCourse
-                    );
-
-
-                    loading.style.display =
-                        "none";
-
-                    paymentContent.style.display =
-                        "block";
-
-
-                } catch (error) {
-
-                    console.error(
-                        error
-                    );
-
-                    loading.style.display =
-                        "none";
-
-                    showError(
-                        "Unable to load this course."
-                    );
-
-                }
-
+                return;
             }
-        );
 
 
+            const amount =
+                Number(amountInput.value);
 
-        /* =================================================
-           GET COURSE
-        ================================================= */
+            const utr =
+                utrInput.value
+                    .trim()
+                    .toUpperCase();
 
-        async function getCourse(
-            id
-        ) {
+
+            if (!Number.isFinite(amount) || amount <= 0) {
+
+                showMessage(
+                    "Please enter a valid amount.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (!utr || utr.length < 6) {
+
+                showMessage(
+                    "Please enter a valid UTR / transaction ID.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            submitButton.disabled = true;
+
+            submitButton.textContent =
+                "Submitting...";
+
 
             try {
 
-                const doc =
-                    await db
-                        .collection("courses")
-                        .doc(id)
-                        .get();
+                /*
+                IMPORTANT:
+                Payment remains PENDING.
+                Never trust client-side UTR as proof
+                of successful payment.
+                */
+
+                const paymentRef =
+                    await paymentDb
+                    .collection("payments")
+                    .add({
+
+                        userId:
+                            user.uid,
+
+                        userEmail:
+                            user.email || "",
+
+                        amount:
+                            amount,
+
+                        utr:
+                            utr,
+
+                        method:
+                            "UPI",
+
+                        merchantUpi:
+                            MERCHANT_UPI,
+
+                        status:
+                            "pending",
+
+                        verificationStatus:
+                            "pending",
+
+                        walletCredited:
+                            false,
+
+                        createdAt:
+                            firebase.firestore.FieldValue
+                            .serverTimestamp(),
+
+                        updatedAt:
+                            firebase.firestore.FieldValue
+                            .serverTimestamp()
+
+                    });
 
 
-                if (
-                    doc.exists
-                ) {
+                showMessage(
+                    "Payment submitted successfully. It is pending verification.",
+                    "success"
+                );
 
-                    return {
 
-                        id: doc.id,
+                paymentForm.reset();
 
-                        ...doc.data()
+                await loadPaymentHistory(
+                    user.uid
+                );
 
-                    };
 
-                }
+                console.log(
+                    "Payment created:",
+                    paymentRef.id
+                );
+
 
             } catch (error) {
 
-                console.log(
-                    "Firestore course lookup failed.",
-                    error.message
+                console.error(
+                    "Payment submit error:",
+                    error
                 );
 
-            }
-
-
-            if (
-                defaultCourses[id]
-            ) {
-
-                return {
-
-                    id: id,
-
-                    ...defaultCourses[id]
-
-                };
-
-            }
-
-
-            return null;
-
-        }
-
-
-
-        /* =================================================
-           DISPLAY COURSE
-        ================================================= */
-
-        function displayCourse(
-            course
-        ) {
-
-            const price =
-                Number(
-                    course.price || 0
-                );
-
-
-            document.getElementById(
-                "courseTitle"
-            ).textContent =
-                course.title ||
-                "Course";
-
-
-            document.getElementById(
-                "courseDescription"
-            ).textContent =
-                course.description ||
-                "Course enrollment";
-
-
-            document.getElementById(
-                "courseIcon"
-            ).textContent =
-                course.icon ||
-                "🎓";
-
-
-            document.getElementById(
-                "coursePrice"
-            ).textContent =
-                formatCurrency(
-                    price
-                );
-
-
-            document.getElementById(
-                "totalAmount"
-            ).textContent =
-                formatCurrency(
-                    price
-                );
-
-
-            document.getElementById(
-                "payAmount"
-            ).textContent =
-                formatCurrency(
-                    price
-                );
-
-        }
-
-
-
-        /* =================================================
-           PAYMENT BUTTON
-        ================================================= */
-
-        payButton.addEventListener(
-            "click",
-            async function () {
-
-
-                const user =
-                    auth.currentUser;
-
-
-                if (!user) {
-
-                    window.location.href =
-                        "login.html";
-
-                    return;
-
-                }
-
-
-                if (!selectedCourse) {
-
-                    showPaymentMessage(
-                        "Course information is not available.",
-                        true
-                    );
-
-                    return;
-
-                }
-
-
-                const amount =
-                    Number(
-                        selectedCourse.price ||
-                        0
-                    );
-
-
-                if (
-                    amount <= 0
-                ) {
-
-                    showPaymentMessage(
-                        "Invalid course amount.",
-                        true
-                    );
-
-                    return;
-
-                }
-
-
-                /*
-                 * IMPORTANT SECURITY NOTE
-                 *
-                 * The browser must NOT mark the course
-                 * as paid or enrolled.
-                 *
-                 * Your backend should:
-                 *
-                 * 1. Create a payment order.
-                 * 2. Send the order to the payment gateway.
-                 * 3. Verify the gateway response.
-                 * 4. Verify the payment signature.
-                 * 5. Create the enrollment.
-                 *
-                 * Example backend endpoint:
-                 *
-                 * POST /api/create-payment-order
-                 *
-                 * Then:
-                 *
-                 * POST /api/verify-payment
-                 *
-                 */
-
-
-                showPaymentMessage(
-                    "Secure payment gateway setup is required before accepting real payments.",
-                    false
-                );
-
-            }
-        );
-
-
-
-        /* =================================================
-           MESSAGE
-        ================================================= */
-
-        function showPaymentMessage(
-            message,
-            isError
-        ) {
-
-            paymentMessage.textContent =
-                message;
-
-
-            paymentMessage.className =
-                "payment-message-small " +
-                (
-                    isError
-                    ?
+                showMessage(
+                    "Unable to submit payment. Please try again.",
                     "error"
-                    :
-                    "info"
                 );
 
-        }
+            } finally {
 
+                submitButton.disabled =
+                    false;
 
+                submitButton.textContent =
+                    "Submit Payment";
 
-        function showError(
-            message
-        ) {
-
-            loading.style.display =
-                "none";
-
-
-            loginRequired.style.display =
-                "none";
-
-
-            paymentContent.style.display =
-                "block";
-
-
-            paymentContent.innerHTML =
-                `
-                <div class="payment-message">
-
-                    <div class="message-icon">
-                        ⚠️
-                    </div>
-
-                    <h2>
-                        Something Went Wrong
-                    </h2>
-
-                    <p>
-                        ${escapeHtml(message)}
-                    </p>
-
-                    <a
-                        href="courses.html"
-                        class="btn"
-                    >
-                        Back to Courses
-                    </a>
-
-                </div>
-                `;
+            }
 
         }
+    );
 
 
+    /*
+    ============================================================
+    LOAD PAYMENT HISTORY
+    ============================================================
+    */
 
-        /* =================================================
-           HELPERS
-        ================================================= */
+    async function loadPaymentHistory(uid) {
 
-        function formatCurrency(
-            value
-        ) {
+        const container =
+            document.getElementById(
+                "paymentHistory"
+            );
 
-            return "₹" +
-                new Intl.NumberFormat(
-                    "en-IN",
-                    {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
+        container.innerHTML =
+            '<div class="empty">Loading...</div>';
+
+
+        try {
+
+            const snapshot =
+                await paymentDb
+                .collection("payments")
+                .where(
+                    "userId",
+                    "==",
+                    uid
+                )
+                .limit(30)
+                .get();
+
+
+            if (snapshot.empty) {
+
+                container.innerHTML =
+                    '<div class="empty">No payments yet.</div>';
+
+                return;
+            }
+
+
+            const payments =
+                snapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }))
+                .sort((a, b) => {
+
+                    const aTime =
+                        a.createdAt &&
+                        a.createdAt.toMillis
+                            ? a.createdAt.toMillis()
+                            : 0;
+
+                    const bTime =
+                        b.createdAt &&
+                        b.createdAt.toMillis
+                            ? b.createdAt.toMillis()
+                            : 0;
+
+                    return bTime - aTime;
+
+                });
+
+
+            container.innerHTML =
+                payments.map(payment => {
+
+                    const status =
+                        String(
+                            payment.status ||
+                            "pending"
+                        ).toLowerCase();
+
+
+                    let date = "—";
+
+                    if (
+                        payment.createdAt &&
+                        typeof payment.createdAt.toDate ===
+                        "function"
+                    ) {
+
+                        date =
+                            payment.createdAt
+                            .toDate()
+                            .toLocaleString("en-IN");
+
                     }
-                ).format(
-                    Number(value || 0)
-                );
-
-        }
 
 
-        function escapeHtml(
-            value
-        ) {
+                    return `
 
-            return String(value)
-                .replace(
-                    /&/g,
-                    "&amp;"
-                )
-                .replace(
-                    /</g,
-                    "&lt;"
-                )
-                .replace(
-                    />/g,
-                    "&gt;"
-                )
-                .replace(
-                    /"/g,
-                    "&quot;"
-                )
-                .replace(
-                    /'/g,
-                    "&#039;"
-                );
+                        <div class="payment-item">
+
+                            <div class="payment-info">
+
+                                <strong>
+                                    ₹${Number(
+                                        payment.amount || 0
+                                    ).toLocaleString("en-IN")}
+                                </strong>
+
+                                <small>
+                                    UTR:
+                                    ${escapeHtml(
+                                        payment.utr || "—"
+                                    )}
+                                    <br>
+                                    ${date}
+                                </small>
+
+                            </div>
+
+                            <span class="status ${escapeHtml(status)}">
+                                ${escapeHtml(status)}
+                            </span>
+
+                        </div>
+
+                    `;
+
+                }).join("");
+
+
+        } catch (error) {
+
+            console.error(
+                "History error:",
+                error
+            );
+
+            container.innerHTML =
+                '<div class="empty">Unable to load payment history.</div>';
 
         }
 
     }
 
-);
+
+    /*
+    ============================================================
+    COPY UPI
+    ============================================================
+    */
+
+    async function copyUPI() {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                MERCHANT_UPI
+            );
+
+            showMessage(
+                "UPI ID copied.",
+                "success"
+            );
+
+        } catch {
+
+            showMessage(
+                "Unable to copy UPI ID.",
+                "error"
+            );
+
+        }
+
+    }
+
+
+    /*
+    ============================================================
+    MESSAGE
+    ============================================================
+    */
+
+    function showMessage(
+        message,
+        type = "info"
+    ) {
+
+        messageBox.textContent =
+            message;
+
+        messageBox.className =
+            "message " + type;
+
+    }
+
+
+    /*
+    ============================================================
+    HTML ESCAPE
+    ============================================================
+    */
+
+    function escapeHtml(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
 
 </script>
-
-
-
-<!-- =====================================================
-     PAGE CSS
-===================================================== -->
-
-<style>
-
-body {
-    margin: 0;
-    background: #f6f8fc;
-}
-
-
-/* LOADING */
-
-.payment-loading {
-    min-height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-}
-
-.loading-icon {
-    font-size: 45px;
-    margin-bottom: 10px;
-}
-
-
-/* LOGIN */
-
-.payment-message {
-    width: min(550px, 90%);
-    margin: 80px auto;
-    padding: 45px 25px;
-    box-sizing: border-box;
-    text-align: center;
-    background: #ffffff;
-    border-radius: 22px;
-    box-shadow: 0 12px 35px rgba(0,0,0,.07);
-}
-
-.message-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-
-.payment-message h2 {
-    color: #172033;
-}
-
-.payment-message p {
-    color: #788293;
-    line-height: 1.6;
-}
-
-
-/* CONTAINER */
-
-.payment-container {
-    width: min(1100px, 92%);
-    margin: 45px auto 70px;
-}
-
-
-/* HEADING */
-
-.payment-heading {
-    text-align: center;
-    margin-bottom: 35px;
-}
-
-.secure-badge {
-    display: inline-block;
-    padding: 8px 14px;
-    border-radius: 30px;
-    background: #eef4ff;
-    color: #2563eb;
-    font-size: 11px;
-    font-weight: 800;
-}
-
-.payment-heading h1 {
-    margin: 15px 0 10px;
-    font-size: 40px;
-    color: #172033;
-}
-
-.payment-heading h1 span {
-    color: #2563eb;
-}
-
-.payment-heading p {
-    color: #788293;
-}
-
-
-/* GRID */
-
-.payment-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-}
-
-
-/* CARD */
-
-.payment-card {
-    padding: 28px;
-    background: #ffffff;
-    border-radius: 22px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.05);
-}
-
-.card-title {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    margin-bottom: 25px;
-}
-
-.card-title > div:first-child {
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    background: #eef4ff;
-    font-size: 22px;
-}
-
-.card-title h2 {
-    margin: 0 0 3px;
-    font-size: 20px;
-    color: #172033;
-}
-
-.card-title p {
-    margin: 0;
-    color: #89919e;
-    font-size: 12px;
-}
-
-
-/* COURSE */
-
-.course-summary {
-    display: flex;
-    gap: 15px;
-    padding: 18px;
-    background: #f7f9fc;
-    border-radius: 15px;
-    margin-bottom: 20px;
-}
-
-.course-icon {
-    width: 65px;
-    height: 65px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #eef4ff;
-    border-radius: 14px;
-    font-size: 32px;
-}
-
-.course-summary h3 {
-    margin: 5px 0;
-    color: #172033;
-}
-
-.course-summary p {
-    margin: 0;
-    color: #788293;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-
-/* SUMMARY */
-
-.summary-row,
-.summary-total {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 0;
-    border-bottom: 1px solid #edf0f4;
-}
-
-.summary-row span {
-    color: #788293;
-    font-size: 13px;
-}
-
-.summary-row strong {
-    color: #293346;
-}
-
-.summary-total {
-    border: 0;
-    padding-top: 20px;
-}
-
-.summary-total span {
-    color: #172033;
-    font-weight: 700;
-}
-
-.summary-total strong {
-    color: #2563eb;
-    font-size: 25px;
-}
-
-
-/* SECURE */
-
-.secure-box {
-    display: flex;
-    gap: 13px;
-    padding: 17px;
-    background: #f0f8f3;
-    border: 1px solid #dcefe2;
-    border-radius: 14px;
-    margin-bottom: 25px;
-}
-
-.secure-box > div:first-child {
-    font-size: 24px;
-}
-
-.secure-box strong {
-    display: block;
-    color: #176b39;
-    margin-bottom: 4px;
-}
-
-.secure-box p {
-    margin: 0;
-    color: #61766a;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-
-/* PAY BUTTON */
-
-.pay-button {
-    width: 100%;
-    padding: 16px;
-    border: 0;
-    border-radius: 13px;
-    background: #2563eb;
-    color: #ffffff;
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: .2s;
-}
-
-.pay-button:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
-}
-
-
-/* MESSAGE */
-
-.payment-message-small {
-    min-height: 20px;
-    margin: 15px 0;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
-.payment-message-small.info {
-    color: #2563eb;
-}
-
-.payment-message-small.error {
-    color: #c62828;
-}
-
-
-/* METHODS */
-
-.payment-methods {
-    padding: 18px 0;
-    border-top: 1px solid #edf0f4;
-    border-bottom: 1px solid #edf0f4;
-    color: #89919e;
-    text-align: center;
-    font-size: 11px;
-}
-
-
-/* NOTE */
-
-.payment-note {
-    margin-top: 20px;
-    padding: 14px;
-    background: #fff9e8;
-    border-radius: 12px;
-}
-
-.payment-note strong {
-    color: #806300;
-    font-size: 12px;
-}
-
-.payment-note p {
-    margin: 5px 0 0;
-    color: #8b7b4b;
-    font-size: 11px;
-    line-height: 1.5;
-}
-
-
-/* TRUST */
-
-.payment-trust {
-    display: flex;
-    justify-content: center;
-    gap: 50px;
-    margin-top: 30px;
-    color: #667085;
-    font-size: 12px;
-}
-
-.payment-trust div {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
-
-/* MOBILE */
-
-@media (max-width: 800px) {
-
-    .payment-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .payment-heading h1 {
-        font-size: 32px;
-    }
-
-}
-
-
-@media (max-width: 600px) {
-
-    .payment-container {
-        width: 92%;
-        margin-top: 25px;
-    }
-
-    .payment-card {
-        padding: 20px;
-    }
-
-    .payment-trust {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-
-}
-
-</style>
-
 
 </body>
 </html>

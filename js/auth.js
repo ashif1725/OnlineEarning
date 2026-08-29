@@ -1,1126 +1,528 @@
+/*
+
+* =========================================================
+* SKILLEARN HUB
+* AUTHENTICATION UI
+* 
+* IMPORTANT:
+* This file only handles frontend validation and UI.
+* It does NOT store passwords or create real accounts.
+* 
+* Real authentication should be connected to a secure
+* authentication provider/backend in a later step.
+* =========================================================
+  */
+
+"use strict";
+
 /* =========================================================
-   SkillEarn Hub
-   js/auth.js
-   Firebase Authentication
-   ========================================================= */
+HELPERS
+========================================================= */
 
-(function () {
+function getElement(id) {
+return document.getElementById(id);
+}
 
-    "use strict";
+function showAlert(element, message, type = "error") {
+if (!element) return;
 
+element.textContent = message;
+element.className = "auth-alert show";
 
-    /* =======================================================
-       FIREBASE CHECK
-       ======================================================= */
+if (type === "success") {
+    element.classList.add("success");
+}
 
-    if (typeof firebase === "undefined") {
+}
 
-        console.error(
-            "Firebase SDK is not loaded."
+function clearAlert(element) {
+if (!element) return;
+
+element.textContent = "";
+element.className = "auth-alert";
+
+}
+
+function isValidEmail(email) {
+return /^[^\s@]+@[^\s@]+.[^\s@]+$/.test(email);
+}
+
+function setButtonLoading(button, loading) {
+if (!button) return;
+
+if (loading) {
+    button.dataset.originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = `
+        <span class="button-spinner"></span>
+        <span>Please wait...</span>
+    `;
+} else {
+    button.disabled = false;
+
+    if (button.dataset.originalText) {
+        button.innerHTML = button.dataset.originalText;
+    }
+}
+
+}
+
+/* =========================================================
+PASSWORD VISIBILITY
+========================================================= */
+
+document.querySelectorAll(".password-toggle").forEach(button => {
+
+button.addEventListener("click", () => {
+
+    const targetId = button.dataset.target;
+    const input = getElement(targetId);
+
+    if (!input) return;
+
+    const isPassword = input.type === "password";
+
+    input.type = isPassword ? "text" : "password";
+
+    button.textContent = isPassword ? "Hide" : "Show";
+
+    button.setAttribute(
+        "aria-label",
+        isPassword ? "Hide password" : "Show password"
+    );
+});
+
+});
+
+/* =========================================================
+LOGIN
+========================================================= */
+
+const loginForm = getElement("loginForm");
+
+if (loginForm) {
+
+const loginAlert = getElement("loginAlert");
+const emailInput = getElement("loginEmail");
+const passwordInput = getElement("loginPassword");
+
+loginForm.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    clearAlert(loginAlert);
+
+    emailInput.classList.remove("input-error");
+    passwordInput.classList.remove("input-error");
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email) {
+
+        emailInput.classList.add("input-error");
+
+        showAlert(
+            loginAlert,
+            "Please enter your email address."
         );
 
+        emailInput.focus();
         return;
     }
 
+    if (!isValidEmail(email)) {
 
-    if (!firebase.apps.length) {
+        emailInput.classList.add("input-error");
 
-        console.error(
-            "Firebase has not been initialized."
+        showAlert(
+            loginAlert,
+            "Please enter a valid email address."
         );
 
+        emailInput.focus();
         return;
     }
 
+    if (!password) {
 
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+        passwordInput.classList.add("input-error");
 
-
-    /* =======================================================
-       HELPERS
-       ======================================================= */
-
-    function showMessage(message, type = "error") {
-
-        const possibleIds = [
-            "loginMessage",
-            "authMessage",
-            "message",
-            "errorMessage"
-        ];
-
-        let box = null;
-
-        for (const id of possibleIds) {
-
-            const element =
-                document.getElementById(id);
-
-            if (element) {
-
-                box = element;
-                break;
-            }
-        }
-
-
-        if (!box) {
-
-            console.log(message);
-            return;
-        }
-
-
-        box.textContent = message;
-
-        box.className =
-            "message " + type;
-
-        box.style.display = "block";
-    }
-
-
-    function clearMessage() {
-
-        const possibleIds = [
-            "loginMessage",
-            "authMessage",
-            "message",
-            "errorMessage"
-        ];
-
-        possibleIds.forEach(function (id) {
-
-            const element =
-                document.getElementById(id);
-
-            if (element) {
-
-                element.textContent = "";
-                element.style.display = "none";
-            }
-
-        });
-    }
-
-
-    function getLoginErrorMessage(error) {
-
-        if (!error) {
-            return "Unable to login.";
-        }
-
-
-        switch (error.code) {
-
-            case "auth/invalid-email":
-                return "Please enter a valid email address.";
-
-            case "auth/user-disabled":
-                return "This account has been disabled.";
-
-            case "auth/user-not-found":
-                return "No account found with this email.";
-
-            case "auth/wrong-password":
-                return "Incorrect password.";
-
-            case "auth/invalid-credential":
-                return "Incorrect email or password.";
-
-            case "auth/too-many-requests":
-                return "Too many login attempts. Please try again later.";
-
-            case "auth/network-request-failed":
-                return "Network error. Please check your internet connection.";
-
-            case "auth/operation-not-allowed":
-                return "Email/password login is not enabled in Firebase.";
-
-            default:
-                return error.message ||
-                    "Unable to login. Please try again.";
-        }
-    }
-
-
-    /* =======================================================
-       GET USER DATA
-       ======================================================= */
-
-    async function getUserData(uid) {
-
-        if (!uid) {
-            return null;
-        }
-
-
-        try {
-
-            const userRef =
-                db.collection("users").doc(uid);
-
-            const snapshot =
-                await userRef.get();
-
-
-            if (!snapshot.exists) {
-
-                return null;
-            }
-
-
-            return {
-                id: snapshot.id,
-                ...snapshot.data()
-            };
-
-        } catch (error) {
-
-            console.error(
-                "getUserData error:",
-                error
-            );
-
-            return null;
-        }
-    }
-
-
-    /* =======================================================
-       CREATE USER PROFILE
-       ======================================================= */
-
-    async function createUserProfile(
-        user,
-        extraData = {}
-    ) {
-
-        if (!user) {
-            throw new Error(
-                "User is required."
-            );
-        }
-
-
-        const userRef =
-            db.collection("users").doc(user.uid);
-
-
-        const existing =
-            await userRef.get();
-
-
-        if (existing.exists) {
-
-            return {
-                id: user.uid,
-                ...existing.data()
-            };
-        }
-
-
-        const userData = {
-
-            uid: user.uid,
-
-            name:
-                extraData.name ||
-                user.displayName ||
-                "Member",
-
-            email:
-                user.email || "",
-
-            role:
-                "user",
-
-            status:
-                "active",
-
-            enrolledCourses:
-                0,
-
-            earnings:
-                0,
-
-            createdAt:
-                firebase.firestore.FieldValue.serverTimestamp(),
-
-            updatedAt:
-                firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-
-        await userRef.set(
-            userData,
-            {
-                merge: true
-            }
+        showAlert(
+            loginAlert,
+            "Please enter your password."
         );
 
-
-        return {
-            id: user.uid,
-            ...userData
-        };
+        passwordInput.focus();
+        return;
     }
 
+    if (password.length < 8) {
 
-    /* =======================================================
-       LOGIN USER
-       ======================================================= */
+        passwordInput.classList.add("input-error");
 
-    async function loginUser(
-        email,
-        password
-    ) {
-
-        try {
-
-            clearMessage();
-
-
-            email =
-                String(email || "")
-                .trim()
-                .toLowerCase();
-
-            password =
-                String(password || "");
-
-
-            if (!email) {
-
-                showMessage(
-                    "Please enter your email address."
-                );
-
-                return null;
-            }
-
-
-            if (!password) {
-
-                showMessage(
-                    "Please enter your password."
-                );
-
-                return null;
-            }
-
-
-            console.log(
-                "Logging in:",
-                email
-            );
-
-
-            const result =
-                await auth.signInWithEmailAndPassword(
-                    email,
-                    password
-                );
-
-
-            const user =
-                result.user;
-
-
-            if (!user) {
-
-                throw new Error(
-                    "Login failed. User not found."
-                );
-            }
-
-
-            console.log(
-                "Firebase login successful:",
-                user.uid
-            );
-
-
-            /*
-             * Load Firestore user profile.
-             */
-
-            let userData =
-                await getUserData(user.uid);
-
-
-            /*
-             * If profile doesn't exist,
-             * create a normal user profile.
-             */
-
-            if (!userData) {
-
-                userData =
-                    await createUserProfile(
-                        user
-                    );
-            }
-
-
-            showMessage(
-                "Login successful. Redirecting...",
-                "success"
-            );
-
-
-            /*
-             * Save basic login information.
-             */
-
-            try {
-
-                localStorage.setItem(
-                    "skillEarnUser",
-                    JSON.stringify({
-                        uid: user.uid,
-                        email: user.email || "",
-                        name:
-                            userData.name ||
-                            user.displayName ||
-                            "Member",
-                        role:
-                            userData.role ||
-                            "user"
-                    })
-                );
-
-            } catch (storageError) {
-
-                console.warn(
-                    "localStorage error:",
-                    storageError
-                );
-            }
-
-
-            /*
-             * Redirect according to role.
-             */
-
-            if (
-                userData.role === "admin"
-            ) {
-
-                window.location.href =
-                    "admin.html";
-
-            } else {
-
-                window.location.href =
-                    "dashboard.html";
-            }
-
-
-            return {
-                user: user,
-                userData: userData
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "Login error:",
-                error
-            );
-
-
-            showMessage(
-                getLoginErrorMessage(error),
-                "error"
-            );
-
-
-            return null;
-        }
-    }
-
-
-    /* =======================================================
-       REGISTER USER
-       ======================================================= */
-
-    async function registerUser(
-        name,
-        email,
-        password
-    ) {
-
-        try {
-
-            clearMessage();
-
-
-            name =
-                String(name || "")
-                .trim();
-
-            email =
-                String(email || "")
-                .trim()
-                .toLowerCase();
-
-            password =
-                String(password || "");
-
-
-            if (!name) {
-
-                showMessage(
-                    "Please enter your name."
-                );
-
-                return null;
-            }
-
-
-            if (!email) {
-
-                showMessage(
-                    "Please enter your email address."
-                );
-
-                return null;
-            }
-
-
-            if (!password) {
-
-                showMessage(
-                    "Please enter a password."
-                );
-
-                return null;
-            }
-
-
-            if (password.length < 6) {
-
-                showMessage(
-                    "Password must be at least 6 characters."
-                );
-
-                return null;
-            }
-
-
-            const result =
-                await auth.createUserWithEmailAndPassword(
-                    email,
-                    password
-                );
-
-
-            const user =
-                result.user;
-
-
-            if (!user) {
-
-                throw new Error(
-                    "Account creation failed."
-                );
-            }
-
-
-            /*
-             * Update Firebase Auth display name.
-             */
-
-            await user.updateProfile({
-
-                displayName:
-                    name
-            });
-
-
-            /*
-             * Create Firestore profile.
-             */
-
-            const userData =
-                await createUserProfile(
-                    user,
-                    {
-                        name: name
-                    }
-                );
-
-
-            showMessage(
-                "Account created successfully.",
-                "success"
-            );
-
-
-            /*
-             * Save local session info.
-             */
-
-            try {
-
-                localStorage.setItem(
-                    "skillEarnUser",
-                    JSON.stringify({
-                        uid: user.uid,
-                        email: user.email || "",
-                        name: name,
-                        role: "user"
-                    })
-                );
-
-            } catch (error) {
-
-                console.warn(
-                    "Storage error:",
-                    error
-                );
-            }
-
-
-            setTimeout(function () {
-
-                window.location.href =
-                    "dashboard.html";
-
-            }, 500);
-
-
-            return {
-                user: user,
-                userData: userData
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "Register error:",
-                error
-            );
-
-
-            let message =
-                "Unable to create account.";
-
-
-            switch (error.code) {
-
-                case "auth/email-already-in-use":
-                    message =
-                        "This email is already registered.";
-                    break;
-
-                case "auth/invalid-email":
-                    message =
-                        "Please enter a valid email address.";
-                    break;
-
-                case "auth/weak-password":
-                    message =
-                        "Password is too weak.";
-                    break;
-
-                case "auth/network-request-failed":
-                    message =
-                        "Network error. Check your internet connection.";
-                    break;
-
-                default:
-                    message =
-                        error.message ||
-                        message;
-            }
-
-
-            showMessage(
-                message,
-                "error"
-            );
-
-
-            return null;
-        }
-    }
-
-
-    /* =======================================================
-       FORGOT PASSWORD
-       ======================================================= */
-
-    async function forgotPassword(email) {
-
-        try {
-
-            clearMessage();
-
-
-            email =
-                String(email || "")
-                .trim()
-                .toLowerCase();
-
-
-            if (!email) {
-
-                showMessage(
-                    "Please enter your email address."
-                );
-
-                return false;
-            }
-
-
-            await auth.sendPasswordResetEmail(
-                email
-            );
-
-
-            showMessage(
-                "Password reset email has been sent. Check your inbox.",
-                "success"
-            );
-
-
-            return true;
-
-
-        } catch (error) {
-
-            console.error(
-                "Forgot password error:",
-                error
-            );
-
-
-            let message =
-                "Unable to send password reset email.";
-
-
-            switch (error.code) {
-
-                case "auth/invalid-email":
-                    message =
-                        "Please enter a valid email address.";
-                    break;
-
-                case "auth/user-not-found":
-                    message =
-                        "No account found with this email.";
-                    break;
-
-                case "auth/network-request-failed":
-                    message =
-                        "Network error. Please check your internet.";
-                    break;
-
-                default:
-                    message =
-                        error.message ||
-                        message;
-            }
-
-
-            showMessage(
-                message,
-                "error"
-            );
-
-
-            return false;
-        }
-    }
-
-
-    /* =======================================================
-       GOOGLE LOGIN
-       ======================================================= */
-
-    async function loginWithGoogle() {
-
-        try {
-
-            clearMessage();
-
-
-            const provider =
-                new firebase.auth.GoogleAuthProvider();
-
-
-            const result =
-                await auth.signInWithPopup(
-                    provider
-                );
-
-
-            const user =
-                result.user;
-
-
-            if (!user) {
-
-                throw new Error(
-                    "Google login failed."
-                );
-            }
-
-
-            let userData =
-                await getUserData(
-                    user.uid
-                );
-
-
-            /*
-             * Create Firestore profile
-             * if Google user is new.
-             */
-
-            if (!userData) {
-
-                userData =
-                    await createUserProfile(
-                        user
-                    );
-            }
-
-
-            try {
-
-                localStorage.setItem(
-                    "skillEarnUser",
-                    JSON.stringify({
-                        uid: user.uid,
-                        email: user.email || "",
-                        name:
-                            userData.name ||
-                            user.displayName ||
-                            "Member",
-                        role:
-                            userData.role ||
-                            "user"
-                    })
-                );
-
-            } catch (error) {
-
-                console.warn(error);
-            }
-
-
-            showMessage(
-                "Google login successful.",
-                "success"
-            );
-
-
-            if (
-                userData.role === "admin"
-            ) {
-
-                window.location.href =
-                    "admin.html";
-
-            } else {
-
-                window.location.href =
-                    "dashboard.html";
-            }
-
-
-            return {
-                user: user,
-                userData: userData
-            };
-
-
-        } catch (error) {
-
-            console.error(
-                "Google login error:",
-                error
-            );
-
-
-            let message =
-                "Google login failed.";
-
-
-            if (
-                error.code ===
-                "auth/popup-closed-by-user"
-            ) {
-
-                message =
-                    "Google login was cancelled.";
-
-            } else if (
-                error.code ===
-                "auth/popup-blocked"
-            ) {
-
-                message =
-                    "Popup was blocked by the browser.";
-
-            } else {
-
-                message =
-                    error.message ||
-                    message;
-            }
-
-
-            showMessage(
-                message,
-                "error"
-            );
-
-
-            return null;
-        }
-    }
-
-
-    /* =======================================================
-       LOGOUT
-       ======================================================= */
-
-    async function logoutUser() {
-
-        try {
-
-            await auth.signOut();
-
-
-            try {
-
-                localStorage.removeItem(
-                    "skillEarnUser"
-                );
-
-            } catch (error) {
-
-                console.warn(error);
-            }
-
-
-            window.location.href =
-                "login.html";
-
-
-        } catch (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-            showMessage(
-                "Unable to logout.",
-                "error"
-            );
-        }
-    }
-
-
-    /* =======================================================
-       CURRENT USER
-       ======================================================= */
-
-    function getCurrentUser() {
-
-        return auth.currentUser || null;
-    }
-
-
-    /* =======================================================
-       REQUIRE LOGIN
-       ======================================================= */
-
-    async function requireLogin(
-        redirectPage = "login.html"
-    ) {
-
-        const user =
-            auth.currentUser;
-
-
-        if (!user) {
-
-            window.location.href =
-                redirectPage;
-
-            return null;
-        }
-
-
-        const userData =
-            await getUserData(
-                user.uid
-            );
-
-
-        return {
-            user: user,
-            userData: userData
-        };
-    }
-
-
-    /* =======================================================
-       REQUIRE ADMIN
-       ======================================================= */
-
-    async function requireAdmin(
-        redirectPage = "dashboard.html"
-    ) {
-
-        const user =
-            auth.currentUser;
-
-
-        if (!user) {
-
-            window.location.href =
-                "login.html";
-
-            return null;
-        }
-
-
-        const userData =
-            await getUserData(
-                user.uid
-            );
-
-
-        if (
-            !userData ||
-            userData.role !== "admin"
-        ) {
-
-            alert(
-                "Access denied. Administrator permission required."
-            );
-
-
-            window.location.href =
-                redirectPage;
-
-
-            return null;
-        }
-
-
-        return {
-            user: user,
-            userData: userData
-        };
-    }
-
-
-    /* =======================================================
-       AUTH STATE LISTENER
-       ======================================================= */
-
-    function onAuthStateChanged(
-        callback
-    ) {
-
-        return auth.onAuthStateChanged(
-            callback
+        showAlert(
+            loginAlert,
+            "Password must contain at least 8 characters."
         );
+
+        passwordInput.focus();
+        return;
     }
 
+    /*
+     * Real authentication will be connected here later.
+     *
+     * Example future flow:
+     *
+     * 1. Send credentials securely to authentication service.
+     * 2. Server/provider validates credentials.
+     * 3. Receive authenticated session/token.
+     * 4. Redirect to dashboard.
+     *
+     * Never store raw passwords in localStorage.
+     */
 
-    /* =======================================================
-       MAKE FUNCTIONS AVAILABLE GLOBALLY
-       =======================================================
-       
-       IMPORTANT:
-       Your login.html is calling:
-       
-       window.loginUser()
-       window.forgotPassword()
-       
-       Therefore these MUST be attached to window.
-       
-    ======================================================= */
-
-    window.loginUser =
-        loginUser;
-
-    window.registerUser =
-        registerUser;
-
-    window.forgotPassword =
-        forgotPassword;
-
-    window.loginWithGoogle =
-        loginWithGoogle;
-
-    window.logoutUser =
-        logoutUser;
-
-    window.getCurrentUser =
-        getCurrentUser;
-
-    window.getUserData =
-        getUserData;
-
-    window.requireLogin =
-        requireLogin;
-
-    window.requireAdmin =
-        requireAdmin;
-
-    window.onAuthStateChanged =
-        onAuthStateChanged;
-
-
-    /* =======================================================
-       SKILLEARN AUTH API
-       ======================================================= */
-
-    window.SkillEarnAuth = {
-
-        auth: auth,
-
-        db: db,
-
-        loginUser,
-
-        registerUser,
-
-        forgotPassword,
-
-        loginWithGoogle,
-
-        logoutUser,
-
-        getCurrentUser,
-
-        getUserData,
-
-        createUserProfile,
-
-        requireLogin,
-
-        requireAdmin,
-
-        onAuthStateChanged
-    };
-
-
-    console.log(
-        "SkillEarn Hub auth.js loaded successfully."
+    showAlert(
+        loginAlert,
+        "Login UI is ready. Real authentication will be connected in the backend step.",
+        "success"
     );
 
-})();
+});
+
+}
+
+/* =========================================================
+REGISTER
+========================================================= */
+
+const registerForm = getElement("registerForm");
+
+if (registerForm) {
+
+const registerAlert = getElement("registerAlert");
+
+const firstName = getElement("firstName");
+const lastName = getElement("lastName");
+const email = getElement("registerEmail");
+const password = getElement("registerPassword");
+const confirmPassword = getElement("confirmPassword");
+const terms = getElement("acceptTerms");
+
+const strengthText = getElement("passwordStrengthText");
+const strengthBars = document.querySelectorAll(".strength-bars span");
+
+
+function updatePasswordStrength(value) {
+
+    if (!strengthText || !strengthBars.length) return;
+
+    let score = 0;
+
+    if (value.length >= 8) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+
+    strengthBars.forEach(bar => {
+        bar.removeAttribute("data-strength");
+    });
+
+    if (!value) {
+
+        strengthText.textContent =
+            "Use 8+ characters with a mix of letters and numbers.";
+
+        return;
+    }
+
+    if (score <= 2) {
+
+        strengthText.textContent = "Password strength: Weak";
+
+        strengthBars.forEach((bar, index) => {
+            if (index === 0) {
+                bar.dataset.strength = "weak";
+            }
+        });
+
+    } else if (score <= 3) {
+
+        strengthText.textContent = "Password strength: Fair";
+
+        strengthBars.forEach((bar, index) => {
+            if (index < 2) {
+                bar.dataset.strength = "fair";
+            }
+        });
+
+    } else if (score <= 4) {
+
+        strengthText.textContent = "Password strength: Good";
+
+        strengthBars.forEach((bar, index) => {
+            if (index < 3) {
+                bar.dataset.strength = "good";
+            }
+        });
+
+    } else {
+
+        strengthText.textContent = "Password strength: Strong";
+
+        strengthBars.forEach(bar => {
+            bar.dataset.strength = "strong";
+        });
+    }
+}
+
+
+password.addEventListener("input", () => {
+    updatePasswordStrength(password.value);
+});
+
+
+registerForm.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    clearAlert(registerAlert);
+
+    const inputs = [
+        firstName,
+        lastName,
+        email,
+        password,
+        confirmPassword
+    ];
+
+    inputs.forEach(input => {
+        input.classList.remove("input-error");
+    });
+
+
+    if (!firstName.value.trim()) {
+
+        firstName.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Please enter your first name."
+        );
+
+        firstName.focus();
+        return;
+    }
+
+
+    if (!lastName.value.trim()) {
+
+        lastName.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Please enter your last name."
+        );
+
+        lastName.focus();
+        return;
+    }
+
+
+    if (!email.value.trim()) {
+
+        email.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Please enter your email address."
+        );
+
+        email.focus();
+        return;
+    }
+
+
+    if (!isValidEmail(email.value.trim())) {
+
+        email.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Please enter a valid email address."
+        );
+
+        email.focus();
+        return;
+    }
+
+
+    if (password.value.length < 8) {
+
+        password.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Password must contain at least 8 characters."
+        );
+
+        password.focus();
+        return;
+    }
+
+
+    if (password.value !== confirmPassword.value) {
+
+        confirmPassword.classList.add("input-error");
+
+        showAlert(
+            registerAlert,
+            "Passwords do not match."
+        );
+
+        confirmPassword.focus();
+        return;
+    }
+
+
+    if (!terms.checked) {
+
+        showAlert(
+            registerAlert,
+            "Please accept the Terms of Service and Privacy Policy."
+        );
+
+        terms.focus();
+        return;
+    }
+
+
+    /*
+     * SECURITY:
+     * No password is stored here.
+     *
+     * Real account creation will be connected to a secure
+     * authentication service/backend later.
+     */
+
+    showAlert(
+        registerAlert,
+        "Registration UI is ready. Secure account creation will be connected in the backend step.",
+        "success"
+    );
+
+});
+
+}
+
+/* =========================================================
+FORGOT PASSWORD
+========================================================= */
+
+const forgotForm = getElement("forgotForm");
+
+if (forgotForm) {
+
+const forgotAlert = getElement("forgotAlert");
+const emailInput = getElement("forgotEmail");
+
+forgotForm.addEventListener("submit", event => {
+
+    event.preventDefault();
+
+    clearAlert(forgotAlert);
+
+    emailInput.classList.remove("input-error");
+
+    const email = emailInput.value.trim();
+
+    if (!email) {
+
+        emailInput.classList.add("input-error");
+
+        showAlert(
+            forgotAlert,
+            "Please enter your email address."
+        );
+
+        emailInput.focus();
+        return;
+    }
+
+
+    if (!isValidEmail(email)) {
+
+        emailInput.classList.add("input-error");
+
+        showAlert(
+            forgotAlert,
+            "Please enter a valid email address."
+        );
+
+        emailInput.focus();
+        return;
+    }
+
+
+    /*
+     * Real password reset will be implemented through the
+     * authentication provider/backend.
+     *
+     * Do not expose whether an email exists in a production
+     * password-reset endpoint unless the backend is designed
+     * to handle account-enumeration risks appropriately.
+     */
+
+    showAlert(
+        forgotAlert,
+        "Password reset UI is ready. The secure reset service will be connected later.",
+        "success"
+    );
+
+});
+
+}
+
+/* =========================================================
+PASSWORD STRENGTH BAR STYLING
+========================================================= */
+
+const strengthStyle = document.createElement("style");
+
+strengthStyle.textContent = `
+.strength-bars span[data-strength="weak"] {
+background: #e36b6b;
+}
+
+.strength-bars span[data-strength="fair"] {
+    background: #d5a64f;
+}
+
+.strength-bars span[data-strength="good"] {
+    background: #6f9cff;
+}
+
+.strength-bars span[data-strength="strong"] {
+    background: #4fdaa0;
+}
+
+.button-spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,.25);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: authSpin .7s linear infinite;
+}
+
+@keyframes authSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+`;
+
+document.head.appendChild(strengthStyle);

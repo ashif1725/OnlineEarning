@@ -1,588 +1,965 @@
 /* =========================================================
    SkillEarn Hub
-   Authentication System
-   Firebase Compat Version
+   js/auth.js
+   Firebase Authentication
    ========================================================= */
 
+(function () {
 
-/* =========================================================
-   FIREBASE SERVICES
-   ========================================================= */
-
-const auth = firebase.auth();
-const db = firebase.firestore();
+    "use strict";
 
 
-/* =========================================================
-   SHOW MESSAGE HELPER
-   ========================================================= */
+    /* =======================================================
+       FIREBASE CHECK
+       ======================================================= */
 
-function showAuthMessage(message, type = "error") {
+    if (typeof firebase === "undefined") {
 
-    console.log(message);
+        console.error(
+            "Firebase SDK is not loaded."
+        );
 
-    const possibleIds = [
-        "loginMessage",
-        "registerMessage",
-        "authMessage",
-        "message"
-    ];
-
-    let box = null;
-
-    for (const id of possibleIds) {
-
-        const element =
-            document.getElementById(id);
-
-        if (element) {
-            box = element;
-            break;
-        }
-    }
-
-    if (!box) {
         return;
     }
 
-    box.textContent = message;
 
-    box.className =
-        "message " + type;
+    if (!firebase.apps.length) {
 
-    box.style.display = "block";
-}
+        console.error(
+            "Firebase has not been initialized."
+        );
 
-
-/* =========================================================
-   ERROR MESSAGE
-   ========================================================= */
-
-function getFirebaseErrorMessage(error) {
-
-    if (!error) {
-        return "Something went wrong.";
+        return;
     }
 
-    switch (error.code) {
 
-        case "auth/invalid-email":
-            return "Please enter a valid email address.";
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-        case "auth/user-not-found":
-            return "No account found with this email.";
 
-        case "auth/wrong-password":
-            return "Incorrect password.";
+    /* =======================================================
+       HELPERS
+       ======================================================= */
 
-        case "auth/invalid-credential":
-            return "Invalid email or password.";
+    function showMessage(message, type = "error") {
 
-        case "auth/email-already-in-use":
-            return "This email is already registered.";
+        const possibleIds = [
+            "loginMessage",
+            "authMessage",
+            "message",
+            "errorMessage"
+        ];
 
-        case "auth/weak-password":
-            return "Password should be at least 6 characters.";
+        let box = null;
 
-        case "auth/too-many-requests":
-            return "Too many attempts. Please try again later.";
+        for (const id of possibleIds) {
 
-        case "auth/network-request-failed":
-            return "Network error. Please check your internet connection.";
+            const element =
+                document.getElementById(id);
 
-        case "auth/user-disabled":
-            return "This account has been disabled.";
+            if (element) {
 
-        case "auth/operation-not-allowed":
-            return "This login method is not enabled in Firebase.";
+                box = element;
+                break;
+            }
+        }
 
-        default:
-            return error.message ||
-                "Authentication failed.";
+
+        if (!box) {
+
+            console.log(message);
+            return;
+        }
+
+
+        box.textContent = message;
+
+        box.className =
+            "message " + type;
+
+        box.style.display = "block";
     }
-}
 
 
-/* =========================================================
-   GET USER DATA
-   ========================================================= */
+    function clearMessage() {
 
-async function getUserData(uid) {
+        const possibleIds = [
+            "loginMessage",
+            "authMessage",
+            "message",
+            "errorMessage"
+        ];
 
-    if (!uid) {
-        return null;
+        possibleIds.forEach(function (id) {
+
+            const element =
+                document.getElementById(id);
+
+            if (element) {
+
+                element.textContent = "";
+                element.style.display = "none";
+            }
+
+        });
     }
 
-    try {
 
-        const userRef =
-            db.collection("users").doc(uid);
+    function getLoginErrorMessage(error) {
 
-        const snapshot =
-            await userRef.get();
+        if (!error) {
+            return "Unable to login.";
+        }
 
-        if (!snapshot.exists) {
+
+        switch (error.code) {
+
+            case "auth/invalid-email":
+                return "Please enter a valid email address.";
+
+            case "auth/user-disabled":
+                return "This account has been disabled.";
+
+            case "auth/user-not-found":
+                return "No account found with this email.";
+
+            case "auth/wrong-password":
+                return "Incorrect password.";
+
+            case "auth/invalid-credential":
+                return "Incorrect email or password.";
+
+            case "auth/too-many-requests":
+                return "Too many login attempts. Please try again later.";
+
+            case "auth/network-request-failed":
+                return "Network error. Please check your internet connection.";
+
+            case "auth/operation-not-allowed":
+                return "Email/password login is not enabled in Firebase.";
+
+            default:
+                return error.message ||
+                    "Unable to login. Please try again.";
+        }
+    }
+
+
+    /* =======================================================
+       GET USER DATA
+       ======================================================= */
+
+    async function getUserData(uid) {
+
+        if (!uid) {
             return null;
         }
 
-        return {
-            id: snapshot.id,
-            ...snapshot.data()
-        };
 
-    } catch (error) {
+        try {
 
-        console.error(
-            "getUserData error:",
-            error
-        );
+            const userRef =
+                db.collection("users").doc(uid);
 
-        return null;
-    }
-}
+            const snapshot =
+                await userRef.get();
 
 
-/* =========================================================
-   REGISTER USER
-   ========================================================= */
+            if (!snapshot.exists) {
 
-async function registerUser(
-    name,
-    email,
-    password
-) {
-
-    name =
-        String(name || "").trim();
-
-    email =
-        String(email || "").trim();
-
-    password =
-        String(password || "");
+                return null;
+            }
 
 
-    if (!name) {
-        throw new Error(
-            "Please enter your name."
-        );
-    }
+            return {
+                id: snapshot.id,
+                ...snapshot.data()
+            };
 
-    if (!email) {
-        throw new Error(
-            "Please enter your email."
-        );
-    }
+        } catch (error) {
 
-    if (!password) {
-        throw new Error(
-            "Please enter your password."
-        );
-    }
-
-    if (password.length < 6) {
-        throw new Error(
-            "Password must be at least 6 characters."
-        );
-    }
-
-
-    try {
-
-        const result =
-            await auth.createUserWithEmailAndPassword(
-                email,
-                password
+            console.error(
+                "getUserData error:",
+                error
             );
 
-        const user =
-            result.user;
-
-
-        /* -----------------------------------------
-           Update Firebase Auth profile
-           ----------------------------------------- */
-
-        await user.updateProfile({
-            displayName: name
-        });
-
-
-        /* -----------------------------------------
-           Create Firestore user document
-           ----------------------------------------- */
-
-        await db
-            .collection("users")
-            .doc(user.uid)
-            .set({
-
-                uid: user.uid,
-
-                name: name,
-
-                email:
-                    user.email || email,
-
-                role: "user",
-
-                status: "active",
-
-                enrolledCourses: 0,
-
-                earnings: 0,
-
-                walletBalance: 0,
-
-                referralCode:
-                    createReferralCode(user.uid),
-
-                createdAt:
-                    firebase.firestore.FieldValue.serverTimestamp(),
-
-                updatedAt:
-                    firebase.firestore.FieldValue.serverTimestamp()
-
-            });
-
-
-        return {
-            user: user,
-            userData: await getUserData(user.uid)
-        };
-
-    } catch (error) {
-
-        console.error(
-            "registerUser error:",
-            error
-        );
-
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
-    }
-}
-
-
-/* =========================================================
-   LOGIN USER
-   ========================================================= */
-
-async function loginUser(
-    email,
-    password
-) {
-
-    email =
-        String(email || "").trim();
-
-    password =
-        String(password || "");
-
-
-    if (!email) {
-        throw new Error(
-            "Please enter your email."
-        );
-    }
-
-    if (!password) {
-        throw new Error(
-            "Please enter your password."
-        );
+            return null;
+        }
     }
 
 
-    try {
+    /* =======================================================
+       CREATE USER PROFILE
+       ======================================================= */
 
-        const result =
-            await auth.signInWithEmailAndPassword(
-                email,
-                password
+    async function createUserProfile(
+        user,
+        extraData = {}
+    ) {
+
+        if (!user) {
+            throw new Error(
+                "User is required."
             );
-
-        const user =
-            result.user;
-
-
-        /* -----------------------------------------
-           Get Firestore profile
-           ----------------------------------------- */
-
-        let userData =
-            await getUserData(user.uid);
-
-
-        /* -----------------------------------------
-           If profile doesn't exist, create it
-           ----------------------------------------- */
-
-        if (!userData) {
-
-            await db
-                .collection("users")
-                .doc(user.uid)
-                .set({
-
-                    uid: user.uid,
-
-                    name:
-                        user.displayName ||
-                        "Member",
-
-                    email:
-                        user.email || email,
-
-                    role: "user",
-
-                    status: "active",
-
-                    enrolledCourses: 0,
-
-                    earnings: 0,
-
-                    walletBalance: 0,
-
-                    referralCode:
-                        createReferralCode(user.uid),
-
-                    createdAt:
-                        firebase.firestore.FieldValue.serverTimestamp(),
-
-                    updatedAt:
-                        firebase.firestore.FieldValue.serverTimestamp()
-
-                }, {
-                    merge: true
-                });
-
-
-            userData =
-                await getUserData(user.uid);
         }
 
 
-        return {
-            user: user,
-            userData: userData
+        const userRef =
+            db.collection("users").doc(user.uid);
+
+
+        const existing =
+            await userRef.get();
+
+
+        if (existing.exists) {
+
+            return {
+                id: user.uid,
+                ...existing.data()
+            };
+        }
+
+
+        const userData = {
+
+            uid: user.uid,
+
+            name:
+                extraData.name ||
+                user.displayName ||
+                "Member",
+
+            email:
+                user.email || "",
+
+            role:
+                "user",
+
+            status:
+                "active",
+
+            enrolledCourses:
+                0,
+
+            earnings:
+                0,
+
+            createdAt:
+                firebase.firestore.FieldValue.serverTimestamp(),
+
+            updatedAt:
+                firebase.firestore.FieldValue.serverTimestamp()
         };
 
-    } catch (error) {
 
-        console.error(
-            "loginUser error:",
-            error
+        await userRef.set(
+            userData,
+            {
+                merge: true
+            }
         );
 
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
-    }
-}
 
-
-/* =========================================================
-   LOGOUT USER
-   ========================================================= */
-
-async function logoutUser() {
-
-    try {
-
-        await auth.signOut();
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "logoutUser error:",
-            error
-        );
-
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
-    }
-}
-
-
-/* =========================================================
-   FORGOT PASSWORD
-   ========================================================= */
-
-async function forgotPassword(email) {
-
-    email =
-        String(email || "").trim();
-
-
-    if (!email) {
-
-        throw new Error(
-            "Please enter your email address."
-        );
+        return {
+            id: user.uid,
+            ...userData
+        };
     }
 
 
-    try {
+    /* =======================================================
+       LOGIN USER
+       ======================================================= */
 
-        await auth.sendPasswordResetEmail(
-            email
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "forgotPassword error:",
-            error
-        );
-
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
-    }
-}
-
-
-/* =========================================================
-   RESET PASSWORD
-   ========================================================= */
-
-async function resetPassword(
-    code,
-    newPassword
-) {
-
-    if (!code) {
-        throw new Error(
-            "Password reset code is missing."
-        );
-    }
-
-    if (!newPassword) {
-        throw new Error(
-            "Please enter a new password."
-        );
-    }
-
-    if (newPassword.length < 6) {
-        throw new Error(
-            "Password must be at least 6 characters."
-        );
-    }
-
-
-    try {
-
-        await auth.confirmPasswordReset(
-            code,
-            newPassword
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(
-            "resetPassword error:",
-            error
-        );
-
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
-    }
-}
-
-
-/* =========================================================
-   CURRENT USER
-   ========================================================= */
-
-function getCurrentUser() {
-
-    return auth.currentUser;
-}
-
-
-/* =========================================================
-   AUTH STATE
-   ========================================================= */
-
-function onAuthStateChanged(callback) {
-
-    if (
-        typeof callback !== "function"
+    async function loginUser(
+        email,
+        password
     ) {
-        return;
+
+        try {
+
+            clearMessage();
+
+
+            email =
+                String(email || "")
+                .trim()
+                .toLowerCase();
+
+            password =
+                String(password || "");
+
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email address."
+                );
+
+                return null;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please enter your password."
+                );
+
+                return null;
+            }
+
+
+            console.log(
+                "Logging in:",
+                email
+            );
+
+
+            const result =
+                await auth.signInWithEmailAndPassword(
+                    email,
+                    password
+                );
+
+
+            const user =
+                result.user;
+
+
+            if (!user) {
+
+                throw new Error(
+                    "Login failed. User not found."
+                );
+            }
+
+
+            console.log(
+                "Firebase login successful:",
+                user.uid
+            );
+
+
+            /*
+             * Load Firestore user profile.
+             */
+
+            let userData =
+                await getUserData(user.uid);
+
+
+            /*
+             * If profile doesn't exist,
+             * create a normal user profile.
+             */
+
+            if (!userData) {
+
+                userData =
+                    await createUserProfile(
+                        user
+                    );
+            }
+
+
+            showMessage(
+                "Login successful. Redirecting...",
+                "success"
+            );
+
+
+            /*
+             * Save basic login information.
+             */
+
+            try {
+
+                localStorage.setItem(
+                    "skillEarnUser",
+                    JSON.stringify({
+                        uid: user.uid,
+                        email: user.email || "",
+                        name:
+                            userData.name ||
+                            user.displayName ||
+                            "Member",
+                        role:
+                            userData.role ||
+                            "user"
+                    })
+                );
+
+            } catch (storageError) {
+
+                console.warn(
+                    "localStorage error:",
+                    storageError
+                );
+            }
+
+
+            /*
+             * Redirect according to role.
+             */
+
+            if (
+                userData.role === "admin"
+            ) {
+
+                window.location.href =
+                    "admin.html";
+
+            } else {
+
+                window.location.href =
+                    "dashboard.html";
+            }
+
+
+            return {
+                user: user,
+                userData: userData
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "Login error:",
+                error
+            );
+
+
+            showMessage(
+                getLoginErrorMessage(error),
+                "error"
+            );
+
+
+            return null;
+        }
     }
 
-    return auth.onAuthStateChanged(
-        callback
-    );
-}
+
+    /* =======================================================
+       REGISTER USER
+       ======================================================= */
+
+    async function registerUser(
+        name,
+        email,
+        password
+    ) {
+
+        try {
+
+            clearMessage();
 
 
-/* =========================================================
-   REQUIRE LOGIN
-   ========================================================= */
+            name =
+                String(name || "")
+                .trim();
 
-async function requireAuth(
-    redirectPage = "login.html"
-) {
+            email =
+                String(email || "")
+                .trim()
+                .toLowerCase();
 
-    const user =
-        auth.currentUser;
+            password =
+                String(password || "");
 
 
-    if (!user) {
+            if (!name) {
 
-        window.location.href =
-            redirectPage;
+                showMessage(
+                    "Please enter your name."
+                );
 
-        return null;
+                return null;
+            }
+
+
+            if (!email) {
+
+                showMessage(
+                    "Please enter your email address."
+                );
+
+                return null;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    "Please enter a password."
+                );
+
+                return null;
+            }
+
+
+            if (password.length < 6) {
+
+                showMessage(
+                    "Password must be at least 6 characters."
+                );
+
+                return null;
+            }
+
+
+            const result =
+                await auth.createUserWithEmailAndPassword(
+                    email,
+                    password
+                );
+
+
+            const user =
+                result.user;
+
+
+            if (!user) {
+
+                throw new Error(
+                    "Account creation failed."
+                );
+            }
+
+
+            /*
+             * Update Firebase Auth display name.
+             */
+
+            await user.updateProfile({
+
+                displayName:
+                    name
+            });
+
+
+            /*
+             * Create Firestore profile.
+             */
+
+            const userData =
+                await createUserProfile(
+                    user,
+                    {
+                        name: name
+                    }
+                );
+
+
+            showMessage(
+                "Account created successfully.",
+                "success"
+            );
+
+
+            /*
+             * Save local session info.
+             */
+
+            try {
+
+                localStorage.setItem(
+                    "skillEarnUser",
+                    JSON.stringify({
+                        uid: user.uid,
+                        email: user.email || "",
+                        name: name,
+                        role: "user"
+                    })
+                );
+
+            } catch (error) {
+
+                console.warn(
+                    "Storage error:",
+                    error
+                );
+            }
+
+
+            setTimeout(function () {
+
+                window.location.href =
+                    "dashboard.html";
+
+            }, 500);
+
+
+            return {
+                user: user,
+                userData: userData
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "Register error:",
+                error
+            );
+
+
+            let message =
+                "Unable to create account.";
+
+
+            switch (error.code) {
+
+                case "auth/email-already-in-use":
+                    message =
+                        "This email is already registered.";
+                    break;
+
+                case "auth/invalid-email":
+                    message =
+                        "Please enter a valid email address.";
+                    break;
+
+                case "auth/weak-password":
+                    message =
+                        "Password is too weak.";
+                    break;
+
+                case "auth/network-request-failed":
+                    message =
+                        "Network error. Check your internet connection.";
+                    break;
+
+                default:
+                    message =
+                        error.message ||
+                        message;
+            }
+
+
+            showMessage(
+                message,
+                "error"
+            );
+
+
+            return null;
+        }
     }
 
 
-    const userData =
-        await getUserData(
-            user.uid
-        );
+    /* =======================================================
+       FORGOT PASSWORD
+       ======================================================= */
+
+    async function forgotPassword(email) {
+
+        try {
+
+            clearMessage();
 
 
-    return {
-        user: user,
-        userData: userData
-    };
-}
+            email =
+                String(email || "")
+                .trim()
+                .toLowerCase();
 
 
-/* =========================================================
-   REQUIRE ADMIN
-   ========================================================= */
+            if (!email) {
 
-async function requireAdmin(
-    redirectPage = "login.html"
-) {
+                showMessage(
+                    "Please enter your email address."
+                );
 
-    const user =
-        auth.currentUser;
+                return false;
+            }
 
 
-    if (!user) {
+            await auth.sendPasswordResetEmail(
+                email
+            );
 
-        window.location.href =
-            redirectPage;
 
-        return null;
+            showMessage(
+                "Password reset email has been sent. Check your inbox.",
+                "success"
+            );
+
+
+            return true;
+
+
+        } catch (error) {
+
+            console.error(
+                "Forgot password error:",
+                error
+            );
+
+
+            let message =
+                "Unable to send password reset email.";
+
+
+            switch (error.code) {
+
+                case "auth/invalid-email":
+                    message =
+                        "Please enter a valid email address.";
+                    break;
+
+                case "auth/user-not-found":
+                    message =
+                        "No account found with this email.";
+                    break;
+
+                case "auth/network-request-failed":
+                    message =
+                        "Network error. Please check your internet.";
+                    break;
+
+                default:
+                    message =
+                        error.message ||
+                        message;
+            }
+
+
+            showMessage(
+                message,
+                "error"
+            );
+
+
+            return false;
+        }
     }
 
 
-    try {
+    /* =======================================================
+       GOOGLE LOGIN
+       ======================================================= */
+
+    async function loginWithGoogle() {
+
+        try {
+
+            clearMessage();
+
+
+            const provider =
+                new firebase.auth.GoogleAuthProvider();
+
+
+            const result =
+                await auth.signInWithPopup(
+                    provider
+                );
+
+
+            const user =
+                result.user;
+
+
+            if (!user) {
+
+                throw new Error(
+                    "Google login failed."
+                );
+            }
+
+
+            let userData =
+                await getUserData(
+                    user.uid
+                );
+
+
+            /*
+             * Create Firestore profile
+             * if Google user is new.
+             */
+
+            if (!userData) {
+
+                userData =
+                    await createUserProfile(
+                        user
+                    );
+            }
+
+
+            try {
+
+                localStorage.setItem(
+                    "skillEarnUser",
+                    JSON.stringify({
+                        uid: user.uid,
+                        email: user.email || "",
+                        name:
+                            userData.name ||
+                            user.displayName ||
+                            "Member",
+                        role:
+                            userData.role ||
+                            "user"
+                    })
+                );
+
+            } catch (error) {
+
+                console.warn(error);
+            }
+
+
+            showMessage(
+                "Google login successful.",
+                "success"
+            );
+
+
+            if (
+                userData.role === "admin"
+            ) {
+
+                window.location.href =
+                    "admin.html";
+
+            } else {
+
+                window.location.href =
+                    "dashboard.html";
+            }
+
+
+            return {
+                user: user,
+                userData: userData
+            };
+
+
+        } catch (error) {
+
+            console.error(
+                "Google login error:",
+                error
+            );
+
+
+            let message =
+                "Google login failed.";
+
+
+            if (
+                error.code ===
+                "auth/popup-closed-by-user"
+            ) {
+
+                message =
+                    "Google login was cancelled.";
+
+            } else if (
+                error.code ===
+                "auth/popup-blocked"
+            ) {
+
+                message =
+                    "Popup was blocked by the browser.";
+
+            } else {
+
+                message =
+                    error.message ||
+                    message;
+            }
+
+
+            showMessage(
+                message,
+                "error"
+            );
+
+
+            return null;
+        }
+    }
+
+
+    /* =======================================================
+       LOGOUT
+       ======================================================= */
+
+    async function logoutUser() {
+
+        try {
+
+            await auth.signOut();
+
+
+            try {
+
+                localStorage.removeItem(
+                    "skillEarnUser"
+                );
+
+            } catch (error) {
+
+                console.warn(error);
+            }
+
+
+            window.location.href =
+                "login.html";
+
+
+        } catch (error) {
+
+            console.error(
+                "Logout error:",
+                error
+            );
+
+            showMessage(
+                "Unable to logout.",
+                "error"
+            );
+        }
+    }
+
+
+    /* =======================================================
+       CURRENT USER
+       ======================================================= */
+
+    function getCurrentUser() {
+
+        return auth.currentUser || null;
+    }
+
+
+    /* =======================================================
+       REQUIRE LOGIN
+       ======================================================= */
+
+    async function requireLogin(
+        redirectPage = "login.html"
+    ) {
+
+        const user =
+            auth.currentUser;
+
+
+        if (!user) {
+
+            window.location.href =
+                redirectPage;
+
+            return null;
+        }
+
 
         const userData =
             await getUserData(
@@ -590,216 +967,55 @@ async function requireAdmin(
             );
 
 
-        if (!userData) {
-
-            console.error(
-                "Admin check: user document not found."
-            );
-
-            await auth.signOut();
-
-            window.location.href =
-                redirectPage;
-
-            return null;
-        }
-
-
-        if (
-            String(userData.role || "")
-                .toLowerCase() !== "admin"
-        ) {
-
-            console.error(
-                "Admin access denied."
-            );
-
-            await auth.signOut();
-
-            alert(
-                "Access denied. Admin account required."
-            );
-
-            window.location.href =
-                redirectPage;
-
-            return null;
-        }
-
-
         return {
             user: user,
             userData: userData
         };
-
-    } catch (error) {
-
-        console.error(
-            "requireAdmin error:",
-            error
-        );
-
-        await auth.signOut();
-
-        window.location.href =
-            redirectPage;
-
-        return null;
-    }
-}
-
-
-/* =========================================================
-   MAKE ADMIN
-   ========================================================= */
-
-async function makeAdmin(uid) {
-
-    if (!uid) {
-
-        throw new Error(
-            "User UID is required."
-        );
     }
 
 
-    await db
-        .collection("users")
-        .doc(uid)
-        .update({
+    /* =======================================================
+       REQUIRE ADMIN
+       ======================================================= */
 
-            role: "admin",
-
-            updatedAt:
-                firebase.firestore.FieldValue.serverTimestamp()
-
-        });
-
-
-    return true;
-}
-
-
-/* =========================================================
-   REMOVE ADMIN
-   ========================================================= */
-
-async function removeAdmin(uid) {
-
-    if (!uid) {
-
-        throw new Error(
-            "User UID is required."
-        );
-    }
-
-
-    await db
-        .collection("users")
-        .doc(uid)
-        .update({
-
-            role: "user",
-
-            updatedAt:
-                firebase.firestore.FieldValue.serverTimestamp()
-
-        });
-
-
-    return true;
-}
-
-
-/* =========================================================
-   REFERRAL CODE
-   ========================================================= */
-
-function createReferralCode(uid) {
-
-    const cleanUid =
-        String(uid || "")
-            .replace(/[^a-zA-Z0-9]/g, "");
-
-    return (
-        "SEH" +
-        cleanUid
-            .substring(0, 8)
-            .toUpperCase()
-    );
-}
-
-
-/* =========================================================
-   GOOGLE LOGIN
-   ========================================================= */
-
-async function loginWithGoogle() {
-
-    try {
-
-        const provider =
-            new firebase.auth.GoogleAuthProvider();
-
-        const result =
-            await auth.signInWithPopup(
-                provider
-            );
+    async function requireAdmin(
+        redirectPage = "dashboard.html"
+    ) {
 
         const user =
-            result.user;
+            auth.currentUser;
 
 
-        let userData =
+        if (!user) {
+
+            window.location.href =
+                "login.html";
+
+            return null;
+        }
+
+
+        const userData =
             await getUserData(
                 user.uid
             );
 
 
-        if (!userData) {
+        if (
+            !userData ||
+            userData.role !== "admin"
+        ) {
 
-            await db
-                .collection("users")
-                .doc(user.uid)
-                .set({
-
-                    uid: user.uid,
-
-                    name:
-                        user.displayName ||
-                        "Member",
-
-                    email:
-                        user.email || "",
-
-                    role: "user",
-
-                    status: "active",
-
-                    enrolledCourses: 0,
-
-                    earnings: 0,
-
-                    walletBalance: 0,
-
-                    referralCode:
-                        createReferralCode(
-                            user.uid
-                        ),
-
-                    createdAt:
-                        firebase.firestore.FieldValue.serverTimestamp(),
-
-                    updatedAt:
-                        firebase.firestore.FieldValue.serverTimestamp()
-
-                });
+            alert(
+                "Access denied. Administrator permission required."
+            );
 
 
-            userData =
-                await getUserData(
-                    user.uid
-                );
+            window.location.href =
+                redirectPage;
+
+
+            return null;
         }
 
 
@@ -807,122 +1023,104 @@ async function loginWithGoogle() {
             user: user,
             userData: userData
         };
-
-    } catch (error) {
-
-        console.error(
-            "Google login error:",
-            error
-        );
-
-        throw new Error(
-            getFirebaseErrorMessage(error)
-        );
     }
-}
 
 
-/* =========================================================
-   UPDATE USER PROFILE
-   ========================================================= */
+    /* =======================================================
+       AUTH STATE LISTENER
+       ======================================================= */
 
-async function updateUserProfile(
-    uid,
-    data
-) {
+    function onAuthStateChanged(
+        callback
+    ) {
 
-    if (!uid) {
-
-        throw new Error(
-            "User UID is required."
+        return auth.onAuthStateChanged(
+            callback
         );
     }
 
 
-    if (!data) {
-        return false;
-    }
+    /* =======================================================
+       MAKE FUNCTIONS AVAILABLE GLOBALLY
+       =======================================================
+       
+       IMPORTANT:
+       Your login.html is calling:
+       
+       window.loginUser()
+       window.forgotPassword()
+       
+       Therefore these MUST be attached to window.
+       
+    ======================================================= */
+
+    window.loginUser =
+        loginUser;
+
+    window.registerUser =
+        registerUser;
+
+    window.forgotPassword =
+        forgotPassword;
+
+    window.loginWithGoogle =
+        loginWithGoogle;
+
+    window.logoutUser =
+        logoutUser;
+
+    window.getCurrentUser =
+        getCurrentUser;
+
+    window.getUserData =
+        getUserData;
+
+    window.requireLogin =
+        requireLogin;
+
+    window.requireAdmin =
+        requireAdmin;
+
+    window.onAuthStateChanged =
+        onAuthStateChanged;
 
 
-    await db
-        .collection("users")
-        .doc(uid)
-        .update({
+    /* =======================================================
+       SKILLEARN AUTH API
+       ======================================================= */
 
-            ...data,
+    window.SkillEarnAuth = {
 
-            updatedAt:
-                firebase.firestore.FieldValue.serverTimestamp()
+        auth: auth,
 
-        });
+        db: db,
 
+        loginUser,
 
-    return true;
-}
+        registerUser,
 
+        forgotPassword,
 
-/* =========================================================
-   GLOBAL API
-   ========================================================= */
+        loginWithGoogle,
 
-window.loginUser =
-    loginUser;
+        logoutUser,
 
-window.registerUser =
-    registerUser;
+        getCurrentUser,
 
-window.logoutUser =
-    logoutUser;
+        getUserData,
 
-window.forgotPassword =
-    forgotPassword;
+        createUserProfile,
 
-window.resetPassword =
-    resetPassword;
+        requireLogin,
 
-window.getCurrentUser =
-    getCurrentUser;
+        requireAdmin,
 
-window.getUserData =
-    getUserData;
-
-window.requireAuth =
-    requireAuth;
-
-window.requireAdmin =
-    requireAdmin;
-
-window.onAuthStateChanged =
-    onAuthStateChanged;
-
-window.loginWithGoogle =
-    loginWithGoogle;
-
-window.makeAdmin =
-    makeAdmin;
-
-window.removeAdmin =
-    removeAdmin;
-
-window.updateUserProfile =
-    updateUserProfile;
-
-window.createReferralCode =
-    createReferralCode;
+        onAuthStateChanged
+    };
 
 
-/* =========================================================
-   CONSOLE
-   ========================================================= */
+    console.log(
+        "SkillEarn Hub auth.js loaded successfully."
+    );
 
-console.log(
-    "SkillEarn Hub auth.js loaded successfully."
-);
-console.log(
-    "Firebase Auth:",
-    !!auth
-);
-console.log(
-    "Firestore:",
-    !!db
-);
+})();

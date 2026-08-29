@@ -798,3 +798,78 @@ RESPONSIVE
 }
 
 }
+/* =========================================================
+TRANSACTION ROWS
+========================================================= */
+
+.transaction-list {
+min-height: 175px;
+}
+
+.transaction-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 15px;
+padding: 13px 0;
+border-bottom: 1px solid rgba(255,255,255,0.035);
+}
+
+.transaction-row:last-child {
+border-bottom: 0;
+}
+
+.transaction-main {
+display: flex;
+min-width: 0;
+align-items: center;
+gap: 9px;
+}
+
+.transaction-icon {
+display: grid;
+width: 31px;
+height: 31px;
+flex: 0 0 31px;
+place-items: center;
+border-radius: 8px;
+color: #7771cf;
+background: rgba(109,93,252,0.07);
+font-size: 0.65rem;
+font-weight: 800;
+}
+
+.transaction-main strong {
+display: block;
+overflow: hidden;
+color: #707c8f;
+font-size: 0.45rem;
+text-overflow: ellipsis;
+white-space: nowrap;
+}
+
+.transaction-main small,
+.transaction-value small {
+display: block;
+margin-top: 3px;
+color: #404c5f;
+font-size: 0.37rem;
+}
+
+.transaction-value {
+flex: 0 0 auto;
+text-align: right;
+}
+
+.transaction-value strong {
+display: block;
+font-size: 0.45rem;
+}
+
+.transaction-value strong.credit {
+color: #5eb48c;
+}
+
+.transaction-value strong.debit {
+color: #9b747e;
+}

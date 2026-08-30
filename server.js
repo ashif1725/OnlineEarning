@@ -52,6 +52,14 @@ const withdrawalRoutes =
 const adminWithdrawalRoutes =
     require("./src/routes/admin-withdrawal.routes");
 
+const adminUsersRoutes =
+    require("./src/routes/admin-users.routes");
+
+
+app.use(
+    "/api/admin/users",
+    adminUsersRoutes
+);
 
 app.use(
     "/api/admin/withdrawals",

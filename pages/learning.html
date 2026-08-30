@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+
+    <title>My Learning | SkillEarn Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <style>
+        .page-container {
+            max-width: 1500px;
+            padding: 32px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading span {
+            color: #635bff;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .page-heading h2 {
+            margin: 8px 0 6px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 28px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: #667085;
+            font-size: 12px;
+        }
+
+        .learning-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .learning-card {
+            padding: 22px;
+            border: 1px solid #e6e8ee;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(16,24,40,.03);
+        }
+
+        .learning-icon {
+            width: 46px;
+            height: 46px;
+            display: grid;
+            place-items: center;
+            border-radius: 13px;
+            background: #f0efff;
+            color: #635bff;
+            font-size: 20px;
+        }
+
+        .learning-card h3 {
+            margin: 18px 0 7px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 16px;
+        }
+
+        .learning-card p {
+            min-height: 42px;
+            margin: 0;
+            color: #667085;
+            font-size: 10px;
+            line-height: 1.6;
+        }
+
+        .learning-progress {
+            height: 7px;
+            margin-top: 18px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #eef0f5;
+        }
+
+        .learning-progress span {
+            display: block;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg,#635bff,#8b5cf6);
+        }
+
+        .learning-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: #667085;
+            font-size: 9px;
+        }
+
+        @media (max-width: 900px) {
+            .learning-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 22px 17px;
+            }
+
+            .learning-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-body">
+
+<div class="dashboard-app">
+
+    <aside class="dashboard-sidebar">
+
+        <a href="../dashboard.html" class="dashboard-brand">
+            <div class="dashboard-brand-logo">S</div>
+
+            <div class="dashboard-brand-name">
+                <strong>SkillEarn</strong>
+                <small>HUB</small>
+            </div>
+        </a>
+
+        <div class="sidebar-section-title">MAIN MENU</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="../dashboard.html" class="sidebar-link">
+                <span class="sidebar-link-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="./learning.html" class="sidebar-link active">
+                <span class="sidebar-link-icon">◈</span>
+                <span>My Learning</span>
+            </a>
+
+            <a href="./achievements.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◆</span>
+                <span>Achievements</span>
+            </a>
+
+            <a href="./activity.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◷</span>
+                <span>Activity</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-section-title">ACCOUNT</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="./profile.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◎</span>
+                <span>Profile</span>
+            </a>
+
+            <a href="./settings.html" class="sidebar-link">
+                <span class="sidebar-link-icon">⚙</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="sidebar-logout" id="logoutButton">
+                <span>↪</span>
+                Sign Out
+            </button>
+        </div>
+
+    </aside>
+
+    <div class="dashboard-main">
+
+        <header class="dashboard-topbar">
+
+            <div class="topbar-heading">
+                <h1>My Learning</h1>
+                <p>Continue building your skills</p>
+            </div>
+
+            <a href="./profile.html" class="topbar-user">
+                <div class="topbar-avatar" id="userAvatar">U</div>
+
+                <div class="topbar-user-info">
+                    <strong id="userName">User</strong>
+                    <small id="userEmail">Loading...</small>
+                </div>
+            </a>
+
+        </header>
+
+        <main class="page-container">
+
+            <div class="page-heading">
+                <span>LEARNING CENTER</span>
+
+                <h2>Build skills that matter.</h2>
+
+                <p>
+                    Keep track of your learning journey and continue making progress.
+                </p>
+            </div>
+
+            <section class="learning-grid">
+
+                <article class="learning-card">
+                    <div class="learning-icon">✦</div>
+
+                    <h3>UI/UX Design</h3>
+
+                    <p>
+                        Learn design principles, user experience and modern interface thinking.
+                    </p>
+
+                    <div class="learning-progress">
+                        <span style="width:78%"></span>
+                    </div>
+
+                    <div class="learning-meta">
+                        <span>Progress</span>
+                        <strong>78%</strong>
+                    </div>
+                </article>
+
+                <article class="learning-card">
+                    <div class="learning-icon">◆</div>
+
+                    <h3>Digital Skills</h3>
+
+                    <p>
+                        Develop practical digital skills for modern projects and opportunities.
+                    </p>
+
+                    <div class="learning-progress">
+                        <span style="width:56%"></span>
+                    </div>
+
+                    <div class="learning-meta">
+                        <span>Progress</span>
+                        <strong>56%</strong>
+                    </div>
+                </article>
+
+                <article class="learning-card">
+                    <div class="learning-icon">↗</div>
+
+                    <h3>Personal Growth</h3>
+
+                    <p>
+                        Build productive habits and improve your ability to reach meaningful goals.
+                    </p>
+
+                    <div class="learning-progress">
+                        <span style="width:42%"></span>
+                    </div>
+
+                    <div class="learning-meta">
+                        <span>Progress</span>
+                        <strong>42%</strong>
+                    </div>
+                </article>
+
+            </section>
+
+        </main>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+
+<script>
+    const logoutButton = document.getElementById("logoutButton");
+
+    firebase.auth().onAuthStateChanged(function(user) {
+
+        if (!user) {
+            window.location.replace("./login.html");
+            return;
+        }
+
+        const name = user.displayName ||
+            (user.email ? user.email.split("@")[0] : "User");
+
+        document.getElementById("userName").textContent = name;
+        document.getElementById("userEmail").textContent = user.email || "";
+        document.getElementById("userAvatar").textContent =
+            name.charAt(0).toUpperCase();
+    });
+
+    logoutButton.addEventListener("click", async function() {
+        try {
+            await firebase.auth().signOut();
+            window.location.replace("./login.html");
+        } catch (error) {
+            console.error(error);
+            alert("Unable to sign out. Please try again.");
+        }
+    });
+</script>
+
+</body>
+</html>

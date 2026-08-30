@@ -21,6 +21,15 @@ const profileRoutes =
 
 const walletRoutes =
     require("./src/routes/wallet.routes");
+
+const transferRoutes =
+    require("./src/routes/transfer.routes");
+
+app.use(
+    "/api/transfers",
+    transferRoutes
+);
+
 app.use(
     "/api/wallet",
     walletRoutes

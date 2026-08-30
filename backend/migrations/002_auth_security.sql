@@ -1,4 +1,4 @@
-CREATE TABLE user_sessions (
+CREATE TABLE email_verification_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
     user_id UUID
@@ -6,30 +6,19 @@ CREATE TABLE user_sessions (
         REFERENCES users(id)
         ON DELETE CASCADE,
 
-    session_token_hash TEXT
+    token_hash TEXT
         UNIQUE
         NOT NULL,
-
-    ip_address INET,
-
-    user_agent TEXT,
 
     expires_at TIMESTAMPTZ
         NOT NULL,
 
-    revoked_at TIMESTAMPTZ,
+    used_at TIMESTAMPTZ,
 
     created_at TIMESTAMPTZ
-        NOT NULL DEFAULT NOW(),
-
-    last_used_at TIMESTAMPTZ
         NOT NULL DEFAULT NOW()
 );
 
 
-CREATE INDEX idx_user_sessions_user
-ON user_sessions(user_id);
-
-
-CREATE INDEX idx_user_sessions_expiry
-ON user_sessions(expires_at);
+CREATE INDEX idx_email_verification_user
+ON email_verification_tokens(user_id);

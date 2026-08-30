@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="SkillEarn Hub Administrative Audit Logs"
+    >
+
+    <title>Audit Logs — SkillEarn Hub Admin</title>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+    >
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/admin.css"
+    >
+
+</head>
+
+
+<body data-admin-page="audit">
+
+
+<div class="admin-shell">
+
+
+    <aside class="admin-sidebar">
+
+        <div class="admin-brand">
+
+            <div class="admin-logo">
+                S
+            </div>
+
+            <div>
+
+                <strong>
+                    SkillEarn
+                </strong>
+
+                <small>
+                    ADMIN CONTROL
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <nav class="admin-nav">
+
+            <a href="./index.html">
+                <span>▦</span>
+                Dashboard
+            </a>
+
+            <a href="./users.html">
+                <span>◉</span>
+                Users
+            </a>
+
+            <a href="./deposits.html">
+                <span>＋</span>
+                Deposits
+            </a>
+
+            <a href="./withdrawals.html">
+                <span>↗</span>
+                Withdrawals
+            </a>
+
+            <a href="./wallet.html">
+                <span>₹</span>
+                Wallet
+            </a>
+
+            <a href="./reports.html">
+                <span>▥</span>
+                Reports
+            </a>
+
+            <a href="./settings.html">
+                <span>⚙</span>
+                Settings
+            </a>
+
+            <a
+                href="./audit-logs.html"
+                class="active"
+            >
+                <span>◌</span>
+                Audit Logs
+            </a>
+
+            <div class="admin-nav-divider"></div>
+
+            <a href="../pages/dashboard.html">
+                <span>←</span>
+                User Dashboard
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <main class="admin-main">
+
+
+        <header class="admin-topbar">
+
+            <div class="admin-topbar-left">
+
+                <button
+                    type="button"
+                    class="admin-menu"
+                    id="adminMenu"
+                >
+                    ☰
+                </button>
+
+                <div>
+
+                    <span class="admin-page-label">
+                        Security
+                    </span>
+
+                    <h1>
+                        Audit Logs
+                    </h1>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-user">
+
+                <div class="admin-user-info">
+
+                    <strong>
+                        Administrator
+                    </strong>
+
+                    <span data-admin-email>
+                        Loading...
+                    </span>
+
+                </div>
+
+                <div class="admin-avatar">
+                    A
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-btn neutral"
+                    id="adminLogout"
+                >
+                    Logout
+                </button>
+
+            </div>
+
+        </header>
+
+
+        <div class="admin-content">
+
+
+            <section class="admin-welcome">
+
+                <div>
+
+                    <span class="admin-eyebrow">
+                        Security
+                    </span>
+
+                    <h2>
+                        Administrative Activity
+                    </h2>
+
+                    <p>
+                        Review administrative actions recorded by the
+                        platform.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <div class="admin-notice">
+
+                <strong>
+                    Audit integrity:
+                </strong>
+
+                In the production implementation, audit records should be
+                append-only and created by trusted backend code.
+
+            </div>
+
+
+            <section class="admin-section">
+
+
+                <div class="admin-table-wrap">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Action
+                                </th>
+
+                                <th>
+                                    Admin UID
+                                </th>
+
+                                <th>
+                                    Target ID
+                                </th>
+
+                                <th>
+                                    Reason / Note
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="auditRows">
+
+                            <tr>
+
+                                <td
+                                    colspan="5"
+                                    class="admin-empty"
+                                >
+                                    Loading audit logs...
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script src="../js/firebase-config.js"></script>
+
+<script src="../js/admin.js"></script>
+
+</body>
+
+</html>

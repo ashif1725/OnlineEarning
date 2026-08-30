@@ -34,6 +34,14 @@ const transactionRoutes =
 const paymentMethodRoutes =
     require("./src/routes/payment-method.routes");
 
+const depositRoutes =
+    require("./src/routes/deposit.routes");
+
+
+app.use(
+    "/api/deposits",
+    depositRoutes
+);
 
 app.use(
     "/api/payment-methods",

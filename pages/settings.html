@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+
+    <title>Settings | SkillEarn Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <style>
+        .page-container {
+            max-width: 950px;
+            padding: 32px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading span {
+            color: #635bff;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .page-heading h2 {
+            margin: 8px 0 6px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 28px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: #667085;
+            font-size: 12px;
+        }
+
+        .settings-card {
+            padding: 5px 24px;
+            border: 1px solid #e6e8ee;
+            border-radius: 16px;
+            background: #fff;
+        }
+
+        .setting-row {
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .setting-row:last-child {
+            border-bottom: 0;
+        }
+
+        .setting-info strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .setting-info span {
+            display: block;
+            margin-top: 4px;
+            color: #667085;
+            font-size: 9px;
+        }
+
+        .setting-button {
+            padding: 8px 12px;
+            border: 1px solid #e6e8ee;
+            border-radius: 8px;
+            background: #fff;
+            color: #344054;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .setting-button:hover {
+            border-color: #c9c5ff;
+            color: #635bff;
+        }
+
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 22px 17px;
+            }
+
+            .setting-row {
+                align-items: flex-start;
+                flex-direction: column;
+                justify-content: center;
+                gap: 8px;
+                padding: 14px 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-body">
+
+<div class="dashboard-app">
+
+    <aside class="dashboard-sidebar">
+
+        <a href="../dashboard.html" class="dashboard-brand">
+            <div class="dashboard-brand-logo">S</div>
+
+            <div class="dashboard-brand-name">
+                <strong>SkillEarn</strong>
+                <small>HUB</small>
+            </div>
+        </a>
+
+        <div class="sidebar-section-title">MAIN MENU</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="../dashboard.html" class="sidebar-link">
+                <span class="sidebar-link-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="./learning.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◈</span>
+                <span>My Learning</span>
+            </a>
+
+            <a href="./achievements.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◆</span>
+                <span>Achievements</span>
+            </a>
+
+            <a href="./activity.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◷</span>
+                <span>Activity</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-section-title">ACCOUNT</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="./profile.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◎</span>
+                <span>Profile</span>
+            </a>
+
+            <a href="./settings.html" class="sidebar-link active">
+                <span class="sidebar-link-icon">⚙</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="sidebar-logout" id="logoutButton">
+                <span>↪</span>
+                Sign Out
+            </button>
+        </div>
+
+    </aside>
+
+    <div class="dashboard-main">
+
+        <header class="dashboard-topbar">
+
+            <div class="topbar-heading">
+                <h1>Settings</h1>
+                <p>Manage your account preferences</p>
+            </div>
+
+        </header>
+
+        <main class="page-container">
+
+            <div class="page-heading">
+                <span>ACCOUNT SETTINGS</span>
+
+                <h2>Settings.</h2>
+
+                <p>
+                    Account controls and preferences will be connected to the backend as the platform develops.
+                </p>
+            </div>
+
+            <section class="settings-card">
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <strong>Account Security</strong>
+                        <span>Authentication is handled by Firebase.</span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="setting-button"
+                        onclick="alert('Security settings will be added in the next backend step.')"
+                    >
+                        Manage
+                    </button>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <strong>Email Notifications</strong>
+                        <span>Notification preferences can be configured here.</span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="setting-button"
+                        onclick="alert('Notification settings will be added later.')"
+                    >
+                        Configure
+                    </button>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <strong>Profile Preferences</strong>
+                        <span>Manage your account information from your profile.</span>
+                    </div>
+
+                    <a
+                        href="./profile.html"
+                        class="setting-button"
+                    >
+                        Profile
+                    </a>
+
+                </div>
+
+                <div class="setting-row">
+
+                    <div class="setting-info">
+                        <strong>Sign Out</strong>
+                        <span>Sign out from your current SkillEarn Hub session.</span>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="setting-button"
+                        id="logoutButtonSecondary"
+                    >
+                        Sign Out
+                    </button>
+
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+
+<script>
+    function logout() {
+
+        firebase.auth().signOut()
+            .then(function() {
+                window.location.replace("./login.html");
+            })
+            .catch(function(error) {
+                console.error(error);
+                alert("Unable to sign out. Please try again.");
+            });
+
+    }
+
+    firebase.auth().onAuthStateChanged(function(user) {
+
+        if (!user) {
+            window.location.replace("./login.html");
+        }
+
+    });
+
+    document
+        .getElementById("logoutButton")
+        .addEventListener("click", logout);
+
+    document
+        .getElementById("logoutButtonSecondary")
+        .addEventListener("click", logout);
+</script>
+
+</body>
+</html>

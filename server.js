@@ -5,6 +5,7 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const authRoutes =
     require("./src/routes/auth.routes");
@@ -28,6 +29,7 @@ app.use(
     cors({
         origin:
             process.env.FRONTEND_ORIGIN,
+
         credentials: true
     })
 );
@@ -40,6 +42,9 @@ app.use(
 );
 
 
+app.use(cookieParser());
+
+
 app.get(
     "/api/health",
     (req, res) => {
@@ -49,6 +54,7 @@ app.get(
             service: "SkillEarn Hub API",
             status: "healthy"
         });
+
     }
 );
 

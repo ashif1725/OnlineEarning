@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Dashboard — SkillEarn Hub</title>
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/app.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/dashboard.css"
+    >
+
+</head>
+
+
+<body>
+
+<header class="dashboard-header">
+
+    <div class="container dashboard-nav">
+
+        <a
+            href="../index.html"
+            class="brand"
+        >
+
+            <span class="brand-mark">
+                S
+            </span>
+
+            <span>
+                SkillEarn
+            </span>
+
+        </a>
+
+
+        <button
+            id="logoutButton"
+            class="btn btn-ghost"
+            type="button"
+        >
+            Logout
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="dashboard">
+
+    <div class="container">
+
+        <section class="welcome">
+
+            <div>
+
+                <div class="eyebrow">
+                    USER DASHBOARD
+                </div>
+
+                <h1>
+                    Welcome,
+                    <span id="userName">
+                        —
+                    </span>
+                </h1>
+
+                <p>
+                    Manage your SkillEarn Hub account
+                    from one secure dashboard.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <section class="dashboard-grid">
+
+            <article class="dashboard-card">
+
+                <span>
+                    USER ID
+                </span>
+
+                <strong id="userId">
+                    —
+                </strong>
+
+            </article>
+
+
+            <article class="dashboard-card">
+
+                <span>
+                    ACCOUNT STATUS
+                </span>
+
+                <strong id="accountStatus">
+                    —
+                </strong>
+
+            </article>
+
+
+            <article class="dashboard-card">
+
+                <span>
+                    EMAIL
+                </span>
+
+                <strong id="userEmail">
+                    —
+                </strong>
+
+            </article>
+
+
+            <article class="dashboard-card">
+
+                <span>
+                    EMAIL VERIFICATION
+                </span>
+
+                <strong id="emailStatus">
+                    —
+                </strong>
+
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-placeholder">
+
+            <div class="eyebrow">
+                WALLET
+            </div>
+
+            <h2>
+                Wallet services are being connected
+                through the secure API.
+            </h2>
+
+            <p>
+                Balance, transfers, deposits and
+                withdrawals will be loaded only from
+                the server-side wallet ledger.
+            </p>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<script src="../assets/js/dashboard.js"></script>
+
+</body>
+
+</html>

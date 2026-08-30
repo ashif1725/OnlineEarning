@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Receive Money</title>
+</head>
+
+
+<body>
+
+<main>
+
+    <h1>Receive Money</h1>
+
+    <p>Your SkillEarn Hub User ID</p>
+
+    <strong id="userId">
+        Loading...
+    </strong>
+
+
+    <div>
+        <img
+            id="qrCode"
+            alt="Internal wallet QR"
+        >
+    </div>
+
+
+    <p>
+        Share this QR with another
+        SkillEarn Hub user.
+    </p>
+
+</main>
+
+
+<script>
+
+async function loadReceivePage() {
+
+    const response =
+        await fetch(
+            "/api/qr/my",
+            {
+                credentials: "include"
+            }
+        );
+
+
+    if (response.status === 401) {
+
+        window.location.href =
+            "../login.html";
+
+        return;
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.success) {
+
+        alert(
+            "Unable to load QR"
+        );
+
+        return;
+    }
+
+
+    document.getElementById(
+        "userId"
+    ).textContent =
+        data.qr.userId;
+
+
+    document.getElementById(
+        "qrCode"
+    ).src =
+        data.qr.qrDataUrl;
+}
+
+
+loadReceivePage();
+
+</script>
+
+</body>
+
+</html>

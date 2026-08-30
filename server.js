@@ -25,6 +25,15 @@ const walletRoutes =
 const transferRoutes =
     require("./src/routes/transfer.routes");
 
+const recipientRoutes =
+    require("./src/routes/recipient.routes");
+
+
+app.use(
+    "/api/recipients",
+    recipientRoutes
+);
+
 app.use(
     "/api/transfers",
     transferRoutes

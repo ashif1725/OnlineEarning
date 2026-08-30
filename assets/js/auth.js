@@ -1,7 +1,6 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
-
     const registerForm =
         document.getElementById("registerForm");
 
@@ -34,17 +33,84 @@ document.addEventListener("DOMContentLoaded", () => {
             handleForgotPassword
         );
     }
-
 });
 
 
-function handleRegister(event) {
+function getApiUrl(path) {
+
+    const base =
+        window.SKILLEARN_CONFIG?.apiBaseUrl || "";
+
+    return `${base}${path}`;
+}
+
+
+async function apiRequest(
+    path,
+    options = {}
+) {
+
+    const response =
+        await fetch(
+            getApiUrl(path),
+            {
+                method:
+                    options.method || "GET",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    ...(options.headers || {})
+                },
+
+                credentials: "include",
+
+                body:
+                    options.body
+                        ? JSON.stringify(options.body)
+                        : undefined
+            }
+        );
+
+
+    let data = null;
+
+    try {
+        data = await response.json();
+    } catch {
+        data = {};
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            "REQUEST_FAILED"
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================
+   REGISTER
+========================= */
+
+async function handleRegister(event) {
 
     event.preventDefault();
 
     clearMessages();
 
-    const form = event.currentTarget;
+
+    const form =
+        event.currentTarget;
+
 
     const fullName =
         form.fullName.value.trim();
@@ -105,7 +171,7 @@ function handleRegister(event) {
 
         setFieldError(
             "password",
-            "Password does not meet the security requirements."
+            "Use at least 12 characters."
         );
 
         valid = false;
@@ -140,30 +206,92 @@ function handleRegister(event) {
     }
 
 
-    /*
-     * IMPORTANT:
-     *
-     * Registration will be sent to the real backend
-     * in the next integration stage.
-     *
-     * No fake user account is created here.
-     */
+    const button =
+        form.querySelector(
+            'button[type="submit"]'
+        );
 
-    showMessage(
-        "registerMessage",
-        "Account creation is ready for secure backend integration.",
-        "success"
+
+    setButtonLoading(
+        button,
+        true,
+        "Creating account..."
     );
+
+
+    try {
+
+        const result =
+            await apiRequest(
+                "/api/auth/register",
+                {
+                    method: "POST",
+
+                    body: {
+                        fullName,
+                        email,
+                        phone,
+                        password
+                    }
+                }
+            );
+
+
+        showMessage(
+            "registerMessage",
+            result.message ||
+            "Account created successfully. Please verify your email.",
+            "success"
+        );
+
+
+        form.reset();
+
+
+        setTimeout(() => {
+
+            window.location.href =
+                "verify-email.html";
+
+        }, 1200);
+
+
+    } catch (error) {
+
+        showMessage(
+            "registerMessage",
+            getFriendlyError(
+                error.message
+            ),
+            "error"
+        );
+
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Create Account"
+        );
+    }
 }
 
 
-function handleLogin(event) {
+/* =========================
+   LOGIN
+========================= */
+
+async function handleLogin(event) {
 
     event.preventDefault();
 
     clearMessages();
 
-    const form = event.currentTarget;
+
+    const form =
+        event.currentTarget;
+
 
     const email =
         form.email.value.trim();
@@ -194,28 +322,115 @@ function handleLogin(event) {
     }
 
 
-    /*
-     * No client-side authentication.
-     *
-     * Real authentication will be performed
-     * by the backend/authentication provider.
-     */
+    const button =
+        form.querySelector(
+            'button[type="submit"]'
+        );
 
-    showMessage(
-        "loginMessage",
-        "Login is ready for secure authentication integration.",
-        "success"
+
+    setButtonLoading(
+        button,
+        true,
+        "Signing in..."
     );
+
+
+    try {
+
+        const result =
+            await apiRequest(
+                "/api/auth/login",
+                {
+                    method: "POST",
+
+                    body: {
+                        email,
+                        password
+                    }
+                }
+            );
+
+
+        /*
+         * The server should set the
+         * HttpOnly session cookie.
+         *
+         * Do NOT store session tokens
+         * in localStorage.
+         */
+
+
+        if (
+            result.requires2FA === true
+        ) {
+
+            sessionStorage.setItem(
+                "skillearn_2fa_pending",
+                "true"
+            );
+
+
+            window.location.href =
+                "2fa.html";
+
+            return;
+        }
+
+
+        showMessage(
+            "loginMessage",
+            result.message ||
+            "Login successful.",
+            "success"
+        );
+
+
+        setTimeout(() => {
+
+            window.location.href =
+                "user/dashboard.html";
+
+        }, 700);
+
+
+    } catch (error) {
+
+        showMessage(
+            "loginMessage",
+            getFriendlyError(
+                error.message
+            ),
+            "error"
+        );
+
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Sign In"
+        );
+    }
 }
 
 
-function handleForgotPassword(event) {
+/* =========================
+   FORGOT PASSWORD
+========================= */
+
+async function handleForgotPassword(
+    event
+) {
 
     event.preventDefault();
 
     clearMessages();
 
-    const form = event.currentTarget;
+
+    const form =
+        event.currentTarget;
+
 
     const email =
         form.email.value.trim();
@@ -232,18 +447,74 @@ function handleForgotPassword(event) {
     }
 
 
-    /*
-     * Password recovery will use the
-     * real authentication service.
-     */
+    const button =
+        form.querySelector(
+            'button[type="submit"]'
+        );
 
-    showMessage(
-        "resetMessage",
-        "Password recovery is ready for secure backend integration.",
-        "success"
+
+    setButtonLoading(
+        button,
+        true,
+        "Sending..."
     );
+
+
+    try {
+
+        /*
+         * The backend should always
+         * return a generic response
+         * so account existence is not
+         * disclosed.
+         */
+
+        const result =
+            await apiRequest(
+                "/api/auth/forgot-password",
+                {
+                    method: "POST",
+
+                    body: {
+                        email
+                    }
+                }
+            );
+
+
+        showMessage(
+            "resetMessage",
+            result.message ||
+            "If the account exists, a recovery email has been sent.",
+            "success"
+        );
+
+
+    } catch (error) {
+
+        showMessage(
+            "resetMessage",
+            getFriendlyError(
+                error.message
+            ),
+            "error"
+        );
+
+
+    } finally {
+
+        setButtonLoading(
+            button,
+            false,
+            "Continue"
+        );
+    }
 }
 
+
+/* =========================
+   HELPERS
+========================= */
 
 function isValidEmail(email) {
 
@@ -261,27 +532,33 @@ function isReasonablePhone(phone) {
 
 function isStrongPassword(password) {
 
-    if (password.length < 12) {
+    if (
+        password.length < 12 ||
+        password.length > 128
+    ) {
         return false;
     }
 
-    if (password.length > 128) {
-        return false;
-    }
 
     return true;
 }
 
 
-function setFieldError(fieldName, message) {
+function setFieldError(
+    fieldName,
+    message
+) {
 
     const element =
         document.querySelector(
             `[data-error-for="${fieldName}"]`
         );
 
+
     if (element) {
-        element.textContent = message;
+
+        element.textContent =
+            message;
     }
 }
 
@@ -289,21 +566,25 @@ function setFieldError(fieldName, message) {
 function clearMessages() {
 
     document
-        .querySelectorAll(".field-error")
+        .querySelectorAll(
+            ".field-error"
+        )
         .forEach(element => {
+
             element.textContent = "";
         });
 
 
     document
-        .querySelectorAll(".auth-message")
+        .querySelectorAll(
+            ".auth-message"
+        )
         .forEach(element => {
 
             element.textContent = "";
 
             element.className =
                 "auth-message";
-
         });
 }
 
@@ -315,14 +596,91 @@ function showMessage(
 ) {
 
     const element =
-        document.getElementById(elementId);
+        document.getElementById(
+            elementId
+        );
+
 
     if (!element) {
         return;
     }
 
-    element.textContent = message;
+
+    element.textContent =
+        message;
+
 
     element.className =
         `auth-message show ${type}`;
+}
+
+
+function setButtonLoading(
+    button,
+    loading,
+    text
+) {
+
+    if (!button) {
+        return;
+    }
+
+
+    if (loading) {
+
+        button.disabled = true;
+
+        button.dataset.originalText =
+            button.textContent;
+
+        button.textContent =
+            text;
+
+    } else {
+
+        button.disabled = false;
+
+        button.textContent =
+            text;
+    }
+}
+
+
+function getFriendlyError(
+    error
+) {
+
+    const messages = {
+
+        INVALID_CREDENTIALS:
+            "Email or password is incorrect.",
+
+        EMAIL_ALREADY_EXISTS:
+            "An account with this email already exists.",
+
+        EMAIL_NOT_VERIFIED:
+            "Please verify your email before signing in.",
+
+        ACCOUNT_SUSPENDED:
+            "Your account is currently suspended.",
+
+        ACCOUNT_BLOCKED:
+            "Your account is currently blocked.",
+
+        TOO_MANY_REQUESTS:
+            "Too many attempts. Please try again later.",
+
+        INVALID_REQUEST:
+            "Please check the information and try again.",
+
+        INTERNAL_SERVER_ERROR:
+            "Something went wrong. Please try again later."
+    };
+
+
+    return (
+        messages[error] ||
+        error ||
+        "Something went wrong. Please try again."
+    );
 }

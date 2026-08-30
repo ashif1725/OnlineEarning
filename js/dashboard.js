@@ -1,750 +1,289 @@
-/*
-
-* =========================================================
-* SKILLEARN HUB
-* CUSTOMER DASHBOARD
-* =========================================================
-  */
+/* =========================================================
+   SKILLEARN HUB
+   DASHBOARD JAVASCRIPT
+========================================================= */
 
 "use strict";
 
-import {
-onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
-import {
-doc,
-getDoc,
-collection,
-query,
-where,
-orderBy,
-limit,
-getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
-
-import {
-auth,
-db,
-logoutUser,
-getUserProfile
-} from "../firebase/firebase-auth.js";
 
 /* =========================================================
-DOM HELPERS
-========================================================= */
-
-function $(id) {
-return document.getElementById(id);
-}
-
-/* =========================================================
-FORMAT CURRENCY
-========================================================= */
-
-function formatCurrency(
-amount
-) {
-
-const value =
-    Number(amount || 0);
-
-
-return new Intl.NumberFormat(
-    "en-IN",
-    {
-        style: "currency",
-        currency: "INR",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }
-).format(value);
-
-}
-
-/* =========================================================
-SAFE TEXT
-========================================================= */
-
-function setText(
-element,
-value
-) {
-
-if (!element) {
-    return;
-}
-
-element.textContent =
-    value ?? "—";
-
-}
-
-/* =========================================================
-DATE FORMAT
-========================================================= */
-
-function formatDate(
-timestamp
-) {
-
-if (!timestamp) {
-    return "—";
-}
-
-
-let date;
-
-
-if (
-    typeof timestamp.toDate ===
-    "function"
-) {
-
-    date =
-        timestamp.toDate();
-
-} else {
-
-    date =
-        new Date(timestamp);
-
-}
-
-
-if (
-    Number.isNaN(
-        date.getTime()
-    )
-) {
-
-    return "—";
-
-}
-
-
-return new Intl.DateTimeFormat(
-    "en-IN",
-    {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    }
-).format(date);
-
-}
-
-/* =========================================================
-NAME HELPERS
-========================================================= */
-
-function getFirstName(
-name
-) {
-
-if (!name) {
-    return "Member";
-}
-
-
-return name
-    .trim()
-    .split(/\s+/)[0] ||
-    "Member";
-
-}
-
-/* =========================================================
-INITIALIZE USER
-========================================================= */
-
-async function initializeDashboard(
-user
-) {
-
-try {
-
-
-    /* -------------------------------------------------
-       USER PROFILE
-       ------------------------------------------------- */
-
-    const profile =
-        await getUserProfile(
-            user.uid
-        );
-
-
-    const displayName =
-        profile?.displayName ||
-        user.displayName ||
-        "Member";
-
-
-    const email =
-        profile?.email ||
-        user.email ||
-        "—";
-
-
-    const status =
-        profile?.accountStatus ||
-        "active";
-
-
-    setText(
-        $("welcomeName"),
-        getFirstName(displayName)
-    );
-
-
-    setText(
-        $("headerUserName"),
-        displayName
-    );
-
-
-    setText(
-        $("accountName"),
-        displayName
-    );
-
-
-    setText(
-        $("accountEmail"),
-        email
-    );
-
-
-    setText(
-        $("accountStatus"),
-        status === "active"
-            ? "Active"
-            : status
-    );
-
-
-    if (
-        profile?.createdAt
-    ) {
-
-        setText(
-            $("memberSince"),
-            formatDate(
-                profile.createdAt
-            )
-        );
-
-    } else if (
-        user.metadata?.creationTime
-    ) {
-
-        setText(
-            $("memberSince"),
-            formatDate(
-                user.metadata.creationTime
-            )
-        );
-
-    }
-
-
-    /* -------------------------------------------------
-       AVATAR
-       ------------------------------------------------- */
-
-    const avatarLetter =
-        getFirstName(
-            displayName
-        ).charAt(0)
-        .toUpperCase();
-
-
-    setText(
-        $("userAvatar"),
-        avatarLetter
-    );
-
-
-    /* -------------------------------------------------
-       ACCOUNT STATUS
-       ------------------------------------------------- */
-
-    if (
-        status !== "active"
-    ) {
-
-        const statusElement =
-            document.querySelector(
-                ".account-status"
-            );
-
-
-        if (statusElement) {
-
-            statusElement.innerHTML =
-                `<span class="status-dot"></span>${status}`;
-
-        }
-
-    }
-
-
-    /* -------------------------------------------------
-       WALLET
-       -------------------------------------------------
-       IMPORTANT:
-       Wallet is read-only on customer side.
-       */
-
-    await loadWallet(
-        user.uid
-    );
-
-
-    /* -------------------------------------------------
-       RECENT TRANSACTIONS
-       ------------------------------------------------- */
-
-    await loadRecentTransactions(
-        user.uid
-    );
-
-
-} catch (error) {
-
-    console.error(
-        "Dashboard initialization error:",
-        error
-    );
-
-}
-
-}
-
-/* =========================================================
-LOAD WALLET
-========================================================= */
-
-async function loadWallet(
-uid
-) {
-
-const balanceElement =
-    $("walletBalance");
-
-
-try {
-
-    const walletRef =
-        doc(
-            db,
-            "wallets",
-            uid
-        );
-
-
-    const walletSnapshot =
-        await getDoc(
-            walletRef
-        );
-
-
-    if (
-        !walletSnapshot.exists()
-    ) {
-
-        setText(
-            balanceElement,
-            formatCurrency(0)
-        );
-
-        return;
-
-    }
-
-
-    const wallet =
-        walletSnapshot.data();
-
-
-    /*
-     * Balance is displayed only.
-     *
-     * There is intentionally NO
-     * client-side update operation.
-     */
-
-    const balance =
-        Number(
-            wallet.balance || 0
-        );
-
-
-    setText(
-        balanceElement,
-        formatCurrency(balance)
-    );
-
-
-} catch (error) {
-
-    console.error(
-        "Wallet loading error:",
-        error
-    );
-
-
-    setText(
-        balanceElement,
-        "₹0.00"
-    );
-
-}
-
-}
-
-/* =========================================================
-LOAD RECENT TRANSACTIONS
-========================================================= */
-
-async function loadRecentTransactions(
-uid
-) {
-
-const container =
-    $("recentTransactions");
-
-
-if (!container) {
-    return;
-}
-
-
-try {
-
-
-    const transactionsRef =
-        collection(
-            db,
-            "transactions"
-        );
-
-
-    const transactionQuery =
-        query(
-            transactionsRef,
-            where(
-                "userId",
-                "==",
-                uid
-            ),
-            orderBy(
-                "createdAt",
-                "desc"
-            ),
-            limit(5)
-        );
-
-
-    const snapshot =
-        await getDocs(
-            transactionQuery
-        );
-
-
-    if (
-        snapshot.empty
-    ) {
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        "";
-
-
-    snapshot.forEach(
-        transaction => {
-
-            const data =
-                transaction.data();
-
-
-            const type =
-                data.type ||
-                "transaction";
-
-
-            const amount =
-                Number(
-                    data.amount || 0
-                );
-
-
-            const status =
-                data.status ||
-                "pending";
-
-
-            const isCredit =
-                type === "deposit" ||
-                type === "credit";
-
-
-            const row =
-                document.createElement(
-                    "div"
-                );
-
-
-            row.className =
-                "transaction-row";
-
-
-            row.innerHTML = `
-                <div class="transaction-main">
-                    <span class="transaction-icon">
-                        ${isCredit ? "+" : "↗"}
-                    </span>
-
-                    <div>
-                        <strong>
-                            ${formatTransactionType(type)}
-                        </strong>
-
-                        <small>
-                            ${formatDate(data.createdAt)}
-                        </small>
-                    </div>
-                </div>
-
-                <div class="transaction-value">
-                    <strong class="${isCredit ? "credit" : "debit"}">
-                        ${isCredit ? "+" : "-"}${formatCurrency(amount)}
-                    </strong>
-
-                    <small>
-                        ${escapeText(status)}
-                    </small>
-                </div>
-            `;
-
-
-            container.appendChild(
-                row
-            );
-
-        }
-    );
-
-
-} catch (error) {
-
-    /*
-     * Firestore may require an index for
-     * the userId + createdAt query.
-     *
-     * Dashboard remains usable even when
-     * transaction history is unavailable.
-     */
-
-    console.error(
-        "Transaction loading error:",
-        error
-    );
-
-}
-
-}
-
-/* =========================================================
-TRANSACTION TYPE
-========================================================= */
-
-function formatTransactionType(
-type
-) {
-
-const labels = {
-
-    deposit:
-        "Deposit",
-
-    withdrawal:
-        "Withdrawal",
-
-    credit:
-        "Wallet credit",
-
-    debit:
-        "Wallet debit"
-
-};
-
-
-return (
-    labels[type] ||
-    "Transaction"
-);
-
-}
-
-/* =========================================================
-ESCAPE TEXT
-========================================================= */
-
-function escapeText(
-value
-) {
-
-return String(
-    value ?? ""
-)
-    .replaceAll(
-        "&",
-        "&amp;"
-    )
-    .replaceAll(
-        "<",
-        "&lt;"
-    )
-    .replaceAll(
-        ">",
-        "&gt;"
-    )
-    .replaceAll(
-        '"',
-        "&quot;"
-    )
-    .replaceAll(
-        "'",
-        "&#039;"
-    );
-
-}
-
-/* =========================================================
-LOGOUT
-========================================================= */
-
-$("logoutButton")
-?.addEventListener(
-"click",
-async () => {
-
-        const button =
-            $("logoutButton");
-
-
-        if (button) {
-            button.disabled =
-                true;
-        }
-
-
-        try {
-
-            await logoutUser();
-
-
-            window.location.href =
-                "../auth/login.html";
-
-
-        } catch (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
-
-
-            if (button) {
-                button.disabled =
-                    false;
-            }
-
-        }
-
-    }
-);
-
-/* =========================================================
-MOBILE SIDEBAR
+   ELEMENTS
 ========================================================= */
 
 const sidebar =
-$("dashboardSidebar");
+    document.getElementById("dashboardSidebar");
 
-const overlay =
-$("sidebarOverlay");
+const sidebarToggle =
+    document.getElementById("sidebarToggle");
 
-function openSidebar() {
+const sidebarOverlay =
+    document.getElementById("sidebarOverlay");
 
-sidebar?.classList.add(
-    "open"
-);
+const logoutButton =
+    document.getElementById("logoutButton");
 
-overlay?.classList.add(
-    "visible"
-);
+const userName =
+    document.getElementById("userName");
 
-}
+const userEmail =
+    document.getElementById("userEmail");
+
+const userAvatar =
+    document.getElementById("userAvatar");
+
+const welcomeName =
+    document.getElementById("welcomeName");
+
+const accountStatus =
+    document.getElementById("accountStatus");
+
+const currentDate =
+    document.getElementById("currentDate");
+
+
+/* =========================================================
+   MOBILE SIDEBAR
+========================================================= */
 
 function closeSidebar() {
 
-sidebar?.classList.remove(
-    "open"
-);
+    if (sidebar) {
+        sidebar.classList.remove("open");
+    }
 
-overlay?.classList.remove(
-    "visible"
-);
+    if (sidebarOverlay) {
+        sidebarOverlay.classList.remove("open");
+    }
 
 }
 
-$("openSidebar")
-?.addEventListener(
-"click",
-openSidebar
-);
 
-$("closeSidebar")
-?.addEventListener(
-"click",
-closeSidebar
-);
+if (sidebarToggle) {
 
-overlay?.addEventListener(
-"click",
-closeSidebar
-);
+    sidebarToggle.addEventListener(
+        "click",
+        function () {
 
-/* =========================================================
-AUTH GUARD
-========================================================= */
+            if (sidebar) {
+                sidebar.classList.toggle("open");
+            }
 
-onAuthStateChanged(
-auth,
-async user => {
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle("open");
+            }
 
-    if (!user) {
-
-        window.location.href =
-            "../auth/login.html";
-
-        return;
-
-    }
-
-
-    await initializeDashboard(
-        user
+        }
     );
 
 }
 
+
+if (sidebarOverlay) {
+
+    sidebarOverlay.addEventListener(
+        "click",
+        closeSidebar
+    );
+
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+if (currentDate) {
+
+    const today =
+        new Date();
+
+    currentDate.textContent =
+        today.toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            }
+        );
+
+}
+
+
+/* =========================================================
+   FIREBASE AUTH
+========================================================= */
+
+if (
+    typeof firebase === "undefined" ||
+    !firebase.auth
+) {
+
+    console.error(
+        "Firebase Authentication is not loaded."
+    );
+
+} else {
+
+    firebase
+        .auth()
+        .onAuthStateChanged(
+            function (user) {
+
+                /*
+                 * No authenticated user:
+                 * send back to login.
+                 */
+
+                if (!user) {
+
+                    window.location.replace(
+                        "./pages/login.html"
+                    );
+
+                    return;
+
+                }
+
+
+                /* =========================================
+                   USER NAME
+                ========================================== */
+
+                const name =
+                    user.displayName ||
+                    (
+                        user.email
+                            ? user.email.split("@")[0]
+                            : "User"
+                    );
+
+
+                /* =========================================
+                   USER EMAIL
+                ========================================== */
+
+                const email =
+                    user.email ||
+                    "No email";
+
+
+                /* =========================================
+                   UPDATE UI
+                ========================================== */
+
+                if (userName) {
+                    userName.textContent = name;
+                }
+
+
+                if (welcomeName) {
+                    welcomeName.textContent = name;
+                }
+
+
+                if (userEmail) {
+                    userEmail.textContent = email;
+                }
+
+
+                if (userAvatar) {
+
+                    userAvatar.textContent =
+                        name
+                            .charAt(0)
+                            .toUpperCase();
+
+                }
+
+
+                if (accountStatus) {
+
+                    accountStatus.textContent =
+                        user.emailVerified
+                            ? "Verified"
+                            : "Active";
+
+                }
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+if (logoutButton) {
+
+    logoutButton.addEventListener(
+        "click",
+        async function () {
+
+            logoutButton.disabled = true;
+
+            logoutButton.textContent =
+                "Signing out...";
+
+
+            try {
+
+                await firebase
+                    .auth()
+                    .signOut();
+
+
+                window.location.replace(
+                    "./pages/login.html"
+                );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Logout error:",
+                    error
+                );
+
+
+                logoutButton.disabled = false;
+
+                logoutButton.textContent =
+                    "Sign Out";
+
+
+                alert(
+                    "Unable to sign out. Please try again."
+                );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   CLOSE MOBILE MENU AFTER NAVIGATION
+========================================================= */
+
+document
+    .querySelectorAll(".sidebar-link")
+    .forEach(
+        function (link) {
+
+            link.addEventListener(
+                "click",
+                closeSidebar
+            );
+
+        }
+    );
+
+
+console.log(
+    "SkillEarn Hub Dashboard initialized."
 );

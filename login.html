@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login — SkillEarn Hub</title>
+
+    <link rel="stylesheet" href="assets/css/app.css">
+    <link rel="stylesheet" href="assets/css/auth.css">
+
+</head>
+
+<body class="auth-page">
+
+<header class="auth-header">
+
+    <a href="index.html" class="brand">
+
+        <span class="brand-mark">S</span>
+
+        <span>SkillEarn</span>
+
+    </a>
+
+</header>
+
+
+<main class="auth-wrapper">
+
+    <section class="auth-card">
+
+        <div class="auth-heading">
+
+            <div class="eyebrow">
+                SECURE LOGIN
+            </div>
+
+            <h1>Welcome back</h1>
+
+            <p>
+                Sign in to access your SkillEarn Hub account.
+            </p>
+
+        </div>
+
+
+        <form id="loginForm" novalidate>
+
+            <div class="form-group">
+
+                <label for="loginEmail">
+                    Email Address
+                </label>
+
+                <input
+                    id="loginEmail"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    required
+                >
+
+                <small
+                    class="field-error"
+                    data-error-for="loginEmail"
+                ></small>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <div class="form-label-row">
+
+                    <label for="loginPassword">
+                        Password
+                    </label>
+
+                    <a href="forgot-password.html">
+                        Forgot password?
+                    </a>
+
+                </div>
+
+
+                <input
+                    id="loginPassword"
+                    name="password"
+                    type="password"
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                    required
+                >
+
+                <small
+                    class="field-error"
+                    data-error-for="loginPassword"
+                ></small>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-large auth-submit"
+            >
+                Sign In
+            </button>
+
+
+            <div
+                id="loginMessage"
+                class="auth-message"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+        </form>
+
+
+        <div class="security-note">
+
+            <strong>Security</strong>
+
+            <span>
+                Two-factor authentication will be required
+                when enabled on your account.
+            </span>
+
+        </div>
+
+
+        <div class="auth-footer">
+
+            Don't have an account?
+
+            <a href="register.html">
+                Create one
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="assets/js/config.js"></script>
+<script src="assets/js/auth.js"></script>
+
+</body>
+</html>

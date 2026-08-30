@@ -49,6 +49,14 @@ const bankAccountRoutes =
 const withdrawalRoutes =
     require("./src/routes/withdrawal.routes");
 
+const adminWithdrawalRoutes =
+    require("./src/routes/admin-withdrawal.routes");
+
+
+app.use(
+    "/api/admin/withdrawals",
+    adminWithdrawalRoutes
+);
 
 app.use(
     "/api/withdrawals",

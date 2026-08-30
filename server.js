@@ -28,6 +28,14 @@ const transferRoutes =
 const recipientRoutes =
     require("./src/routes/recipient.routes");
 
+const transactionRoutes =
+    require("./src/routes/transaction.routes");
+
+
+app.use(
+    "/api/transactions",
+    transactionRoutes
+);
 
 app.use(
     "/api/recipients",

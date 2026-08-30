@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build
+dist/
+build/
+
+# Temporary
+tmp/
+temp/
+
+# Private keys
+*.pem
+*.key
+*.crt
+
+# Local database
+*.sqlite
+*.sqlite3
+
+# Test coverage
+coverage/

@@ -43,6 +43,14 @@ const adminDepositRoutes =
 const adminDepositListRoutes =
     require("./src/routes/admin-deposits-list.routes");
 
+const bankAccountRoutes =
+    require("./src/routes/bank-account.routes");
+
+
+app.use(
+    "/api/bank-accounts",
+    bankAccountRoutes
+);
 
 app.use(
     "/api/admin/deposits",

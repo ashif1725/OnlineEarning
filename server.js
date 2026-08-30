@@ -55,6 +55,14 @@ const adminWithdrawalRoutes =
 const adminUsersRoutes =
     require("./src/routes/admin-users.routes");
 
+const kycRoutes =
+    require("./src/routes/kyc.routes");
+
+
+app.use(
+    "/api/kyc",
+    kycRoutes
+);
 
 app.use(
     "/api/admin/users",

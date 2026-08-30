@@ -58,6 +58,14 @@ const adminUsersRoutes =
 const kycRoutes =
     require("./src/routes/kyc.routes");
 
+const adminKycRoutes =
+    require("./src/routes/admin-kyc.routes");
+
+
+app.use(
+    "/api/admin/kyc",
+    adminKycRoutes
+);
 
 app.use(
     "/api/kyc",

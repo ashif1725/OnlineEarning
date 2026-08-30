@@ -19,6 +19,12 @@ const PORT =
 const profileRoutes =
     require("./src/routes/profile.routes");
 
+const walletRoutes =
+    require("./src/routes/wallet.routes");
+app.use(
+    "/api/wallet",
+    walletRoutes
+);
 
 app.use(
     "/api/profile",

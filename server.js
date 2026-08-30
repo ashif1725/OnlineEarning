@@ -16,6 +16,14 @@ const app = express();
 const PORT =
     Number(process.env.PORT || 8080);
 
+const profileRoutes =
+    require("./src/routes/profile.routes");
+
+
+app.use(
+    "/api/profile",
+    profileRoutes
+);
 
 app.disable("x-powered-by");
 

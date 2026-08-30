@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+
+    <title>Activity | SkillEarn Hub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+
+    <style>
+        .page-container {
+            max-width: 1100px;
+            padding: 32px;
+        }
+
+        .page-heading {
+            margin-bottom: 25px;
+        }
+
+        .page-heading span {
+            color: #635bff;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .page-heading h2 {
+            margin: 8px 0 6px;
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 28px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: #667085;
+            font-size: 12px;
+        }
+
+        .activity-page-card {
+            padding: 5px 24px;
+            border: 1px solid #e6e8ee;
+            border-radius: 16px;
+            background: #fff;
+        }
+
+        .activity-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-height: 82px;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .activity-row:last-child {
+            border-bottom: 0;
+        }
+
+        .activity-row-icon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            color: #635bff;
+            background: #f0efff;
+        }
+
+        .activity-row-content {
+            flex: 1;
+        }
+
+        .activity-row-content strong {
+            display: block;
+            font-size: 11px;
+        }
+
+        .activity-row-content span {
+            display: block;
+            margin-top: 4px;
+            color: #667085;
+            font-size: 9px;
+        }
+
+        .activity-time {
+            color: #98a2b3;
+            font-size: 9px;
+        }
+
+        @media (max-width: 600px) {
+            .page-container {
+                padding: 22px 17px;
+            }
+
+            .activity-page-card {
+                padding: 5px 15px;
+            }
+
+            .activity-time {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="dashboard-body">
+
+<div class="dashboard-app">
+
+    <aside class="dashboard-sidebar">
+
+        <a href="../dashboard.html" class="dashboard-brand">
+            <div class="dashboard-brand-logo">S</div>
+
+            <div class="dashboard-brand-name">
+                <strong>SkillEarn</strong>
+                <small>HUB</small>
+            </div>
+        </a>
+
+        <div class="sidebar-section-title">MAIN MENU</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="../dashboard.html" class="sidebar-link">
+                <span class="sidebar-link-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="./learning.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◈</span>
+                <span>My Learning</span>
+            </a>
+
+            <a href="./achievements.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◆</span>
+                <span>Achievements</span>
+            </a>
+
+            <a href="./activity.html" class="sidebar-link active">
+                <span class="sidebar-link-icon">◷</span>
+                <span>Activity</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-section-title">ACCOUNT</div>
+
+        <nav class="sidebar-navigation">
+
+            <a href="./profile.html" class="sidebar-link">
+                <span class="sidebar-link-icon">◎</span>
+                <span>Profile</span>
+            </a>
+
+            <a href="./settings.html" class="sidebar-link">
+                <span class="sidebar-link-icon">⚙</span>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <button type="button" class="sidebar-logout" id="logoutButton">
+                <span>↪</span>
+                Sign Out
+            </button>
+        </div>
+
+    </aside>
+
+    <div class="dashboard-main">
+
+        <header class="dashboard-topbar">
+
+            <div class="topbar-heading">
+                <h1>Activity</h1>
+                <p>Your recent account activity</p>
+            </div>
+
+            <a href="./profile.html" class="topbar-user">
+                <div class="topbar-avatar" id="userAvatar">U</div>
+
+                <div class="topbar-user-info">
+                    <strong id="userName">User</strong>
+                    <small id="userEmail">Loading...</small>
+                </div>
+            </a>
+
+        </header>
+
+        <main class="page-container">
+
+            <div class="page-heading">
+                <span>ACCOUNT ACTIVITY</span>
+
+                <h2>Recent activity.</h2>
+
+                <p>
+                    A simple overview of recent actions on your account.
+                </p>
+            </div>
+
+            <section class="activity-page-card">
+
+                <div class="activity-row">
+
+                    <div class="activity-row-icon">✓</div>
+
+                    <div class="activity-row-content">
+                        <strong>Account created</strong>
+                        <span>Your SkillEarn Hub account was created successfully.</span>
+                    </div>
+
+                    <span class="activity-time">Recent</span>
+
+                </div>
+
+                <div class="activity-row">
+
+                    <div class="activity-row-icon">◎</div>
+
+                    <div class="activity-row-content">
+                        <strong>Dashboard accessed</strong>
+                        <span>You opened your personal dashboard.</span>
+                    </div>
+
+                    <span class="activity-time">Today</span>
+
+                </div>
+
+                <div class="activity-row">
+
+                    <div class="activity-row-icon">◈</div>
+
+                    <div class="activity-row-content">
+                        <strong>Learning area opened</strong>
+                        <span>You visited the My Learning section.</span>
+                    </div>
+
+                    <span class="activity-time">Today</span>
+
+                </div>
+
+                <div class="activity-row">
+
+                    <div class="activity-row-icon">✦</div>
+
+                    <div class="activity-row-content">
+                        <strong>Platform welcome</strong>
+                        <span>Welcome to SkillEarn Hub.</span>
+                    </div>
+
+                    <span class="activity-time">Recent</span>
+
+                </div>
+
+            </section>
+
+        </main>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+
+<script>
+    const logoutButton = document.getElementById("logoutButton");
+
+    firebase.auth().onAuthStateChanged(function(user) {
+
+        if (!user) {
+            window.location.replace("./login.html");
+            return;
+        }
+
+        const name = user.displayName ||
+            (user.email ? user.email.split("@")[0] : "User");
+
+        document.getElementById("userName").textContent = name;
+        document.getElementById("userEmail").textContent = user.email || "";
+        document.getElementById("userAvatar").textContent =
+            name.charAt(0).toUpperCase();
+    });
+
+    logoutButton.addEventListener("click", async function() {
+        try {
+            await firebase.auth().signOut();
+            window.location.replace("./login.html");
+        } catch (error) {
+            console.error(error);
+            alert("Unable to sign out. Please try again.");
+        }
+    });
+</script>
+
+</body>
+</html>

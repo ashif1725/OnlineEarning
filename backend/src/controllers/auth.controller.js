@@ -1,37 +1,24 @@
 "use strict";
 
-const jwt = require("jsonwebtoken");
-
 const {
     registerUser,
     authenticateUser
 } = require("../services/auth.service");
 
+const {
+    createSession
+} = require("../services/session.service");
 
-function createAccessToken(user) {
-
-    if (!process.env.JWT_SECRET) {
-        throw new Error("JWT_SECRET is required");
-    }
+const {
+    createAccessToken
+} = require("../utils/jwt");
 
 
-    return jwt.sign(
-        {
-            sub: user.id,
-            role: user.role,
-            userId: user.publicUserId
-        },
-
-        process.env.JWT_SECRET,
-
-        {
-            expiresIn: "15m",
-            issuer: "skillearn-hub",
-            audience: "skillearn-client"
-        }
-    );
-}
-
+/*
+|--------------------------------------------------------------------------
+| REGISTER
+|--------------------------------------------------------------------------
+*/
 
 async function register(req, res) {
 
@@ -45,33 +32,41 @@ async function register(req, res) {
         } = req.body;
 
 
-        const user =
-            await registerUser({
-                fullName,
-                email,
-                phone,
-                password
+        // Validation
+        if (
+            !fullName ||
+            !email ||
+            !phone ||
+            !password
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
             });
+        }
 
 
-        res.status(201).json({
-
-            success: true,
-
-            user: {
-                userId: user.public_user_id,
-                name: user.full_name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role
-            },
-
-            message:
-                "Account created successfully."
+        const user = await registerUser({
+            fullName,
+            email,
+            phone,
+            password
         });
 
 
+        return res.status(201).json({
+            success: true,
+            message: "Account created successfully",
+            user
+        });
+
     } catch (error) {
+
+        console.error(
+            "REGISTER ERROR:",
+            error
+        );
+
 
         if (
             error.code ===
@@ -80,20 +75,25 @@ async function register(req, res) {
 
             return res.status(409).json({
                 success: false,
-                error: "ACCOUNT_ALREADY_EXISTS"
+                message:
+                    "Email or phone already registered"
             });
         }
 
 
-        console.error(error);
-
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            error: "REGISTRATION_FAILED"
+            message: "Registration failed"
         });
     }
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
 async function login(req, res) {
 
@@ -105,6 +105,23 @@ async function login(req, res) {
         } = req.body;
 
 
+        // Validation
+        if (!email || !password) {
+
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Email and password are required"
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Authenticate user
+        |--------------------------------------------------------------------------
+        */
+
         const user =
             await authenticateUser({
                 email,
@@ -112,26 +129,80 @@ async function login(req, res) {
             });
 
 
-        const accessToken =
-            createAccessToken(user);
+        /*
+        |--------------------------------------------------------------------------
+        | Create JWT access token
+        |--------------------------------------------------------------------------
+        */
+
+        const {
+            token,
+            expiresAt
+        } = createAccessToken(user);
 
 
-        res.status(200).json({
+        /*
+        |--------------------------------------------------------------------------
+        | Create login session
+        |--------------------------------------------------------------------------
+        */
+
+        const session =
+            await createSession({
+                userId: user.id,
+                token,
+                expiresAt
+            });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login successful
+        |--------------------------------------------------------------------------
+        */
+
+        return res.status(200).json({
 
             success: true,
 
-            accessToken,
+            message:
+                "Login successful",
+
+            token,
+
+            expiresAt,
+
+            sessionId:
+                session.id,
 
             user: {
-                userId: user.publicUserId,
-                name: user.fullName,
-                email: user.email,
-                role: user.role
+                id: user.id,
+                publicUserId:
+                    user.publicUserId,
+                fullName:
+                    user.fullName,
+                email:
+                    user.email,
+                phone:
+                    user.phone,
+                role:
+                    user.role
             }
         });
 
-
     } catch (error) {
+
+        console.error(
+            "LOGIN ERROR:",
+            error
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Invalid credentials
+        |--------------------------------------------------------------------------
+        */
 
         if (
             error.message ===
@@ -140,10 +211,17 @@ async function login(req, res) {
 
             return res.status(401).json({
                 success: false,
-                error: "INVALID_CREDENTIALS"
+                message:
+                    "Invalid email or password"
             });
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Account unavailable
+        |--------------------------------------------------------------------------
+        */
 
         if (
             error.message ===
@@ -152,20 +230,32 @@ async function login(req, res) {
 
             return res.status(403).json({
                 success: false,
-                error: "ACCOUNT_UNAVAILABLE"
+                message:
+                    "Your account is currently unavailable"
             });
         }
 
 
-        console.error(error);
+        /*
+        |--------------------------------------------------------------------------
+        | Server error
+        |--------------------------------------------------------------------------
+        */
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
-            error: "LOGIN_FAILED"
+            message:
+                "Login failed. Please try again."
         });
     }
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
 
 module.exports = {
     register,

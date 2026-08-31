@@ -36,60 +36,111 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-function getApiUrl(path) {
+function getApiBaseUrl() {
 
-    const base =
-        window.SKILLEARN_CONFIG?.apiBaseUrl || "";
+    const configured =
+        window.SKILLEARN_CONFIG &&
+        window.SKILLEARN_CONFIG.apiBaseUrl;
 
-    return `${base}${path}`;
+    if (!configured) {
+        throw new Error(
+            "API_URL_NOT_CONFIGURED"
+        );
+    }
+
+    return configured.replace(
+        /\/+$/,
+        ""
+    );
 }
 
 
 async function apiRequest(
-    path,
-    options = {}
+    endpoint,
+    method,
+    body
 ) {
+
+    const url =
+        `${getApiBaseUrl()}${endpoint}`;
+
 
     const response =
         await fetch(
-            getApiUrl(path),
+            url,
             {
-                method:
-                    options.method || "GET",
+                method,
+
+                credentials:
+                    "include",
 
                 headers: {
-                    "Content-Type":
+                    "Accept":
                         "application/json",
 
-                    ...(options.headers || {})
+                    "Content-Type":
+                        "application/json"
                 },
 
-                credentials: "include",
-
                 body:
-                    options.body
-                        ? JSON.stringify(options.body)
-                        : undefined
+                    body === undefined
+                        ? undefined
+                        : JSON.stringify(body)
             }
         );
 
 
-    let data = null;
+    let data = {};
 
-    try {
-        data = await response.json();
-    } catch {
-        data = {};
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+
+    if (
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch {
+
+            data = {};
+        }
+
+    } else {
+
+        const text =
+            await response.text();
+
+        data = {
+            message: text
+        };
     }
 
 
     if (!response.ok) {
 
-        throw new Error(
-            data.error ||
-            data.message ||
-            "REQUEST_FAILED"
-        );
+        const error =
+            new Error(
+                data.error ||
+                data.message ||
+                `HTTP_${response.status}`
+            );
+
+        error.status =
+            response.status;
+
+        error.data =
+            data;
+
+        throw error;
     }
 
 
@@ -97,9 +148,9 @@ async function apiRequest(
 }
 
 
-/* =========================
+/* =========================================
    REGISTER
-========================= */
+========================================= */
 
 async function handleRegister(event) {
 
@@ -113,22 +164,22 @@ async function handleRegister(event) {
 
 
     const fullName =
-        form.fullName.value.trim();
+        form.elements.fullName.value.trim();
 
     const email =
-        form.email.value.trim();
+        form.elements.email.value.trim();
 
     const phone =
-        form.phone.value.trim();
+        form.elements.phone.value.trim();
 
     const password =
-        form.password.value;
+        form.elements.password.value;
 
     const confirmPassword =
-        form.confirmPassword.value;
+        form.elements.confirmPassword.value;
 
     const terms =
-        form.terms.checked;
+        form.elements.terms.checked;
 
 
     let valid = true;
@@ -156,7 +207,7 @@ async function handleRegister(event) {
     }
 
 
-    if (!isReasonablePhone(phone)) {
+    if (!isValidPhone(phone)) {
 
         setFieldError(
             "phone",
@@ -171,14 +222,17 @@ async function handleRegister(event) {
 
         setFieldError(
             "password",
-            "Use at least 12 characters."
+            "Password must contain at least 12 characters."
         );
 
         valid = false;
     }
 
 
-    if (password !== confirmPassword) {
+    if (
+        password !==
+        confirmPassword
+    ) {
 
         setFieldError(
             "confirmPassword",
@@ -212,7 +266,7 @@ async function handleRegister(event) {
         );
 
 
-    setButtonLoading(
+    setLoading(
         button,
         true,
         "Creating account..."
@@ -224,15 +278,12 @@ async function handleRegister(event) {
         const result =
             await apiRequest(
                 "/api/auth/register",
+                "POST",
                 {
-                    method: "POST",
-
-                    body: {
-                        fullName,
-                        email,
-                        phone,
-                        password
-                    }
+                    fullName,
+                    email,
+                    phone,
+                    password
                 }
             );
 
@@ -240,7 +291,7 @@ async function handleRegister(event) {
         showMessage(
             "registerMessage",
             result.message ||
-            "Account created successfully. Please verify your email.",
+            "Account created. Please verify your email.",
             "success"
         );
 
@@ -253,15 +304,21 @@ async function handleRegister(event) {
             window.location.href =
                 "verify-email.html";
 
-        }, 1200);
+        }, 1000);
 
 
     } catch (error) {
 
+        console.error(
+            "Register error:",
+            error
+        );
+
+
         showMessage(
             "registerMessage",
-            getFriendlyError(
-                error.message
+            friendlyError(
+                error
             ),
             "error"
         );
@@ -269,7 +326,7 @@ async function handleRegister(event) {
 
     } finally {
 
-        setButtonLoading(
+        setLoading(
             button,
             false,
             "Create Account"
@@ -278,9 +335,9 @@ async function handleRegister(event) {
 }
 
 
-/* =========================
+/* =========================================
    LOGIN
-========================= */
+========================================= */
 
 async function handleLogin(event) {
 
@@ -294,10 +351,10 @@ async function handleLogin(event) {
 
 
     const email =
-        form.email.value.trim();
+        form.elements.email.value.trim();
 
     const password =
-        form.password.value;
+        form.elements.password.value;
 
 
     if (!isValidEmail(email)) {
@@ -328,7 +385,7 @@ async function handleLogin(event) {
         );
 
 
-    setButtonLoading(
+    setLoading(
         button,
         true,
         "Signing in..."
@@ -340,24 +397,12 @@ async function handleLogin(event) {
         const result =
             await apiRequest(
                 "/api/auth/login",
+                "POST",
                 {
-                    method: "POST",
-
-                    body: {
-                        email,
-                        password
-                    }
+                    email,
+                    password
                 }
             );
-
-
-        /*
-         * The server should set the
-         * HttpOnly session cookie.
-         *
-         * Do NOT store session tokens
-         * in localStorage.
-         */
 
 
         if (
@@ -395,10 +440,16 @@ async function handleLogin(event) {
 
     } catch (error) {
 
+        console.error(
+            "Login error:",
+            error
+        );
+
+
         showMessage(
             "loginMessage",
-            getFriendlyError(
-                error.message
+            friendlyError(
+                error
             ),
             "error"
         );
@@ -406,7 +457,7 @@ async function handleLogin(event) {
 
     } finally {
 
-        setButtonLoading(
+        setLoading(
             button,
             false,
             "Sign In"
@@ -415,9 +466,9 @@ async function handleLogin(event) {
 }
 
 
-/* =========================
+/* =========================================
    FORGOT PASSWORD
-========================= */
+========================================= */
 
 async function handleForgotPassword(
     event
@@ -433,7 +484,7 @@ async function handleForgotPassword(
 
 
     const email =
-        form.email.value.trim();
+        form.elements.email.value.trim();
 
 
     if (!isValidEmail(email)) {
@@ -453,7 +504,7 @@ async function handleForgotPassword(
         );
 
 
-    setButtonLoading(
+    setLoading(
         button,
         true,
         "Sending..."
@@ -462,22 +513,12 @@ async function handleForgotPassword(
 
     try {
 
-        /*
-         * The backend should always
-         * return a generic response
-         * so account existence is not
-         * disclosed.
-         */
-
         const result =
             await apiRequest(
                 "/api/auth/forgot-password",
+                "POST",
                 {
-                    method: "POST",
-
-                    body: {
-                        email
-                    }
+                    email
                 }
             );
 
@@ -492,10 +533,16 @@ async function handleForgotPassword(
 
     } catch (error) {
 
+        console.error(
+            "Password recovery error:",
+            error
+        );
+
+
         showMessage(
             "resetMessage",
-            getFriendlyError(
-                error.message
+            friendlyError(
+                error
             ),
             "error"
         );
@@ -503,7 +550,7 @@ async function handleForgotPassword(
 
     } finally {
 
-        setButtonLoading(
+        setLoading(
             button,
             false,
             "Continue"
@@ -512,9 +559,9 @@ async function handleForgotPassword(
 }
 
 
-/* =========================
-   HELPERS
-========================= */
+/* =========================================
+   VALIDATION
+========================================= */
 
 function isValidEmail(email) {
 
@@ -523,7 +570,7 @@ function isValidEmail(email) {
 }
 
 
-function isReasonablePhone(phone) {
+function isValidPhone(phone) {
 
     return /^[0-9+\-\s()]{8,20}$/
         .test(phone);
@@ -532,17 +579,16 @@ function isReasonablePhone(phone) {
 
 function isStrongPassword(password) {
 
-    if (
-        password.length < 12 ||
-        password.length > 128
-    ) {
-        return false;
-    }
-
-
-    return true;
+    return (
+        password.length >= 12 &&
+        password.length <= 128
+    );
 }
 
+
+/* =========================================
+   UI HELPERS
+========================================= */
 
 function setFieldError(
     fieldName,
@@ -571,7 +617,8 @@ function clearMessages() {
         )
         .forEach(element => {
 
-            element.textContent = "";
+            element.textContent =
+                "";
         });
 
 
@@ -581,7 +628,8 @@ function clearMessages() {
         )
         .forEach(element => {
 
-            element.textContent = "";
+            element.textContent =
+                "";
 
             element.className =
                 "auth-message";
@@ -609,16 +657,15 @@ function showMessage(
     element.textContent =
         message;
 
-
     element.className =
         `auth-message show ${type}`;
 }
 
 
-function setButtonLoading(
+function setLoading(
     button,
     loading,
-    text
+    loadingText
 ) {
 
     if (!button) {
@@ -628,59 +675,105 @@ function setButtonLoading(
 
     if (loading) {
 
-        button.disabled = true;
+        button.disabled =
+            true;
 
         button.dataset.originalText =
             button.textContent;
 
         button.textContent =
-            text;
+            loadingText;
 
     } else {
 
-        button.disabled = false;
+        button.disabled =
+            false;
 
         button.textContent =
-            text;
+            button.dataset.originalText ||
+            button.textContent;
     }
 }
 
 
-function getFriendlyError(
-    error
-) {
+/* =========================================
+   ERROR HANDLING
+========================================= */
 
-    const messages = {
+function friendlyError(error) {
 
-        INVALID_CREDENTIALS:
-            "Email or password is incorrect.",
+    if (
+        error.message ===
+        "API_URL_NOT_CONFIGURED"
+    ) {
 
-        EMAIL_ALREADY_EXISTS:
-            "An account with this email already exists.",
+        return "Authentication server is not configured.";
+    }
 
-        EMAIL_NOT_VERIFIED:
-            "Please verify your email before signing in.",
 
-        ACCOUNT_SUSPENDED:
-            "Your account is currently suspended.",
+    if (
+        error.message ===
+        "Failed to fetch"
+    ) {
 
-        ACCOUNT_BLOCKED:
-            "Your account is currently blocked.",
+        return "Unable to connect to the authentication server.";
+    }
 
-        TOO_MANY_REQUESTS:
-            "Too many attempts. Please try again later.",
 
-        INVALID_REQUEST:
-            "Please check the information and try again.",
+    const status =
+        error.status;
 
-        INTERNAL_SERVER_ERROR:
-            "Something went wrong. Please try again later."
-    };
+
+    if (status === 400) {
+
+        return (
+            error.data?.message ||
+            error.data?.error ||
+            "Please check the information you entered."
+        );
+    }
+
+
+    if (status === 401) {
+
+        return "Invalid email or password.";
+    }
+
+
+    if (status === 403) {
+
+        return (
+            error.data?.message ||
+            "This account is not allowed to sign in."
+        );
+    }
+
+
+    if (status === 409) {
+
+        return (
+            error.data?.message ||
+            "An account with these details already exists."
+        );
+    }
+
+
+    if (status === 429) {
+
+        return "Too many attempts. Please try again later.";
+    }
+
+
+    if (status >= 500) {
+
+        return "Server error. Please try again later.";
+    }
 
 
     return (
-        messages[error] ||
-        error ||
-        "Something went wrong. Please try again."
+        error.data?.message ||
+        error.data?.error ||
+        error.message ||
+        "Request failed."
     );
 }

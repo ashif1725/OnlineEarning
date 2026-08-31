@@ -6,12 +6,9 @@ const {
 } = require("../services/auth.service");
 
 const {
-    createSession
+    createSession,
+    revokeSession
 } = require("../services/session.service");
-
-const {
-    createAccessToken
-} = require("../utils/jwt");
 
 
 /*
@@ -129,62 +126,102 @@ async function login(req, res) {
             });
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create JWT access token
-        |--------------------------------------------------------------------------
-        */
+        if (!user) {
 
-        const {
-            token,
-            expiresAt
-        } = createAccessToken(user);
+            return res.status(401).json({
+                success: false,
+                message:
+                    "Invalid email or password"
+            });
+        }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Create login session
+        | Create server-side session
         |--------------------------------------------------------------------------
         */
 
         const session =
             await createSession({
                 userId: user.id,
-                token,
-                expiresAt
+                ipAddress: req.ip,
+                userAgent:
+                    req.get("user-agent")
             });
 
 
         /*
         |--------------------------------------------------------------------------
-        | Login successful
+        | Set HTTP-only session cookie
+        |--------------------------------------------------------------------------
+        */
+
+        const expiresAt =
+            new Date(session.expiresAt);
+
+
+        const maxAge =
+            Math.max(
+                0,
+                expiresAt.getTime() -
+                Date.now()
+            );
+
+
+        res.cookie(
+            "skillearn_session",
+            session.token,
+            {
+                httpOnly: true,
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                sameSite: "lax",
+
+                maxAge,
+
+                path: "/"
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login response
         |--------------------------------------------------------------------------
         */
 
         return res.status(200).json({
-
             success: true,
 
             message:
                 "Login successful",
 
-            token,
-
-            expiresAt,
+            expiresAt:
+                session.expiresAt,
 
             sessionId:
                 session.id,
 
             user: {
-                id: user.id,
+                id:
+                    user.id,
+
                 publicUserId:
                     user.publicUserId,
+
                 fullName:
                     user.fullName,
+
                 email:
                     user.email,
+
                 phone:
                     user.phone,
+
                 role:
                     user.role
             }
@@ -200,12 +237,12 @@ async function login(req, res) {
 
         /*
         |--------------------------------------------------------------------------
-        | Invalid credentials
+        | Authentication failure
         |--------------------------------------------------------------------------
         */
 
         if (
-            error.message ===
+            error.code ===
             "INVALID_CREDENTIALS"
         ) {
 
@@ -219,33 +256,46 @@ async function login(req, res) {
 
         /*
         |--------------------------------------------------------------------------
-        | Account unavailable
+        | Account locked / disabled
         |--------------------------------------------------------------------------
         */
 
         if (
-            error.message ===
-            "ACCOUNT_UNAVAILABLE"
+            error.code ===
+            "ACCOUNT_LOCKED"
+        ) {
+
+            return res.status(423).json({
+                success: false,
+                message:
+                    "Account is temporarily locked"
+            });
+        }
+
+
+        if (
+            error.code ===
+            "ACCOUNT_DISABLED"
         ) {
 
             return res.status(403).json({
                 success: false,
                 message:
-                    "Your account is currently unavailable"
+                    "Account is disabled"
             });
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Server error
+        | Generic server error
         |--------------------------------------------------------------------------
         */
 
         return res.status(500).json({
             success: false,
             message:
-                "Login failed. Please try again."
+                "Login failed"
         });
     }
 }
@@ -253,11 +303,72 @@ async function login(req, res) {
 
 /*
 |--------------------------------------------------------------------------
-| EXPORT
+| LOGOUT
+|--------------------------------------------------------------------------
+*/
+
+async function logout(req, res) {
+
+    try {
+
+        const token =
+            req.cookies &&
+            req.cookies.skillearn_session;
+
+
+        if (token) {
+
+            await revokeSession(token);
+        }
+
+
+        res.clearCookie(
+            "skillearn_session",
+            {
+                httpOnly: true,
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                sameSite: "lax",
+
+                path: "/"
+            }
+        );
+
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Logout successful"
+        });
+
+    } catch (error) {
+
+        console.error(
+            "LOGOUT ERROR:",
+            error
+        );
+
+
+        return res.status(500).json({
+            success: false,
+            message:
+                "Logout failed"
+        });
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
 |--------------------------------------------------------------------------
 */
 
 module.exports = {
     register,
-    login
+    login,
+    logout
 };

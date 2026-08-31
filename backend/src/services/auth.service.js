@@ -12,6 +12,12 @@ const {
 } = require("../utils/user-id");
 
 
+/*
+|--------------------------------------------------------------------------
+| REGISTER USER
+|--------------------------------------------------------------------------
+*/
+
 async function registerUser({
     fullName,
     email,
@@ -23,8 +29,20 @@ async function registerUser({
 
     try {
 
+        /*
+        |--------------------------------------------------------------------------
+        | BEGIN TRANSACTION
+        |--------------------------------------------------------------------------
+        */
+
         await client.query("BEGIN");
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZE INPUT
+        |--------------------------------------------------------------------------
+        */
 
         const normalizedEmail =
             email.trim().toLowerCase();
@@ -32,11 +50,21 @@ async function registerUser({
         const normalizedPhone =
             phone.trim();
 
+        const normalizedFullName =
+            fullName.trim();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK EXISTING ACCOUNT
+        |--------------------------------------------------------------------------
+        */
 
         const existing =
             await client.query(
                 `
-                SELECT id
+                SELECT
+                    id
                 FROM users
                 WHERE email = $1
                    OR phone = $2
@@ -52,7 +80,9 @@ async function registerUser({
         if (existing.rowCount > 0) {
 
             const error =
-                new Error("ACCOUNT_ALREADY_EXISTS");
+                new Error(
+                    "ACCOUNT_ALREADY_EXISTS"
+                );
 
             error.code =
                 "ACCOUNT_ALREADY_EXISTS";
@@ -61,31 +91,56 @@ async function registerUser({
         }
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | HASH PASSWORD
+        |--------------------------------------------------------------------------
+        */
+
         const passwordHash =
             await hashPassword(password);
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | GENERATE PUBLIC USER ID
+        |--------------------------------------------------------------------------
+        */
+
         let publicUserId;
 
-        for (let attempt = 0; attempt < 5; attempt++) {
+
+        for (
+            let attempt = 0;
+            attempt < 5;
+            attempt++
+        ) {
 
             const candidate =
                 generatePublicUserId();
 
+
             const collision =
                 await client.query(
                     `
-                    SELECT 1
+                    SELECT
+                        1
                     FROM users
                     WHERE public_user_id = $1
                     LIMIT 1
                     `,
-                    [candidate]
+                    [
+                        candidate
+                    ]
                 );
 
-            if (collision.rowCount === 0) {
 
-                publicUserId = candidate;
+            if (
+                collision.rowCount === 0
+            ) {
+
+                publicUserId =
+                    candidate;
 
                 break;
             }
@@ -93,11 +148,24 @@ async function registerUser({
 
 
         if (!publicUserId) {
-            throw new Error(
-                "USER_ID_GENERATION_FAILED"
-            );
+
+            const error =
+                new Error(
+                    "USER_ID_GENERATION_FAILED"
+                );
+
+            error.code =
+                "USER_ID_GENERATION_FAILED";
+
+            throw error;
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE USER
+        |--------------------------------------------------------------------------
+        */
 
         const userResult =
             await client.query(
@@ -132,7 +200,7 @@ async function registerUser({
                 `,
                 [
                     publicUserId,
-                    fullName.trim(),
+                    normalizedFullName,
                     normalizedEmail,
                     normalizedPhone,
                     passwordHash
@@ -144,6 +212,12 @@ async function registerUser({
             userResult.rows[0];
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE USER SECURITY RECORD
+        |--------------------------------------------------------------------------
+        */
+
         await client.query(
             `
             INSERT INTO user_security (
@@ -151,37 +225,103 @@ async function registerUser({
             )
             VALUES ($1)
             `,
-            [user.id]
+            [
+                user.id
+            ]
         );
 
 
-        await client.query(
-            `
-            INSERT INTO wallets (
-                user_id,
-                currency,
-                status
-            )
-            VALUES (
-                $1,
-                'INR',
-                'active'
-            )
-            `,
-            [user.id]
-        );
-
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE WALLET
+        |--------------------------------------------------------------------------
+        */
 
         const walletResult =
             await client.query(
                 `
-                SELECT id
-                FROM wallets
-                WHERE user_id = $1
+                INSERT INTO wallets (
+                    user_id,
+                    currency,
+                    status
+                )
+                VALUES (
+                    $1,
+                    'INR',
+                    'active'
+                )
+                RETURNING
+                    id,
+                    currency,
+                    status
                 `,
-                [user.id]
+                [
+                    user.id
+                ]
             );
 
+
+        if (
+            walletResult.rowCount === 0
+        ) {
+
+            const error =
+                new Error(
+                    "WALLET_CREATION_FAILED"
+                );
+
+            error.code =
+                "WALLET_CREATION_FAILED";
+
+            throw error;
+        }
+
+
+        const wallet =
+            walletResult.rows[0];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE INITIAL WALLET BALANCE
+        |--------------------------------------------------------------------------
+        |
+        | New wallet always starts with:
+        |
+        | available_balance = 0
+        | pending_balance   = 0
+        |
+        */
+
+        await client.query(
+            `
+            INSERT INTO wallet_balances (
+                wallet_id,
+                available_balance,
+                pending_balance,
+                currency
+            )
+            VALUES (
+                $1,
+                0,
+                0,
+                $2
+            )
+            ON CONFLICT (wallet_id)
+            DO NOTHING
+            `,
+            [
+                wallet.id,
+                wallet.currency
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE LEDGER ACCOUNT
+        |--------------------------------------------------------------------------
+        */
 
         await client.query(
             `
@@ -192,13 +332,22 @@ async function registerUser({
             )
             VALUES (
                 $1,
-                'INR',
+                $2,
                 'active'
             )
             `,
-            [walletResult.rows[0].id]
+            [
+                wallet.id,
+                wallet.currency
+            ]
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE AUDIT LOG
+        |--------------------------------------------------------------------------
+        */
 
         await client.query(
             `
@@ -215,20 +364,87 @@ async function registerUser({
                 $1
             )
             `,
-            [user.id]
+            [
+                user.id
+            ]
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | COMMIT
+        |--------------------------------------------------------------------------
+        */
 
         await client.query("COMMIT");
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | RETURN SAFE USER DATA
+        |--------------------------------------------------------------------------
+        |
+        | password_hash is never returned.
+        |
+        */
+
         return user;
+
 
     } catch (error) {
 
-        await client.query("ROLLBACK");
+        /*
+        |--------------------------------------------------------------------------
+        | ROLLBACK
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+        } catch (rollbackError) {
+
+            console.error(
+                "REGISTER ROLLBACK ERROR:",
+                rollbackError
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZE POSTGRES UNIQUE VIOLATION
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            error &&
+            error.code === "23505"
+        ) {
+
+            const duplicateError =
+                new Error(
+                    "ACCOUNT_ALREADY_EXISTS"
+                );
+
+            duplicateError.code =
+                "ACCOUNT_ALREADY_EXISTS";
+
+            throw duplicateError;
+        }
+
+
+        console.error(
+            "REGISTER DATABASE ERROR:",
+            error
+        );
+
 
         throw error;
+
 
     } finally {
 
@@ -237,10 +453,26 @@ async function registerUser({
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATE USER
+|--------------------------------------------------------------------------
+*/
+
 async function authenticateUser({
     email,
     password
 }) {
+
+    const normalizedEmail =
+        email.trim().toLowerCase();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | FIND USER
+    |--------------------------------------------------------------------------
+    */
 
     const result =
         await pool.query(
@@ -259,16 +491,30 @@ async function authenticateUser({
             LIMIT 1
             `,
             [
-                email.trim().toLowerCase()
+                normalizedEmail
             ]
         );
 
 
-    if (result.rowCount === 0) {
+    /*
+    |--------------------------------------------------------------------------
+    | INVALID USER
+    |--------------------------------------------------------------------------
+    */
 
-        throw new Error(
-            "INVALID_CREDENTIALS"
-        );
+    if (
+        result.rowCount === 0
+    ) {
+
+        const error =
+            new Error(
+                "INVALID_CREDENTIALS"
+            );
+
+        error.code =
+            "INVALID_CREDENTIALS";
+
+        throw error;
     }
 
 
@@ -276,13 +522,34 @@ async function authenticateUser({
         result.rows[0];
 
 
-    if (user.account_status !== "active") {
+    /*
+    |--------------------------------------------------------------------------
+    | ACCOUNT STATUS
+    |--------------------------------------------------------------------------
+    */
 
-        throw new Error(
-            "ACCOUNT_UNAVAILABLE"
-        );
+    if (
+        user.account_status !==
+        "active"
+    ) {
+
+        const error =
+            new Error(
+                "ACCOUNT_DISABLED"
+            );
+
+        error.code =
+            "ACCOUNT_DISABLED";
+
+        throw error;
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | VERIFY PASSWORD
+    |--------------------------------------------------------------------------
+    */
 
     const valid =
         await verifyPassword(
@@ -293,22 +560,54 @@ async function authenticateUser({
 
     if (!valid) {
 
-        throw new Error(
-            "INVALID_CREDENTIALS"
-        );
+        const error =
+            new Error(
+                "INVALID_CREDENTIALS"
+            );
+
+        error.code =
+            "INVALID_CREDENTIALS";
+
+        throw error;
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | RETURN SAFE USER OBJECT
+    |--------------------------------------------------------------------------
+    |
+    | password_hash is deliberately excluded.
+    |
+    */
+
     return {
-        id: user.id,
-        publicUserId: user.public_user_id,
-        fullName: user.full_name,
-        email: user.email,
-        phone: user.phone,
-        role: user.role
+        id:
+            user.id,
+
+        publicUserId:
+            user.public_user_id,
+
+        fullName:
+            user.full_name,
+
+        email:
+            user.email,
+
+        phone:
+            user.phone,
+
+        role:
+            user.role
     };
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
+|--------------------------------------------------------------------------
+*/
 
 module.exports = {
     registerUser,

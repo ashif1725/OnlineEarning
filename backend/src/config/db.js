@@ -2,27 +2,34 @@
 
 const { Pool } = require("pg");
 
-if (!process.env.DATABASE_URL) {
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
     throw new Error("DATABASE_URL is required");
 }
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: databaseUrl,
 
     ssl:
         process.env.NODE_ENV === "production"
-            ? { rejectUnauthorized: true }
+            ? {
+                rejectUnauthorized: false
+            }
             : false,
 
     max: 10,
 
     idleTimeoutMillis: 30_000,
 
-    connectionTimeoutMillis: 5_000
+    connectionTimeoutMillis: 10_000
 });
 
 pool.on("error", (error) => {
-    console.error("Unexpected PostgreSQL pool error", error);
+    console.error(
+        "Unexpected PostgreSQL pool error:",
+        error
+    );
 });
 
 module.exports = pool;

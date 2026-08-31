@@ -13,7 +13,7 @@ window.SKILLEARN_CONFIG = Object.freeze({
     appName: "SkillEarn Hub",
 
     // Production Backend API
-    apiBaseUrl: "https://skillearnhub.onrender.com",
+    apiBaseUrl: "https://skillearnhub-1.onrender.com",
 
     // Current environment
     environment: "production"

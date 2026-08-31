@@ -15,17 +15,18 @@ async function createSession({
     userAgent
 }) {
 
-    const token =
-        generateSessionToken();
+    if (!userId) {
+        throw new Error("USER_ID_REQUIRED");
+    }
 
-    const tokenHash =
-        hashToken(token);
+    const token = generateSessionToken();
 
-    const expiry =
-        getSessionExpiry();
+    const tokenHash = hashToken(token);
+
+    const expiry = getSessionExpiry();
 
 
-    await pool.query(
+    const result = await pool.query(
         `
         INSERT INTO user_sessions (
             user_id,
@@ -41,6 +42,11 @@ async function createSession({
             $4,
             $5
         )
+        RETURNING
+            id,
+            user_id,
+            expires_at,
+            created_at
         `,
         [
             userId,
@@ -52,9 +58,15 @@ async function createSession({
     );
 
 
+    const session = result.rows[0];
+
+
     return {
+        id: session.id,
+        userId: session.user_id,
         token,
-        expiresAt: expiry
+        expiresAt: session.expires_at,
+        createdAt: session.created_at
     };
 }
 
@@ -66,38 +78,36 @@ async function getSession(token) {
     }
 
 
-    const tokenHash =
-        hashToken(token);
+    const tokenHash = hashToken(token);
 
 
-    const result =
-        await pool.query(
-            `
-            SELECT
-                s.id AS session_id,
-                s.user_id,
-                s.expires_at,
-                s.revoked_at,
+    const result = await pool.query(
+        `
+        SELECT
+            s.id AS session_id,
+            s.user_id,
+            s.expires_at,
+            s.revoked_at,
 
-                u.public_user_id,
-                u.full_name,
-                u.email,
-                u.phone,
-                u.role,
-                u.account_status,
-                u.email_verified_at
+            u.public_user_id,
+            u.full_name,
+            u.email,
+            u.phone,
+            u.role,
+            u.account_status,
+            u.email_verified_at
 
-            FROM user_sessions s
+        FROM user_sessions s
 
-            JOIN users u
-              ON u.id = s.user_id
+        JOIN users u
+            ON u.id = s.user_id
 
-            WHERE s.session_token_hash = $1
+        WHERE s.session_token_hash = $1
 
-            LIMIT 1
-            `,
-            [tokenHash]
-        );
+        LIMIT 1
+        `,
+        [tokenHash]
+    );
 
 
     if (result.rowCount === 0) {
@@ -105,8 +115,7 @@ async function getSession(token) {
     }
 
 
-    const session =
-        result.rows[0];
+    const session = result.rows[0];
 
 
     if (session.revoked_at) {
@@ -115,8 +124,8 @@ async function getSession(token) {
 
 
     if (
-        new Date(session.expires_at)
-        <= new Date()
+        new Date(session.expires_at) <=
+        new Date()
     ) {
         return null;
     }
@@ -125,7 +134,9 @@ async function getSession(token) {
     await pool.query(
         `
         UPDATE user_sessions
+
         SET last_used_at = NOW()
+
         WHERE id = $1
         `,
         [session.session_id]
@@ -143,14 +154,15 @@ async function revokeSession(token) {
     }
 
 
-    const tokenHash =
-        hashToken(token);
+    const tokenHash = hashToken(token);
 
 
     await pool.query(
         `
         UPDATE user_sessions
+
         SET revoked_at = NOW()
+
         WHERE session_token_hash = $1
         `,
         [tokenHash]

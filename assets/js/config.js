@@ -32,7 +32,7 @@ window.SKILLEARN_CONFIG = Object.freeze({
      */
 
     apiBaseUrl:
-        "https://YOUR-BACKEND-DOMAIN.com",
+        "https://skillearnhub.onrender.com",
 
     environment:
         "production"

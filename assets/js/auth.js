@@ -907,7 +907,7 @@
             setTimeout(
                 function () {
                     window.location.href =
-                        "dashboard.html";
+    "user/dashboard.html";
                 },
                 700
             );

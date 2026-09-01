@@ -5,12 +5,20 @@ const { z } = require("zod");
 
 const {
     register,
-    login
+    login,
+    me,
+    logout
 } = require("../controllers/auth.controller");
 
 
 const router = express.Router();
 
+
+/*
+|--------------------------------------------------------------------------
+| REGISTER VALIDATION
+|--------------------------------------------------------------------------
+*/
 
 const registerSchema =
     z.object({
@@ -41,6 +49,12 @@ const registerSchema =
     });
 
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN VALIDATION
+|--------------------------------------------------------------------------
+*/
+
 const loginSchema =
     z.object({
 
@@ -57,41 +71,111 @@ const loginSchema =
     });
 
 
+/*
+|--------------------------------------------------------------------------
+| VALIDATION MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
+
 function validate(schema) {
 
     return (req, res, next) => {
 
         const result =
-            schema.safeParse(req.body);
+            schema.safeParse(
+                req.body
+            );
 
 
         if (!result.success) {
 
             return res.status(400).json({
+
                 success: false,
-                error: "INVALID_REQUEST"
+
+                error:
+                    "INVALID_REQUEST",
+
+                message:
+                    "Invalid request data"
             });
         }
 
 
-        req.body = result.data;
+        req.body =
+            result.data;
+
 
         next();
     };
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| REGISTER
+|--------------------------------------------------------------------------
+*/
+
 router.post(
+
     "/register",
-    validate(registerSchema),
+
+    validate(
+        registerSchema
+    ),
+
     register
+
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
+
 router.post(
+
     "/login",
-    validate(loginSchema),
+
+    validate(
+        loginSchema
+    ),
+
     login
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| CURRENT USER
+|--------------------------------------------------------------------------
+*/
+
+router.get(
+
+    "/me",
+
+    me
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT
+|--------------------------------------------------------------------------
+*/
+
+router.post(
+
+    "/logout",
+
+    logout
+
 );
 
 

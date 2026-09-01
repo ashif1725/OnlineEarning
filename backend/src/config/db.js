@@ -5,18 +5,15 @@ const { Pool } = require("pg");
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-    throw new Error("postgresql://skillearnhub_user:mTJIupbBYD72we6v7Siv5kDsRf2YCWCE@dpg-daag68lg1s2s73d39ah0-a/skillearnhub");
+    throw new Error("DATABASE_URL is required");
 }
 
 const pool = new Pool({
     connectionString: databaseUrl,
 
-    ssl:
-        process.env.NODE_ENV === "production"
-            ? {
-                rejectUnauthorized: false
-            }
-            : false,
+    ssl: {
+        rejectUnauthorized: false
+    },
 
     max: 10,
 

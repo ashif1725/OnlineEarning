@@ -354,19 +354,16 @@ await client.query(
     INSERT INTO audit_logs (
         actor_user_id,
         action,
-        entity_type,
-        entity_id
+        entity_type
     )
     VALUES (
         $1::uuid,
         'USER_REGISTERED',
-        'USER',
-        $2::varchar
+        'USER'
     )
     `,
     [
-        user.id,
-        String(user.id)
+        user.id
     ]
 );
 

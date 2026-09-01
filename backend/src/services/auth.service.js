@@ -358,10 +358,10 @@ await client.query(
         entity_id
     )
     VALUES (
-        $1,
+        $1::uuid,
         'USER_REGISTERED',
         'USER',
-        $2
+        $2::varchar
     )
     `,
     [

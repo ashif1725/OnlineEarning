@@ -1,16 +1,35 @@
 "use strict";
 
+
 /*
 |--------------------------------------------------------------------------
-| SkillEarn Hub - User Dashboard
-| Cookie-based Session Authentication
+| SkillEarn Hub
+| User Dashboard
 |--------------------------------------------------------------------------
 */
+
 
 document.addEventListener(
     "DOMContentLoaded",
     initDashboard
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| API
+|--------------------------------------------------------------------------
+*/
+
+const DASHBOARD_API =
+    (
+        typeof window.apiUrl ===
+        "function"
+    )
+        ? window.apiUrl
+        : endpoint =>
+            "https://skillearnhub-1.onrender.com" +
+            endpoint;
 
 
 /*
@@ -22,6 +41,10 @@ document.addEventListener(
 async function initDashboard() {
 
     setupLogout();
+
+    setupQuickAccess();
+
+    showLoadingState();
 
     await loadDashboard();
 }
@@ -37,47 +60,49 @@ async function loadDashboard() {
 
     try {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Build API URL
-        |--------------------------------------------------------------------------
-        */
-
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/me")
-                : "https://skillearnhub-1.onrender.com/api/auth/me";
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Request using HTTP-only session cookie
-        |--------------------------------------------------------------------------
-        */
-
         const response =
-            await fetch(url, {
+            await fetch(
 
-                method: "GET",
+                DASHBOARD_API(
+                    "/api/auth/me"
+                ),
 
-                headers: {
-                    "Accept":
-                        "application/json"
-                },
+                {
 
-                credentials:
-                    "include"
+                    method:
+                        "GET",
 
-            });
+                    credentials:
+                        "include",
+
+                    headers:
+                        typeof window.getApiHeaders ===
+                        "function"
+
+                            ? window.getApiHeaders()
+
+                            : {
+                                "Accept":
+                                    "application/json"
+                            }
+
+                }
+
+            );
 
 
         /*
         |--------------------------------------------------------------------------
-        | Authentication failed
+        | NOT AUTHENTICATED
         |--------------------------------------------------------------------------
         */
 
-        if (response.status === 401) {
+        if (
+            response.status ===
+            401
+        ) {
+
+            clearLocalSession();
 
             redirectToLogin();
 
@@ -87,64 +112,60 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | Account disabled
-        |--------------------------------------------------------------------------
-        */
-
-        if (response.status === 403) {
-
-            showDashboardMessage(
-                "Your account is currently unavailable."
-            );
-
-            return;
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Other server errors
+        | OTHER SERVER ERROR
         |--------------------------------------------------------------------------
         */
 
         if (!response.ok) {
 
             throw new Error(
-                `Dashboard API failed: ${response.status}`
+                `Dashboard request failed: ${response.status}`
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Parse response
-        |--------------------------------------------------------------------------
-        */
 
         const data =
             await response.json();
 
 
-        if (
-            !data ||
-            !data.user
-        ) {
+        const user =
+            data?.user ||
+            data?.data?.user;
+
+
+        if (!user) {
 
             throw new Error(
-                "User data not found"
+                "User information was not returned by the server."
             );
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Render user
+        | SAVE SAFE USER DATA
         |--------------------------------------------------------------------------
         */
 
-        renderUser(
-            data.user
-        );
+        try {
+
+            sessionStorage.setItem(
+                "skillEarnUser",
+                JSON.stringify(user)
+            );
+
+        } catch {}
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | RENDER
+        |--------------------------------------------------------------------------
+        */
+
+        renderUser(user);
+
+        hideLoadingState();
 
 
     } catch (error) {
@@ -153,6 +174,51 @@ async function loadDashboard() {
             "DASHBOARD ERROR:",
             error
         );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Try cached user
+        |--------------------------------------------------------------------------
+        */
+
+        let cachedUser = null;
+
+
+        try {
+
+            const saved =
+                sessionStorage.getItem(
+                    "skillEarnUser"
+                );
+
+
+            if (saved) {
+
+                cachedUser =
+                    JSON.parse(saved);
+            }
+
+        } catch {}
+
+
+        if (cachedUser) {
+
+            renderUser(
+                cachedUser
+            );
+
+            hideLoadingState();
+
+            showDashboardMessage(
+                "Live account data is temporarily unavailable. Showing saved information."
+            );
+
+            return;
+        }
+
+
+        hideLoadingState();
 
 
         showDashboardMessage(
@@ -171,40 +237,52 @@ async function loadDashboard() {
 function renderUser(user) {
 
     const fullName =
-        user.fullName ||
-        user.full_name ||
-        user.name ||
+        user?.fullName ||
+        user?.full_name ||
+        user?.name ||
         "User";
 
 
     const publicUserId =
-        user.publicUserId ||
-        user.public_user_id ||
-        user.userId ||
+        user?.publicUserId ||
+        user?.public_user_id ||
+        user?.userId ||
+        user?.id ||
         "—";
 
 
     const email =
-        user.email ||
+        user?.email ||
         "—";
+
+
+    const phone =
+        user?.phone ||
+        "—";
+
+
+    const role =
+        user?.role ||
+        "User";
 
 
     const accountStatus =
-        user.accountStatus ||
-        user.account_status ||
-        "—";
+        user?.accountStatus ||
+        user?.account_status ||
+        "Active";
 
 
     let emailVerified =
-        user.emailVerified;
+        user?.emailVerified;
 
 
     if (
-        emailVerified === undefined
+        emailVerified ===
+        undefined
     ) {
 
         emailVerified =
-            user.email_verified;
+            user?.email_verified;
     }
 
 
@@ -212,14 +290,16 @@ function renderUser(user) {
 
 
     if (
-        emailVerified === true
+        emailVerified ===
+        true
     ) {
 
         emailStatus =
             "Verified";
 
     } else if (
-        emailVerified === false
+        emailVerified ===
+        false
     ) {
 
         emailStatus =
@@ -234,7 +314,7 @@ function renderUser(user) {
 
     /*
     |--------------------------------------------------------------------------
-    | Update UI
+    | USER NAME
     |--------------------------------------------------------------------------
     */
 
@@ -244,11 +324,23 @@ function renderUser(user) {
     );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | USER ID
+    |--------------------------------------------------------------------------
+    */
+
     setText(
         "userId",
         publicUserId
     );
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL
+    |--------------------------------------------------------------------------
+    */
 
     setText(
         "userEmail",
@@ -256,68 +348,147 @@ function renderUser(user) {
     );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | PHONE
+    |--------------------------------------------------------------------------
+    */
+
+    setText(
+        "userPhone",
+        phone
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ROLE
+    |--------------------------------------------------------------------------
+    */
+
+    setText(
+        "userRole",
+        role
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ACCOUNT STATUS
+    |--------------------------------------------------------------------------
+    */
+
     setText(
         "accountStatus",
         accountStatus
     );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | EMAIL VERIFICATION
+    |--------------------------------------------------------------------------
+    */
+
     setText(
         "emailStatus",
         emailStatus
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Avatar initial
+    |--------------------------------------------------------------------------
+    */
+
+    const initial =
+        fullName
+            .charAt(0)
+            .toUpperCase();
+
+
+    setText(
+        "userInitial",
+        initial
     );
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| SAFE TEXT SETTER
+| SAFE TEXT
 |--------------------------------------------------------------------------
 */
 
-function setText(id, value) {
+function setText(
+    id,
+    value
+) {
 
     const element =
         document.getElementById(id);
 
 
     if (!element) {
+
         return;
     }
 
 
     element.textContent =
-        value !== undefined &&
         value !== null &&
+        value !== undefined &&
         String(value).trim() !== ""
+
             ? String(value)
+
             : "—";
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| LOGOUT BUTTON
+| LOADING STATE
 |--------------------------------------------------------------------------
 */
 
-function setupLogout() {
+function showLoadingState() {
 
-    const logoutButton =
-        document.getElementById(
-            "logoutButton"
+    [
+        "userName",
+        "userId",
+        "userEmail",
+        "userPhone",
+        "userRole",
+        "accountStatus",
+        "emailStatus"
+    ]
+        .forEach(
+            id => {
+
+                const element =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (element) {
+
+                    element.textContent =
+                        "Loading...";
+                }
+            }
         );
+}
 
 
-    if (!logoutButton) {
-        return;
-    }
+function hideLoadingState() {
 
-
-    logoutButton.addEventListener(
-        "click",
-        logoutUser
-    );
+    /*
+     * Data is replaced by renderUser().
+     * Nothing else required.
+     */
 }
 
 
@@ -327,9 +498,30 @@ function setupLogout() {
 |--------------------------------------------------------------------------
 */
 
+function setupLogout() {
+
+    const button =
+        document.getElementById(
+            "logoutButton"
+        );
+
+
+    if (!button) {
+
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        logoutUser
+    );
+}
+
+
 async function logoutUser() {
 
-    const logoutButton =
+    const button =
         document.getElementById(
             "logoutButton"
         );
@@ -337,36 +529,40 @@ async function logoutUser() {
 
     try {
 
-        if (logoutButton) {
+        if (button) {
 
-            logoutButton.disabled =
+            button.disabled =
                 true;
 
-            logoutButton.textContent =
+            button.textContent =
                 "Logging out...";
         }
 
 
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/logout")
-                : "https://skillearnhub-1.onrender.com/api/auth/logout";
+        await fetch(
 
+            DASHBOARD_API(
+                "/api/auth/logout"
+            ),
 
-        await fetch(url, {
+            {
 
-            method: "POST",
+                method:
+                    "POST",
 
-            headers: {
+                credentials:
+                    "include",
 
-                "Accept":
-                    "application/json"
-            },
+                headers: {
 
-            credentials:
-                "include"
+                    "Accept":
+                        "application/json"
 
-        });
+                }
+
+            }
+
+        );
 
 
     } catch (error) {
@@ -376,8 +572,9 @@ async function logoutUser() {
             error
         );
 
-
     } finally {
+
+        clearLocalSession();
 
         redirectToLogin();
     }
@@ -386,7 +583,75 @@ async function logoutUser() {
 
 /*
 |--------------------------------------------------------------------------
-| REDIRECT TO LOGIN
+| QUICK ACCESS
+|--------------------------------------------------------------------------
+*/
+
+function setupQuickAccess() {
+
+    document
+        .querySelectorAll(
+            "[data-dashboard-link]"
+        )
+        .forEach(
+            card => {
+
+                card.addEventListener(
+                    "click",
+                    event => {
+
+                        const url =
+                            card.getAttribute(
+                                "data-dashboard-link"
+                            );
+
+
+                        if (!url) {
+
+                            return;
+                        }
+
+
+                        event.preventDefault();
+
+                        window.location.href =
+                            url;
+                    }
+                );
+            }
+        );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CLEAR LOCAL CACHE
+|--------------------------------------------------------------------------
+*/
+
+function clearLocalSession() {
+
+    try {
+
+        sessionStorage.removeItem(
+            "skillEarnUser"
+        );
+
+        localStorage.removeItem(
+            "skillearn_access_token"
+        );
+
+        localStorage.removeItem(
+            "skillearn_user"
+        );
+
+    } catch {}
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGIN REDIRECT
 |--------------------------------------------------------------------------
 */
 
@@ -403,7 +668,9 @@ function redirectToLogin() {
 |--------------------------------------------------------------------------
 */
 
-function showDashboardMessage(message) {
+function showDashboardMessage(
+    message
+) {
 
     let element =
         document.getElementById(
@@ -418,30 +685,39 @@ function showDashboardMessage(message) {
                 "div"
             );
 
+
         element.id =
             "dashboardMessage";
 
-        element.style.marginTop =
-            "20px";
+
+        element.style.margin =
+            "20px 0";
+
 
         element.style.padding =
-            "12px";
+            "14px 16px";
+
 
         element.style.borderRadius =
-            "10px";
-
-        element.style.fontSize =
-            "14px";
+            "12px";
 
 
-        const dashboard =
+        element.style.background =
+            "rgba(255,255,255,0.06)";
+
+
+        element.style.color =
+            "#ffffff";
+
+
+        const main =
             document.querySelector(
                 "main"
             ) ||
             document.body;
 
 
-        dashboard.appendChild(
+        main.prepend(
             element
         );
     }

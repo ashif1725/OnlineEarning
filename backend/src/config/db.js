@@ -5,7 +5,7 @@ const { Pool } = require("pg");
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required");
+    throw new Error("postgresql://skillearnhub_user:mTJIupbBYD72we6v7Siv5kDsRf2YCWCE@dpg-daag68lg1s2s73d39ah0-a/skillearnhub");
 }
 
 const pool = new Pool({

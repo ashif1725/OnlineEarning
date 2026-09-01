@@ -81,22 +81,23 @@
 
 
     function showMessage(element, message, type) {
-        if (!element) {
-            return;
-        }
-
-        element.textContent = message || "";
-
-        element.classList.remove(
-            "success",
-            "error",
-            "info"
-        );
-
-        if (type) {
-            element.classList.add(type);
-        }
+    if (!element) {
+        return;
     }
+
+    element.textContent = message || "";
+
+    element.classList.remove(
+        "success",
+        "error",
+        "info",
+        "show"
+    );
+
+    if (type && message) {
+        element.classList.add(type, "show");
+    }
+}
 
 
     function setButtonLoading(button, loading, normalText) {

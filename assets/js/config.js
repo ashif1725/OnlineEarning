@@ -6,56 +6,38 @@
 "use strict";
 
 /*
- * =========================================================
- * PRODUCTION BACKEND CONFIGURATION
- * =========================================================
+ * Backend API configuration
  */
 
 const SKILLEARN_CONFIG = {
 
-    /*
-     * IMPORTANT:
-     * केवल public backend URL रखें।
-     *
-     * कोई DATABASE_URL
-     * कोई password
-     * कोई JWT secret
-     * कोई private API key
-     * यहाँ नहीं रखना है।
-     */
-
+    // Production Backend API
     API_BASE_URL:
         "https://skillearnhub-1.onrender.com",
 
-    /*
-     * Authentication endpoints
-     */
-
+    // Authentication endpoints
     AUTH: {
 
         REGISTER:
-            "/auth/register",
+            "/api/auth/register",
 
         LOGIN:
-            "/auth/login",
+            "/api/auth/login",
 
         LOGOUT:
-            "/auth/logout",
+            "/api/auth/logout",
 
         ME:
-            "/auth/me",
+            "/api/auth/me",
 
         FORGOT_PASSWORD:
-            "/auth/forgot-password",
+            "/api/auth/forgot-password",
 
         RESET_PASSWORD:
-            "/auth/reset-password"
+            "/api/auth/reset-password"
     },
 
-    /*
-     * Request settings
-     */
-
+    // Request settings
     REQUEST: {
 
         TIMEOUT:
@@ -65,10 +47,7 @@ const SKILLEARN_CONFIG = {
             "include"
     },
 
-    /*
-     * Local storage keys
-     */
-
+    // Local storage keys
     STORAGE: {
 
         TOKEN:
@@ -77,26 +56,6 @@ const SKILLEARN_CONFIG = {
         USER:
             "skillearn_user"
     }
-
-};
-
-
-/*
- * =========================================================
- * BACKWARD COMPATIBILITY
- * =========================================================
- *
- * auth.js currently reads:
- *
- * window.APP_CONFIG.API_BASE_URL
- *
- * इसलिए APP_CONFIG भी expose किया गया है।
- */
-
-window.APP_CONFIG = {
-
-    API_BASE_URL:
-        SKILLEARN_CONFIG.API_BASE_URL
 
 };
 
@@ -180,7 +139,6 @@ function getSavedUser() {
     if (!user) {
 
         return null;
-
     }
 
     try {
@@ -262,7 +220,6 @@ function getApiHeaders() {
 
         "Accept":
             "application/json"
-
     };
 
     const token =
@@ -272,12 +229,30 @@ function getApiHeaders() {
 
         headers.Authorization =
             `Bearer ${token}`;
-
     }
 
     return headers;
 
 }
+
+
+/*
+ * =========================================================
+ * GLOBAL CONFIG
+ * =========================================================
+ *
+ * auth.js uses:
+ *
+ * window.APP_CONFIG.API_BASE_URL
+ *
+ */
+
+window.APP_CONFIG = {
+
+    API_BASE_URL:
+        SKILLEARN_CONFIG.API_BASE_URL
+
+};
 
 
 /*

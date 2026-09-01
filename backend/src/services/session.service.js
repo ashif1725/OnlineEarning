@@ -1,6 +1,9 @@
 "use strict";
 
-const pool = require("../config/db");
+
+const pool =
+    require("../config/db");
+
 
 const {
     generateSessionToken,
@@ -9,6 +12,12 @@ const {
 } = require("../utils/session");
 
 
+/*
+|--------------------------------------------------------------------------
+| CREATE SESSION
+|--------------------------------------------------------------------------
+*/
+
 async function createSession({
     userId,
     ipAddress,
@@ -16,122 +25,187 @@ async function createSession({
 }) {
 
     if (!userId) {
-        throw new Error("USER_ID_REQUIRED");
+
+        throw new Error(
+            "USER_ID_REQUIRED"
+        );
     }
 
-    const token = generateSessionToken();
 
-    const tokenHash = hashToken(token);
-
-    const expiry = getSessionExpiry();
+    const token =
+        generateSessionToken();
 
 
-    const result = await pool.query(
-        `
-        INSERT INTO user_sessions (
-            user_id,
-            session_token_hash,
-            ip_address,
-            user_agent,
-            expires_at
-        )
-        VALUES (
-            $1,
-            $2,
-            $3,
-            $4,
-            $5
-        )
-        RETURNING
-            id,
-            user_id,
-            expires_at,
-            created_at
-        `,
-        [
-            userId,
-            tokenHash,
-            ipAddress || null,
-            userAgent || null,
-            expiry
-        ]
-    );
+    const tokenHash =
+        hashToken(token);
 
 
-    const session = result.rows[0];
+    const expiry =
+        getSessionExpiry();
+
+
+    const result =
+        await pool.query(
+
+            `
+            INSERT INTO user_sessions (
+                user_id,
+                session_token_hash,
+                ip_address,
+                user_agent,
+                expires_at
+            )
+
+            VALUES (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5
+            )
+
+            RETURNING
+                id,
+                user_id,
+                expires_at,
+                created_at
+            `,
+
+            [
+                userId,
+                tokenHash,
+                ipAddress || null,
+                userAgent || null,
+                expiry
+            ]
+
+        );
+
+
+    const session =
+        result.rows[0];
 
 
     return {
-        id: session.id,
-        userId: session.user_id,
+
+        id:
+            session.id,
+
+        userId:
+            session.user_id,
+
         token,
-        expiresAt: session.expires_at,
-        createdAt: session.created_at
+
+        expiresAt:
+            session.expires_at,
+
+        createdAt:
+            session.created_at
+
     };
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| GET SESSION
+|--------------------------------------------------------------------------
+*/
+
 async function getSession(token) {
 
     if (!token) {
+
         return null;
     }
 
 
-    const tokenHash = hashToken(token);
+    const tokenHash =
+        hashToken(token);
 
 
-    const result = await pool.query(
-        `
-        SELECT
-            s.id AS session_id,
-            s.user_id,
-            s.expires_at,
-            s.revoked_at,
+    const result =
+        await pool.query(
 
-            u.public_user_id,
-            u.full_name,
-            u.email,
-            u.phone,
-            u.role,
-            u.account_status,
-            u.email_verified_at
+            `
+            SELECT
 
-        FROM user_sessions s
+                s.id AS session_id,
 
-        JOIN users u
-            ON u.id = s.user_id
+                s.user_id,
 
-        WHERE s.session_token_hash = $1
+                s.expires_at,
 
-        LIMIT 1
-        `,
-        [tokenHash]
-    );
+                s.revoked_at,
+
+                u.public_user_id,
+
+                u.full_name,
+
+                u.email,
+
+                u.phone,
+
+                u.role,
+
+                u.account_status,
+
+                u.email_verified_at
+
+            FROM user_sessions s
+
+            JOIN users u
+                ON u.id = s.user_id
+
+            WHERE
+                s.session_token_hash = $1
+
+            LIMIT 1
+            `,
+
+            [tokenHash]
+
+        );
 
 
-    if (result.rowCount === 0) {
+    if (
+        result.rowCount === 0
+    ) {
+
         return null;
     }
 
 
-    const session = result.rows[0];
+    const session =
+        result.rows[0];
 
 
-    if (session.revoked_at) {
+    if (
+        session.revoked_at
+    ) {
+
         return null;
     }
 
 
     if (
-        new Date(session.expires_at) <=
-        new Date()
+        new Date(
+            session.expires_at
+        ) <= new Date()
     ) {
+
         return null;
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | LAST USED
+    |--------------------------------------------------------------------------
+    */
+
     await pool.query(
+
         `
         UPDATE user_sessions
 
@@ -139,7 +213,11 @@ async function getSession(token) {
 
         WHERE id = $1
         `,
-        [session.session_id]
+
+        [
+            session.session_id
+        ]
+
     );
 
 
@@ -147,17 +225,26 @@ async function getSession(token) {
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| REVOKE SESSION
+|--------------------------------------------------------------------------
+*/
+
 async function revokeSession(token) {
 
     if (!token) {
+
         return;
     }
 
 
-    const tokenHash = hashToken(token);
+    const tokenHash =
+        hashToken(token);
 
 
     await pool.query(
+
         `
         UPDATE user_sessions
 
@@ -165,13 +252,27 @@ async function revokeSession(token) {
 
         WHERE session_token_hash = $1
         `,
-        [tokenHash]
+
+        [
+            tokenHash
+        ]
+
     );
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
+|--------------------------------------------------------------------------
+*/
+
 module.exports = {
+
     createSession,
+
     getSession,
+
     revokeSession
+
 };

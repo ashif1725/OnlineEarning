@@ -6,64 +6,125 @@
 "use strict";
 
 /*
- * Backend API configuration
- *
- * Change only API_BASE_URL if your backend is hosted
- * somewhere else.
+ * =========================================================
+ * PRODUCTION BACKEND CONFIGURATION
+ * =========================================================
  */
 
 const SKILLEARN_CONFIG = {
 
-    // Backend API base URL
-    API_BASE_URL: "http://localhost:3000/api",
+    /*
+     * IMPORTANT:
+     * केवल public backend URL रखें।
+     *
+     * कोई DATABASE_URL
+     * कोई password
+     * कोई JWT secret
+     * कोई private API key
+     * यहाँ नहीं रखना है।
+     */
 
-    // Authentication endpoints
+    API_BASE_URL:
+        "https://skillearnhub-1.onrender.com",
+
+    /*
+     * Authentication endpoints
+     */
+
     AUTH: {
-        REGISTER: "/auth/register",
-        LOGIN: "/auth/login",
-        LOGOUT: "/auth/logout",
-        ME: "/auth/me",
-        FORGOT_PASSWORD: "/auth/forgot-password",
-        RESET_PASSWORD: "/auth/reset-password"
+
+        REGISTER:
+            "/auth/register",
+
+        LOGIN:
+            "/auth/login",
+
+        LOGOUT:
+            "/auth/logout",
+
+        ME:
+            "/auth/me",
+
+        FORGOT_PASSWORD:
+            "/auth/forgot-password",
+
+        RESET_PASSWORD:
+            "/auth/reset-password"
     },
 
-    // Request settings
+    /*
+     * Request settings
+     */
+
     REQUEST: {
-        TIMEOUT: 15000,
-        CREDENTIALS: "include"
+
+        TIMEOUT:
+            15000,
+
+        CREDENTIALS:
+            "include"
     },
 
-    // Local storage keys
+    /*
+     * Local storage keys
+     */
+
     STORAGE: {
-        TOKEN: "skillearn_access_token",
-        USER: "skillearn_user"
+
+        TOKEN:
+            "skillearn_access_token",
+
+        USER:
+            "skillearn_user"
     }
 
 };
 
 
 /*
- * Helper function to create a complete API URL.
+ * =========================================================
+ * BACKWARD COMPATIBILITY
+ * =========================================================
  *
- * Example:
- * apiUrl("/auth/login")
+ * auth.js currently reads:
  *
- * becomes:
- * http://localhost:3000/api/auth/login
+ * window.APP_CONFIG.API_BASE_URL
+ *
+ * इसलिए APP_CONFIG भी expose किया गया है।
+ */
+
+window.APP_CONFIG = {
+
+    API_BASE_URL:
+        SKILLEARN_CONFIG.API_BASE_URL
+
+};
+
+
+/*
+ * =========================================================
+ * API URL HELPER
+ * =========================================================
  */
 
 function apiUrl(endpoint) {
 
-    const baseUrl = SKILLEARN_CONFIG.API_BASE_URL.replace(/\/+$/, "");
+    const baseUrl =
+        SKILLEARN_CONFIG.API_BASE_URL
+            .replace(/\/+$/, "");
 
-    const path = String(endpoint || "").replace(/^\/+/, "");
+    const path =
+        String(endpoint || "")
+            .replace(/^\/+/, "");
 
     return `${baseUrl}/${path}`;
 }
 
 
 /*
- * Get saved authentication token.
+ * =========================================================
+ * AUTH TOKEN
+ * =========================================================
  */
 
 function getAuthToken() {
@@ -75,13 +136,10 @@ function getAuthToken() {
 }
 
 
-/*
- * Save authentication token.
- */
-
 function setAuthToken(token) {
 
     if (!token) {
+
         localStorage.removeItem(
             SKILLEARN_CONFIG.STORAGE.TOKEN
         );
@@ -97,10 +155,6 @@ function setAuthToken(token) {
 }
 
 
-/*
- * Remove authentication token.
- */
-
 function removeAuthToken() {
 
     localStorage.removeItem(
@@ -111,17 +165,22 @@ function removeAuthToken() {
 
 
 /*
- * Get saved user.
+ * =========================================================
+ * SAVED USER
+ * =========================================================
  */
 
 function getSavedUser() {
 
-    const user = localStorage.getItem(
-        SKILLEARN_CONFIG.STORAGE.USER
-    );
+    const user =
+        localStorage.getItem(
+            SKILLEARN_CONFIG.STORAGE.USER
+        );
 
     if (!user) {
+
         return null;
+
     }
 
     try {
@@ -145,10 +204,6 @@ function getSavedUser() {
 }
 
 
-/*
- * Save user information.
- */
-
 function setSavedUser(user) {
 
     if (!user) {
@@ -168,10 +223,6 @@ function setSavedUser(user) {
 }
 
 
-/*
- * Remove saved user.
- */
-
 function removeSavedUser() {
 
     localStorage.removeItem(
@@ -182,33 +233,45 @@ function removeSavedUser() {
 
 
 /*
- * Clear complete authentication data.
+ * =========================================================
+ * CLEAR AUTH DATA
+ * =========================================================
  */
 
 function clearAuthData() {
 
     removeAuthToken();
+
     removeSavedUser();
 
 }
 
 
 /*
- * Build default API headers.
+ * =========================================================
+ * API HEADERS
+ * =========================================================
  */
 
 function getApiHeaders() {
 
     const headers = {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
+
+        "Content-Type":
+            "application/json",
+
+        "Accept":
+            "application/json"
+
     };
 
-    const token = getAuthToken();
+    const token =
+        getAuthToken();
 
     if (token) {
 
-        headers.Authorization = `Bearer ${token}`;
+        headers.Authorization =
+            `Bearer ${token}`;
 
     }
 
@@ -218,22 +281,37 @@ function getApiHeaders() {
 
 
 /*
- * Export configuration for auth.js
- *
- * These variables are intentionally global because
- * config.js is loaded before auth.js in the HTML files.
+ * =========================================================
+ * GLOBAL EXPORTS
+ * =========================================================
  */
 
-window.SKILLEARN_CONFIG = SKILLEARN_CONFIG;
-window.apiUrl = apiUrl;
+window.SKILLEARN_CONFIG =
+    SKILLEARN_CONFIG;
 
-window.getAuthToken = getAuthToken;
-window.setAuthToken = setAuthToken;
-window.removeAuthToken = removeAuthToken;
+window.apiUrl =
+    apiUrl;
 
-window.getSavedUser = getSavedUser;
-window.setSavedUser = setSavedUser;
-window.removeSavedUser = removeSavedUser;
+window.getAuthToken =
+    getAuthToken;
 
-window.clearAuthData = clearAuthData;
-window.getApiHeaders = getApiHeaders;
+window.setAuthToken =
+    setAuthToken;
+
+window.removeAuthToken =
+    removeAuthToken;
+
+window.getSavedUser =
+    getSavedUser;
+
+window.setSavedUser =
+    setSavedUser;
+
+window.removeSavedUser =
+    removeSavedUser;
+
+window.clearAuthData =
+    clearAuthData;
+
+window.getApiHeaders =
+    getApiHeaders;

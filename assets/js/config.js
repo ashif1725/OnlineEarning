@@ -260,6 +260,10 @@ window.APP_CONFIG = {
  * GLOBAL EXPORTS
  * =========================================================
  */
+window.APP_CONFIG = {
+    API_BASE_URL:
+        SKILLEARN_CONFIG.API_BASE_URL
+};
 
 window.SKILLEARN_CONFIG =
     SKILLEARN_CONFIG;

@@ -7,6 +7,7 @@ const {
 
 const {
     createSession,
+    getSession,
     revokeSession
 } = require("../services/session.service");
 
@@ -29,13 +30,13 @@ async function register(req, res) {
         } = req.body;
 
 
-        // Validation
         if (
             !fullName ||
             !email ||
             !phone ||
             !password
         ) {
+
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -43,19 +44,47 @@ async function register(req, res) {
         }
 
 
-        const user = await registerUser({
-            fullName,
-            email,
-            phone,
-            password
-        });
+        const user =
+            await registerUser({
+                fullName,
+                email,
+                phone,
+                password
+            });
 
 
         return res.status(201).json({
+
             success: true,
-            message: "Account created successfully",
-            user
+
+            message:
+                "Account created successfully",
+
+            user: {
+                id:
+                    user.id,
+
+                publicUserId:
+                    user.public_user_id,
+
+                fullName:
+                    user.full_name,
+
+                email:
+                    user.email,
+
+                phone:
+                    user.phone,
+
+                role:
+                    user.role,
+
+                accountStatus:
+                    user.account_status
+            }
+
         });
+
 
     } catch (error) {
 
@@ -71,7 +100,9 @@ async function register(req, res) {
         ) {
 
             return res.status(409).json({
+
                 success: false,
+
                 message:
                     "Email or phone already registered"
             });
@@ -79,8 +110,11 @@ async function register(req, res) {
 
 
         return res.status(500).json({
+
             success: false,
-            message: "Registration failed"
+
+            message:
+                "Registration failed"
         });
     }
 }
@@ -102,22 +136,17 @@ async function login(req, res) {
         } = req.body;
 
 
-        // Validation
         if (!email || !password) {
 
             return res.status(400).json({
+
                 success: false,
+
                 message:
                     "Email and password are required"
             });
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Authenticate user
-        |--------------------------------------------------------------------------
-        */
 
         const user =
             await authenticateUser({
@@ -129,7 +158,9 @@ async function login(req, res) {
         if (!user) {
 
             return res.status(401).json({
+
                 success: false,
+
                 message:
                     "Invalid email or password"
             });
@@ -138,14 +169,19 @@ async function login(req, res) {
 
         /*
         |--------------------------------------------------------------------------
-        | Create server-side session
+        | CREATE SESSION
         |--------------------------------------------------------------------------
         */
 
         const session =
             await createSession({
-                userId: user.id,
-                ipAddress: req.ip,
+
+                userId:
+                    user.id,
+
+                ipAddress:
+                    req.ip,
+
                 userAgent:
                     req.get("user-agent")
             });
@@ -153,12 +189,14 @@ async function login(req, res) {
 
         /*
         |--------------------------------------------------------------------------
-        | Set HTTP-only session cookie
+        | SESSION COOKIE
         |--------------------------------------------------------------------------
         */
 
         const expiresAt =
-            new Date(session.expiresAt);
+            new Date(
+                session.expiresAt
+            );
 
 
         const maxAge =
@@ -170,31 +208,47 @@ async function login(req, res) {
 
 
         res.cookie(
+
             "skillearn_session",
+
             session.token,
+
             {
+
                 httpOnly: true,
 
                 secure:
                     process.env.NODE_ENV ===
                     "production",
 
-                sameSite: "lax",
+                /*
+                 * Because frontend and backend
+                 * are on different sites, use
+                 * "none" in production.
+                 */
+
+                sameSite:
+                    process.env.NODE_ENV ===
+                    "production"
+                        ? "none"
+                        : "lax",
 
                 maxAge,
 
                 path: "/"
             }
+
         );
 
 
         /*
         |--------------------------------------------------------------------------
-        | Login response
+        | RESPONSE
         |--------------------------------------------------------------------------
         */
 
         return res.status(200).json({
+
             success: true,
 
             message:
@@ -203,10 +257,8 @@ async function login(req, res) {
             expiresAt:
                 session.expiresAt,
 
-            sessionId:
-                session.id,
-
             user: {
+
                 id:
                     user.id,
 
@@ -225,7 +277,9 @@ async function login(req, res) {
                 role:
                     user.role
             }
+
         });
+
 
     } catch (error) {
 
@@ -235,30 +289,20 @@ async function login(req, res) {
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Authentication failure
-        |--------------------------------------------------------------------------
-        */
-
         if (
             error.code ===
             "INVALID_CREDENTIALS"
         ) {
 
             return res.status(401).json({
+
                 success: false,
+
                 message:
                     "Invalid email or password"
             });
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Account locked / disabled
-        |--------------------------------------------------------------------------
-        */
 
         if (
             error.code ===
@@ -266,7 +310,9 @@ async function login(req, res) {
         ) {
 
             return res.status(423).json({
+
                 success: false,
+
                 message:
                     "Account is temporarily locked"
             });
@@ -279,7 +325,96 @@ async function login(req, res) {
         ) {
 
             return res.status(403).json({
+
                 success: false,
+
+                message:
+                    "Account is disabled"
+            });
+        }
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Login failed"
+        });
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| CURRENT USER / ME
+|--------------------------------------------------------------------------
+*/
+
+async function me(req, res) {
+
+    try {
+
+        const token =
+            req.cookies &&
+            req.cookies.skillearn_session;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | No session
+        |--------------------------------------------------------------------------
+        */
+
+        if (!token) {
+
+            return res.status(401).json({
+
+                success: false,
+
+                message:
+                    "Authentication required"
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find session
+        |--------------------------------------------------------------------------
+        */
+
+        const session =
+            await getSession(token);
+
+
+        if (!session) {
+
+            return res.status(401).json({
+
+                success: false,
+
+                message:
+                    "Session expired or invalid"
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Account status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            session.account_status !==
+            "active"
+        ) {
+
+            return res.status(403).json({
+
+                success: false,
+
                 message:
                     "Account is disabled"
             });
@@ -288,14 +423,60 @@ async function login(req, res) {
 
         /*
         |--------------------------------------------------------------------------
-        | Generic server error
+        | RETURN CURRENT USER
         |--------------------------------------------------------------------------
         */
 
+        return res.status(200).json({
+
+            success: true,
+
+            user: {
+
+                id:
+                    session.user_id,
+
+                publicUserId:
+                    session.public_user_id,
+
+                fullName:
+                    session.full_name,
+
+                email:
+                    session.email,
+
+                phone:
+                    session.phone,
+
+                role:
+                    session.role,
+
+                accountStatus:
+                    session.account_status,
+
+                emailVerified:
+                    Boolean(
+                        session.email_verified_at
+                    )
+            }
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "ME ERROR:",
+            error
+        );
+
+
         return res.status(500).json({
+
             success: false,
+
             message:
-                "Login failed"
+                "Unable to load account"
         });
     }
 }
@@ -318,31 +499,44 @@ async function logout(req, res) {
 
         if (token) {
 
-            await revokeSession(token);
+            await revokeSession(
+                token
+            );
         }
 
 
         res.clearCookie(
+
             "skillearn_session",
+
             {
+
                 httpOnly: true,
 
                 secure:
                     process.env.NODE_ENV ===
                     "production",
 
-                sameSite: "lax",
+                sameSite:
+                    process.env.NODE_ENV ===
+                    "production"
+                        ? "none"
+                        : "lax",
 
                 path: "/"
             }
+
         );
 
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Logout successful"
         });
+
 
     } catch (error) {
 
@@ -353,7 +547,9 @@ async function logout(req, res) {
 
 
         return res.status(500).json({
+
             success: false,
+
             message:
                 "Logout failed"
         });
@@ -368,7 +564,13 @@ async function logout(req, res) {
 */
 
 module.exports = {
+
     register,
+
     login,
+
+    me,
+
     logout
+
 };

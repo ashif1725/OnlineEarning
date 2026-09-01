@@ -3,10 +3,14 @@
 /*
 |--------------------------------------------------------------------------
 | SkillEarn Hub - User Dashboard
+| Cookie-based Session Authentication
 |--------------------------------------------------------------------------
 */
 
-document.addEventListener("DOMContentLoaded", initDashboard);
+document.addEventListener(
+    "DOMContentLoaded",
+    initDashboard
+);
 
 
 /*
@@ -19,17 +23,6 @@ async function initDashboard() {
 
     setupLogout();
 
-    // Show saved user immediately if available
-    const savedUser =
-        typeof window.getSavedUser === "function"
-            ? window.getSavedUser()
-            : null;
-
-    if (savedUser) {
-        renderUser(savedUser);
-    }
-
-    // Then load fresh data from Render API
     await loadDashboard();
 }
 
@@ -44,38 +37,9 @@ async function loadDashboard() {
 
     try {
 
-        const token =
-            typeof window.getAuthToken === "function"
-                ? window.getAuthToken()
-                : null;
-
-
         /*
         |--------------------------------------------------------------------------
-        | If there is no token, use saved user only
-        |--------------------------------------------------------------------------
-        */
-
-        if (!token) {
-
-            const savedUser =
-                typeof window.getSavedUser === "function"
-                    ? window.getSavedUser()
-                    : null;
-
-            if (savedUser) {
-                renderUser(savedUser);
-                return;
-            }
-
-            redirectToLogin();
-            return;
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Build Render API URL
+        | Build API URL
         |--------------------------------------------------------------------------
         */
 
@@ -87,7 +51,7 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | API REQUEST
+        | Request using HTTP-only session cookie
         |--------------------------------------------------------------------------
         */
 
@@ -96,36 +60,24 @@ async function loadDashboard() {
 
                 method: "GET",
 
-                headers:
-                    typeof window.getApiHeaders === "function"
-                        ? window.getApiHeaders()
-                        : {
-                            "Accept":
-                                "application/json",
+                headers: {
+                    "Accept":
+                        "application/json"
+                },
 
-                            "Authorization":
-                                `Bearer ${token}`
-                        },
-
-                credentials: "include"
+                credentials:
+                    "include"
 
             });
 
 
         /*
         |--------------------------------------------------------------------------
-        | Unauthorized
+        | Authentication failed
         |--------------------------------------------------------------------------
         */
 
         if (response.status === 401) {
-
-            if (
-                typeof window.clearAuthData ===
-                "function"
-            ) {
-                window.clearAuthData();
-            }
 
             redirectToLogin();
 
@@ -135,7 +87,23 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | Server Error
+        | Account disabled
+        |--------------------------------------------------------------------------
+        */
+
+        if (response.status === 403) {
+
+            showDashboardMessage(
+                "Your account is currently unavailable."
+            );
+
+            return;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Other server errors
         |--------------------------------------------------------------------------
         */
 
@@ -149,7 +117,7 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | Parse JSON
+        | Parse response
         |--------------------------------------------------------------------------
         */
 
@@ -157,19 +125,10 @@ async function loadDashboard() {
             await response.json();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Get User
-        |--------------------------------------------------------------------------
-        */
-
-        const user =
-            data.user ||
-            data.data?.user ||
-            data;
-
-
-        if (!user) {
+        if (
+            !data ||
+            !data.user
+        ) {
 
             throw new Error(
                 "User data not found"
@@ -179,25 +138,13 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | Save User
+        | Render user
         |--------------------------------------------------------------------------
         */
 
-        if (
-            typeof window.setSavedUser ===
-            "function"
-        ) {
-            window.setSavedUser(user);
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Render User
-        |--------------------------------------------------------------------------
-        */
-
-        renderUser(user);
+        renderUser(
+            data.user
+        );
 
 
     } catch (error) {
@@ -208,32 +155,8 @@ async function loadDashboard() {
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Use cached user if API temporarily fails
-        |--------------------------------------------------------------------------
-        */
-
-        const savedUser =
-            typeof window.getSavedUser === "function"
-                ? window.getSavedUser()
-                : null;
-
-
-        if (savedUser) {
-
-            renderUser(savedUser);
-
-            showDashboardMessage(
-                "Unable to refresh live data. Showing saved account information."
-            );
-
-            return;
-        }
-
-
         showDashboardMessage(
-            "Unable to load your account. Please try again."
+            "Unable to load your account. Please refresh the page and try again."
         );
     }
 }
@@ -246,12 +169,6 @@ async function loadDashboard() {
 */
 
 function renderUser(user) {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Support both backend naming styles
-    |--------------------------------------------------------------------------
-    */
 
     const fullName =
         user.fullName ||
@@ -278,37 +195,46 @@ function renderUser(user) {
         "—";
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Email verification
-    |--------------------------------------------------------------------------
-    */
-
     let emailVerified =
-        user.emailVerified ??
-        user.email_verified;
+        user.emailVerified;
 
 
-    if (emailVerified === true) {
+    if (
+        emailVerified === undefined
+    ) {
 
         emailVerified =
+            user.email_verified;
+    }
+
+
+    let emailStatus;
+
+
+    if (
+        emailVerified === true
+    ) {
+
+        emailStatus =
             "Verified";
 
-    } else if (emailVerified === false) {
+    } else if (
+        emailVerified === false
+    ) {
 
-        emailVerified =
+        emailStatus =
             "Not Verified";
 
     } else {
 
-        emailVerified =
+        emailStatus =
             "—";
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Update dashboard
+    | Update UI
     |--------------------------------------------------------------------------
     */
 
@@ -338,7 +264,7 @@ function renderUser(user) {
 
     setText(
         "emailStatus",
-        emailVerified
+        emailStatus
     );
 }
 
@@ -364,14 +290,14 @@ function setText(id, value) {
         value !== undefined &&
         value !== null &&
         String(value).trim() !== ""
-            ? value
+            ? String(value)
             : "—";
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| LOGOUT
+| LOGOUT BUTTON
 |--------------------------------------------------------------------------
 */
 
@@ -397,7 +323,7 @@ function setupLogout() {
 
 /*
 |--------------------------------------------------------------------------
-| LOGOUT USER
+| LOGOUT
 |--------------------------------------------------------------------------
 */
 
@@ -421,12 +347,6 @@ async function logoutUser() {
         }
 
 
-        const token =
-            typeof window.getAuthToken === "function"
-                ? window.getAuthToken()
-                : null;
-
-
         const url =
             typeof window.apiUrl === "function"
                 ? window.apiUrl("/api/auth/logout")
@@ -437,21 +357,14 @@ async function logoutUser() {
 
             method: "POST",
 
-            headers:
-                token
-                    ? {
-                        "Accept":
-                            "application/json",
+            headers: {
 
-                        "Authorization":
-                            `Bearer ${token}`
-                    }
-                    : {
-                        "Accept":
-                            "application/json"
-                    },
+                "Accept":
+                    "application/json"
+            },
 
-            credentials: "include"
+            credentials:
+                "include"
 
         });
 
@@ -465,36 +378,6 @@ async function logoutUser() {
 
 
     } finally {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Always clear local authentication
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            typeof window.clearAuthData ===
-            "function"
-        ) {
-            window.clearAuthData();
-
-        } else {
-
-            localStorage.removeItem(
-                "skillearn_access_token"
-            );
-
-            localStorage.removeItem(
-                "skillearn_user"
-            );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect
-        |--------------------------------------------------------------------------
-        */
 
         redirectToLogin();
     }

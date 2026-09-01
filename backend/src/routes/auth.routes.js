@@ -6,176 +6,120 @@ const { z } = require("zod");
 const {
     register,
     login,
-    me,
-    logout
+    logout,
+    me
 } = require("../controllers/auth.controller");
-
 
 const router = express.Router();
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER VALIDATION
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   VALIDATION SCHEMAS
+========================================================= */
 
-const registerSchema =
-    z.object({
+const registerSchema = z.object({
 
-        fullName:
-            z.string()
-                .trim()
-                .min(2)
-                .max(80),
+    fullName:
+        z.string()
+            .trim()
+            .min(2)
+            .max(80),
 
-        email:
-            z.string()
-                .trim()
-                .email()
-                .max(160),
+    email:
+        z.string()
+            .trim()
+            .email()
+            .max(160),
 
-        phone:
-            z.string()
-                .trim()
-                .min(8)
-                .max(20),
+    phone:
+        z.string()
+            .trim()
+            .min(8)
+            .max(20),
 
-        password:
-            z.string()
-                .min(12)
-                .max(128)
+    password:
+        z.string()
+            .min(12)
+            .max(128)
 
-    });
+});
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN VALIDATION
-|--------------------------------------------------------------------------
-*/
+const loginSchema = z.object({
 
-const loginSchema =
-    z.object({
+    email:
+        z.string()
+            .trim()
+            .email()
+            .max(160),
 
-        email:
-            z.string()
-                .trim()
-                .email(),
+    password:
+        z.string()
+            .min(1)
+            .max(128)
 
-        password:
-            z.string()
-                .min(1)
-                .max(128)
-
-    });
+});
 
 
-/*
-|--------------------------------------------------------------------------
-| VALIDATION MIDDLEWARE
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   VALIDATION MIDDLEWARE
+========================================================= */
 
 function validate(schema) {
 
     return (req, res, next) => {
 
         const result =
-            schema.safeParse(
-                req.body
-            );
-
+            schema.safeParse(req.body);
 
         if (!result.success) {
 
             return res.status(400).json({
-
                 success: false,
-
-                error:
-                    "INVALID_REQUEST",
-
-                message:
-                    "Invalid request data"
+                error: "INVALID_REQUEST"
             });
         }
 
-
-        req.body =
-            result.data;
-
+        req.body = result.data;
 
         next();
     };
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   AUTH ROUTES
+========================================================= */
 
 router.post(
-
     "/register",
-
-    validate(
-        registerSchema
-    ),
-
+    validate(registerSchema),
     register
-
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN
-|--------------------------------------------------------------------------
-*/
-
 router.post(
-
     "/login",
-
-    validate(
-        loginSchema
-    ),
-
+    validate(loginSchema),
     login
-
 );
 
 
 /*
-|--------------------------------------------------------------------------
-| CURRENT USER
-|--------------------------------------------------------------------------
-*/
-
+ * Current logged-in user
+ */
 router.get(
-
     "/me",
-
     me
-
 );
 
 
 /*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
-
+ * Logout
+ */
 router.post(
-
     "/logout",
-
     logout
-
 );
 
 

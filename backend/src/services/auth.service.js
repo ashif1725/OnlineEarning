@@ -343,31 +343,32 @@ async function registerUser({
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE AUDIT LOG
-        |--------------------------------------------------------------------------
-        */
+        /*  
+|--------------------------------------------------------------------------
+| CREATE AUDIT LOG
+|--------------------------------------------------------------------------
+*/
 
-        await client.query(
-            `
-            INSERT INTO audit_logs (
-                actor_user_id,
-                action,
-                entity_type,
-                entity_id
-            )
-            VALUES (
-                $1,
-                'USER_REGISTERED',
-                'USER',
-                $1
-            )
-            `,
-            [
-                user.id
-            ]
-        );
+await client.query(
+    `
+    INSERT INTO audit_logs (
+        actor_user_id,
+        action,
+        entity_type,
+        entity_id
+    )
+    VALUES (
+        $1,
+        'USER_REGISTERED',
+        'USER',
+        $2
+    )
+    `,
+    [
+        user.id,
+        String(user.id)
+    ]
+);
 
 
         /*

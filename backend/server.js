@@ -5,6 +5,7 @@ require("dotenv").config();
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./src/routes/auth.routes");
 
@@ -13,6 +14,7 @@ const app = express();
 const PORT = Number(process.env.PORT || 8080);
 
 app.disable("x-powered-by");
+
 
 /* =========================================
    SECURITY HEADERS
@@ -47,6 +49,15 @@ app.use(
     express.json({
         limit: "100kb"
     })
+);
+
+
+/* =========================================
+   COOKIE PARSER
+========================================= */
+
+app.use(
+    cookieParser()
 );
 
 

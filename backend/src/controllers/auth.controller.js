@@ -1,15 +1,49 @@
 "use strict";
 
+
 const {
     registerUser,
     authenticateUser
 } = require("../services/auth.service");
+
 
 const {
     createSession,
     getSession,
     revokeSession
 } = require("../services/session.service");
+
+
+/*
+|--------------------------------------------------------------------------
+| COOKIE OPTIONS
+|--------------------------------------------------------------------------
+*/
+
+function getCookieOptions(maxAge) {
+
+    const isProduction =
+        process.env.NODE_ENV === "production";
+
+
+    return {
+
+        httpOnly: true,
+
+        secure:
+            isProduction,
+
+        sameSite:
+            isProduction
+                ? "none"
+                : "lax",
+
+        maxAge,
+
+        path: "/"
+
+    };
+}
 
 
 /*
@@ -38,18 +72,24 @@ async function register(req, res) {
         ) {
 
             return res.status(400).json({
+
                 success: false,
-                message: "All fields are required"
+
+                message:
+                    "All fields are required."
+
             });
         }
 
 
         const user =
             await registerUser({
+
                 fullName,
                 email,
                 phone,
                 password
+
             });
 
 
@@ -58,30 +98,9 @@ async function register(req, res) {
             success: true,
 
             message:
-                "Account created successfully",
+                "Account created successfully.",
 
-            user: {
-                id:
-                    user.id,
-
-                publicUserId:
-                    user.public_user_id,
-
-                fullName:
-                    user.full_name,
-
-                email:
-                    user.email,
-
-                phone:
-                    user.phone,
-
-                role:
-                    user.role,
-
-                accountStatus:
-                    user.account_status
-            }
+            user
 
         });
 
@@ -104,7 +123,8 @@ async function register(req, res) {
                 success: false,
 
                 message:
-                    "Email or phone already registered"
+                    "Email or phone already registered."
+
             });
         }
 
@@ -114,7 +134,8 @@ async function register(req, res) {
             success: false,
 
             message:
-                "Registration failed"
+                "Registration failed."
+
         });
     }
 }
@@ -136,22 +157,34 @@ async function login(req, res) {
         } = req.body;
 
 
-        if (!email || !password) {
+        if (
+            !email ||
+            !password
+        ) {
 
             return res.status(400).json({
 
                 success: false,
 
                 message:
-                    "Email and password are required"
+                    "Email and password are required."
+
             });
         }
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | AUTHENTICATE
+        |--------------------------------------------------------------------------
+        */
+
         const user =
             await authenticateUser({
+
                 email,
                 password
+
             });
 
 
@@ -162,14 +195,15 @@ async function login(req, res) {
                 success: false,
 
                 message:
-                    "Invalid email or password"
+                    "Invalid email or password."
+
             });
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | CREATE SESSION
+        | CREATE SERVER SESSION
         |--------------------------------------------------------------------------
         */
 
@@ -184,6 +218,7 @@ async function login(req, res) {
 
                 userAgent:
                     req.get("user-agent")
+
             });
 
 
@@ -213,30 +248,7 @@ async function login(req, res) {
 
             session.token,
 
-            {
-
-                httpOnly: true,
-
-                secure:
-                    process.env.NODE_ENV ===
-                    "production",
-
-                /*
-                 * Because frontend and backend
-                 * are on different sites, use
-                 * "none" in production.
-                 */
-
-                sameSite:
-                    process.env.NODE_ENV ===
-                    "production"
-                        ? "none"
-                        : "lax",
-
-                maxAge,
-
-                path: "/"
-            }
+            getCookieOptions(maxAge)
 
         );
 
@@ -252,10 +264,13 @@ async function login(req, res) {
             success: true,
 
             message:
-                "Login successful",
+                "Login successful.",
 
             expiresAt:
                 session.expiresAt,
+
+            sessionId:
+                session.id,
 
             user: {
 
@@ -275,7 +290,19 @@ async function login(req, res) {
                     user.phone,
 
                 role:
-                    user.role
+                    user.role,
+
+                accountStatus:
+                    user.accountStatus ||
+                    user.account_status ||
+                    null,
+
+                emailVerified:
+                    Boolean(
+                        user.emailVerifiedAt ||
+                        user.email_verified_at
+                    )
+
             }
 
         });
@@ -299,7 +326,8 @@ async function login(req, res) {
                 success: false,
 
                 message:
-                    "Invalid email or password"
+                    "Invalid email or password."
+
             });
         }
 
@@ -314,7 +342,8 @@ async function login(req, res) {
                 success: false,
 
                 message:
-                    "Account is temporarily locked"
+                    "Account is temporarily locked."
+
             });
         }
 
@@ -329,7 +358,8 @@ async function login(req, res) {
                 success: false,
 
                 message:
-                    "Account is disabled"
+                    "Account is disabled."
+
             });
         }
 
@@ -339,7 +369,8 @@ async function login(req, res) {
             success: false,
 
             message:
-                "Login failed"
+                "Login failed."
+
         });
     }
 }
@@ -360,12 +391,6 @@ async function me(req, res) {
             req.cookies.skillearn_session;
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | No session
-        |--------------------------------------------------------------------------
-        */
-
         if (!token) {
 
             return res.status(401).json({
@@ -373,16 +398,11 @@ async function me(req, res) {
                 success: false,
 
                 message:
-                    "Authentication required"
+                    "Not authenticated."
+
             });
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Find session
-        |--------------------------------------------------------------------------
-        */
 
         const session =
             await getSession(token);
@@ -395,37 +415,11 @@ async function me(req, res) {
                 success: false,
 
                 message:
-                    "Session expired or invalid"
+                    "Session expired or invalid."
+
             });
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Account status
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            session.account_status !==
-            "active"
-        ) {
-
-            return res.status(403).json({
-
-                success: false,
-
-                message:
-                    "Account is disabled"
-            });
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RETURN CURRENT USER
-        |--------------------------------------------------------------------------
-        */
 
         return res.status(200).json({
 
@@ -458,6 +452,7 @@ async function me(req, res) {
                     Boolean(
                         session.email_verified_at
                     )
+
             }
 
         });
@@ -476,7 +471,8 @@ async function me(req, res) {
             success: false,
 
             message:
-                "Unable to load account"
+                "Unable to load account."
+
         });
     }
 }
@@ -509,22 +505,7 @@ async function logout(req, res) {
 
             "skillearn_session",
 
-            {
-
-                httpOnly: true,
-
-                secure:
-                    process.env.NODE_ENV ===
-                    "production",
-
-                sameSite:
-                    process.env.NODE_ENV ===
-                    "production"
-                        ? "none"
-                        : "lax",
-
-                path: "/"
-            }
+            getCookieOptions(0)
 
         );
 
@@ -534,7 +515,8 @@ async function logout(req, res) {
             success: true,
 
             message:
-                "Logout successful"
+                "Logout successful."
+
         });
 
 
@@ -551,7 +533,8 @@ async function logout(req, res) {
             success: false,
 
             message:
-                "Logout failed"
+                "Logout failed."
+
         });
     }
 }

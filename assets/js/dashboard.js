@@ -1,60 +1,81 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", function () {
-    loadDashboard();
-    setupLogout();
+
+    loadUserData();
+
+    const logoutButton =
+        document.getElementById("logoutButton");
+
+    if (logoutButton) {
+        logoutButton.addEventListener(
+            "click",
+            logoutUser
+        );
+    }
 });
 
 
-function loadDashboard() {
+function loadUserData() {
+
+    let user = null;
+
     try {
         const storedUser =
             sessionStorage.getItem("skillEarnUser");
 
-        if (!storedUser) {
-            window.location.href = "../login.html";
-            return;
+        if (storedUser) {
+            user = JSON.parse(storedUser);
         }
-
-        const user = JSON.parse(storedUser);
-
-        setText(
-            "userName",
-            user.fullName || user.name
-        );
-
-        setText(
-            "userId",
-            user.publicUserId || user.userId || user.id
-        );
-
-        setText(
-            "userEmail",
-            user.email
-        );
-
-        setText(
-            "accountStatus",
-            user.accountStatus || "Active"
-        );
-
-        setText(
-            "emailStatus",
-            user.emailVerified
-                ? "Verified"
-                : "Not Verified"
-        );
-
     } catch (error) {
         console.error(
-            "Dashboard loading error:",
+            "Unable to read user session:",
             error
         );
     }
+
+
+    if (!user) {
+        window.location.href =
+            "../login.html";
+
+        return;
+    }
+
+
+    setText(
+        "userName",
+        user.fullName || "User"
+    );
+
+
+    setText(
+        "userId",
+        user.publicUserId || user.id || "—"
+    );
+
+
+    setText(
+        "userEmail",
+        user.email || "—"
+    );
+
+
+    setText(
+        "accountStatus",
+        "Active"
+    );
+
+
+    setText(
+        "emailStatus",
+        "Not Verified"
+    );
 }
 
 
 function setText(id, value) {
+
     const element =
         document.getElementById(id);
 
@@ -65,54 +86,55 @@ function setText(id, value) {
 }
 
 
-function setupLogout() {
+async function logoutUser() {
+
     const logoutButton =
         document.getElementById("logoutButton");
 
-    if (!logoutButton) {
-        return;
+
+    if (logoutButton) {
+        logoutButton.disabled = true;
+        logoutButton.textContent =
+            "Logging out...";
     }
 
-    logoutButton.addEventListener(
-        "click",
-        async function () {
 
-            const API_BASE_URL =
-                "https://skillearnhub-1.onrender.com";
+    try {
 
-            try {
-                await fetch(
-                    API_BASE_URL +
-                    "/api/auth/logout",
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: {
-                            "Accept":
-                                "application/json"
-                        }
-                    }
-                );
-            } catch (error) {
-                console.warn(
-                    "Logout API request failed:",
-                    error
-                );
+        await fetch(
+            "https://skillearnhub-1.onrender.com/api/auth/logout",
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
             }
+        );
 
-            try {
-                sessionStorage.removeItem(
-                    "skillEarnUser"
-                );
-            } catch (error) {
-                console.warn(
-                    "Unable to clear session:",
-                    error
-                );
-            }
+    } catch (error) {
 
-            window.location.href =
-                "../login.html";
+        console.warn(
+            "Logout API error:",
+            error
+        );
+
+    } finally {
+
+        try {
+            sessionStorage.removeItem(
+                "skillEarnUser"
+            );
+        } catch (error) {
+            console.warn(
+                "Unable to clear session:",
+                error
+            );
         }
-    );
+
+
+        window.location.href =
+            "../login.html";
+    }
 }

@@ -1,80 +1,42 @@
 "use strict";
 
+document.addEventListener("DOMContentLoaded", function () {
+    loadDashboard();
+    setupLogout();
+});
 
-document.addEventListener(
-    "DOMContentLoaded",
-    loadDashboard
-);
 
-
-async function loadDashboard() {
-
+function loadDashboard() {
     try {
+        const storedUser =
+            sessionStorage.getItem("skillEarnUser");
 
-        const response =
-            await fetch(
-                "/api/profile/me",
-                {
-                    method: "GET",
-
-                    credentials: "include",
-
-                    headers: {
-                        "Accept":
-                            "application/json"
-                    }
-                }
-            );
-
-
-        if (response.status === 401) {
-
-            window.location.href =
-                "../login.html";
-
+        if (!storedUser) {
+            window.location.href = "../login.html";
             return;
         }
 
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Unable to load profile"
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        const user =
-            data.user;
-
+        const user = JSON.parse(storedUser);
 
         setText(
             "userName",
-            user.name
+            user.fullName || user.name
         );
-
 
         setText(
             "userId",
-            user.userId
+            user.publicUserId || user.userId || user.id
         );
-
 
         setText(
             "userEmail",
             user.email
         );
 
-
         setText(
             "accountStatus",
-            user.accountStatus
+            user.accountStatus || "Active"
         );
-
 
         setText(
             "emailStatus",
@@ -83,59 +45,74 @@ async function loadDashboard() {
                 : "Not Verified"
         );
 
-
     } catch (error) {
-
-        console.error(error);
-
+        console.error(
+            "Dashboard loading error:",
+            error
+        );
     }
 }
 
 
-function setText(
-    id,
-    value
-) {
-
+function setText(id, value) {
     const element =
         document.getElementById(id);
 
-
     if (element) {
         element.textContent =
-            value ?? "—";
+            value || "—";
     }
 }
 
 
-const logoutButton =
-    document.getElementById(
-        "logoutButton"
-    );
+function setupLogout() {
+    const logoutButton =
+        document.getElementById("logoutButton");
 
-
-if (logoutButton) {
+    if (!logoutButton) {
+        return;
+    }
 
     logoutButton.addEventListener(
         "click",
-        async () => {
+        async function () {
+
+            const API_BASE_URL =
+                "https://skillearnhub-1.onrender.com";
 
             try {
-
                 await fetch(
+                    API_BASE_URL +
                     "/api/auth/logout",
                     {
                         method: "POST",
-                        credentials: "include"
+                        credentials: "include",
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
                     }
                 );
-
-            } finally {
-
-                window.location.href =
-                    "../login.html";
+            } catch (error) {
+                console.warn(
+                    "Logout API request failed:",
+                    error
+                );
             }
 
+            try {
+                sessionStorage.removeItem(
+                    "skillEarnUser"
+                );
+            } catch (error) {
+                console.warn(
+                    "Unable to clear session:",
+                    error
+                );
+            }
+
+            window.location.href =
+                "../login.html";
         }
     );
 }

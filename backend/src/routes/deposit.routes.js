@@ -1,5 +1,6 @@
 "use strict";
 
+
 const express =
     require("express");
 
@@ -9,22 +10,27 @@ const router =
 
 
 const {
-
     createDeposit,
-
     getMyDeposits
-
 } =
     require(
         "../controllers/deposit.controller"
     );
 
 
-const requireAuth =
+const {
+    requireAuth
+} =
     require(
         "../middleware/auth.middleware"
     );
 
+
+/*
+|--------------------------------------------------------------------------
+| CREATE DEPOSIT REQUEST
+|--------------------------------------------------------------------------
+*/
 
 router.post(
     "/",
@@ -32,6 +38,12 @@ router.post(
     createDeposit
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| GET MY DEPOSIT REQUESTS
+|--------------------------------------------------------------------------
+*/
 
 router.get(
     "/",

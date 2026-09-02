@@ -1,11 +1,3 @@
-/* =========================================================
-   SkillEarn Hub
-   assets/js/dashboard.js
-
-   STEP 5
-   User Dashboard Controller
-   ========================================================= */
-
 "use strict";
 
 
@@ -15,90 +7,46 @@ document.addEventListener(
 );
 
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| INIT
+|--------------------------------------------------------------------------
+*/
 
 async function initDashboard() {
 
-    setupNavigation();
-
     setupLogout();
 
-    setupMobileMenu();
+    setupWalletActions();
 
     await loadDashboard();
+
 }
 
 
-/* =========================================================
-   LOAD CURRENT USER
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| LOAD DASHBOARD
+|--------------------------------------------------------------------------
+*/
 
 async function loadDashboard() {
 
-    const loading =
-        document.getElementById(
-            "dashboardLoading"
-        );
-
-
     try {
 
-        if (loading) {
-
-            loading.hidden =
-                false;
-        }
-
-
-        /*
-         * Server-side session
-         */
-
-        const result =
-            await window.apiRequest(
-                "/api/auth/me",
-                {
-                    method:
-                        "GET"
-                }
-            );
-
-
         const user =
-            result?.user;
+            await loadCurrentUser();
 
 
-        if (!user) {
+        if (user) {
 
-            throw new Error(
-                "User session not found"
-            );
+            renderUser(user);
         }
 
 
-        /*
-         * Save non-sensitive display data
-         */
+        await loadWallet();
 
-        window.setSavedUser(
-            user
-        );
-
-
-        /*
-         * Render
-         */
-
-        renderUser(
-            user
-        );
-
-
-        updateNavigation(
-            user
-        );
+        await loadTransactions();
 
 
     } catch (error) {
@@ -108,156 +56,705 @@ async function loadDashboard() {
             error
         );
 
-
-        if (
-            error.status ===
-            401
-        ) {
-
-            window.clearAuthData();
-
-            redirectToLogin();
-
-            return;
-        }
-
-
-        /*
-         * Temporary network failure:
-         * show cached display information
-         */
-
-        const savedUser =
-            window.getSavedUser();
-
-
-        if (savedUser) {
-
-            renderUser(
-                savedUser
-            );
-
-            showMessage(
-                "Live account data could not be refreshed."
-            );
-
-        } else {
-
-            showMessage(
-                "Unable to load your account. Please try again."
-            );
-        }
-
-    } finally {
-
-        if (loading) {
-
-            loading.hidden =
-                true;
-        }
+        showMessage(
+            "Unable to load dashboard data."
+        );
     }
 }
 
 
-/* =========================================================
-   RENDER USER
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| CURRENT USER
+|--------------------------------------------------------------------------
+*/
+
+async function loadCurrentUser() {
+
+    const url =
+        window.apiUrl(
+            "/api/auth/me"
+        );
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                },
+
+                credentials:
+                    "include"
+            }
+        );
+
+
+    if (
+        response.status === 401
+    ) {
+
+        redirectToLogin();
+
+        return null;
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Unable to load user"
+        );
+    }
+
+
+    const data =
+        await response.json();
+
+
+    const user =
+        data.user ||
+        data.data?.user ||
+        null;
+
+
+    if (user) {
+
+        if (
+            typeof window.setSavedUser ===
+            "function"
+        ) {
+
+            window.setSavedUser(
+                user
+            );
+        }
+    }
+
+
+    return user;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RENDER USER
+|--------------------------------------------------------------------------
+*/
 
 function renderUser(user) {
 
-    const fullName =
-        user.fullName ||
-        user.full_name ||
-        "User";
-
-
-    const userId =
-        user.publicUserId ||
-        user.public_user_id ||
-        "—";
-
-
-    const email =
-        user.email ||
-        "—";
-
-
-    const status =
-        user.accountStatus ||
-        user.account_status ||
-        "—";
-
-
-    const verified =
-        user.emailVerified === true
-            ? "Verified"
-            : "Not Verified";
-
-
     setText(
         "userName",
-        fullName
-    );
-
-
-    setText(
-        "welcomeName",
-        fullName
+        user.fullName ||
+        user.full_name ||
+        user.name ||
+        "User"
     );
 
 
     setText(
         "userId",
-        userId
+        user.publicUserId ||
+        user.public_user_id ||
+        "—"
     );
 
 
     setText(
         "userEmail",
-        email
+        user.email ||
+        "—"
     );
 
 
     setText(
         "accountStatus",
-        status
+        user.accountStatus ||
+        user.account_status ||
+        "—"
     );
+
+
+    const verified =
+        user.emailVerified === true ||
+        user.email_verified === true;
 
 
     setText(
         "emailStatus",
         verified
+            ? "Verified"
+            : "Not Verified"
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| WALLET
+|--------------------------------------------------------------------------
+*/
+
+async function loadWallet() {
+
+    const response =
+        await fetch(
+            window.apiUrl(
+                "/api/wallet"
+            ),
+            {
+                method: "GET",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                },
+
+                credentials:
+                    "include"
+            }
+        );
+
+
+    if (
+        response.status === 401
+    ) {
+
+        redirectToLogin();
+
+        return;
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Wallet request failed"
+        );
+    }
+
+
+    const data =
+        await response.json();
+
+
+    const wallet =
+        data.wallet;
+
+
+    if (!wallet) {
+        return;
+    }
+
+
+    setText(
+        "walletBalance",
+        formatAmount(
+            wallet.balance
+        )
     );
 
 
-    /*
-     * Optional email verification badge
-     */
+    setText(
+        "walletCurrency",
+        wallet.currency ||
+        "POINT"
+    );
 
-    const badge =
+
+    setText(
+        "walletStatus",
+        wallet.status ||
+        "active"
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| TRANSACTIONS
+|--------------------------------------------------------------------------
+*/
+
+async function loadTransactions() {
+
+    const response =
+        await fetch(
+            window.apiUrl(
+                "/api/wallet/transactions"
+            ),
+            {
+                method: "GET",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                },
+
+                credentials:
+                    "include"
+            }
+        );
+
+
+    if (!response.ok) {
+        return;
+    }
+
+
+    const data =
+        await response.json();
+
+
+    renderTransactions(
+        data.transactions ||
+        []
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RENDER TRANSACTIONS
+|--------------------------------------------------------------------------
+*/
+
+function renderTransactions(
+    transactions
+) {
+
+    const container =
         document.getElementById(
-            "emailStatus"
+            "transactionList"
         );
 
 
-    if (badge) {
+    if (!container) {
+        return;
+    }
 
-        badge.classList.toggle(
-            "verified",
-            user.emailVerified === true
+
+    container.innerHTML = "";
+
+
+    if (
+        transactions.length === 0
+    ) {
+
+        container.innerHTML =
+            `
+            <div class="empty-state">
+                No transactions yet.
+            </div>
+            `;
+
+        return;
+    }
+
+
+    transactions.forEach(
+        function (transaction) {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "transaction-item";
+
+
+            const type =
+                transaction.transaction_type;
+
+
+            const incoming =
+                type === "receive";
+
+
+            item.innerHTML =
+                `
+                <div class="transaction-main">
+
+                    <strong>
+                        ${
+                            incoming
+                                ? "Received"
+                                : "Sent"
+                        }
+                    </strong>
+
+                    <span>
+                        ${
+                            transaction.description ||
+                            "Wallet transaction"
+                        }
+                    </span>
+
+                </div>
+
+                <div class="transaction-amount ${
+                    incoming
+                        ? "positive"
+                        : "negative"
+                }">
+
+                    ${
+                        incoming
+                            ? "+"
+                            : "-"
+                    }${formatAmount(
+                        transaction.amount
+                    )}
+
+                </div>
+                `;
+
+
+            container.appendChild(
+                item
+            );
+        }
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| WALLET ACTIONS
+|--------------------------------------------------------------------------
+*/
+
+function setupWalletActions() {
+
+    const sendForm =
+        document.getElementById(
+            "sendMoneyForm"
         );
 
-        badge.classList.toggle(
-            "not-verified",
-            user.emailVerified !== true
+
+    if (sendForm) {
+
+        sendForm.addEventListener(
+            "submit",
+            handleSendMoney
+        );
+    }
+
+
+    const receiveButton =
+        document.getElementById(
+            "receiveMoneyButton"
+        );
+
+
+    if (receiveButton) {
+
+        receiveButton.addEventListener(
+            "click",
+            showReceivePanel
+        );
+    }
+
+
+    const closeReceive =
+        document.getElementById(
+            "closeReceiveButton"
+        );
+
+
+    if (closeReceive) {
+
+        closeReceive.addEventListener(
+            "click",
+            hideReceivePanel
         );
     }
 }
 
 
-/* =========================================================
-   SAFE TEXT
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| SEND MONEY
+|--------------------------------------------------------------------------
+*/
+
+async function handleSendMoney(
+    event
+) {
+
+    event.preventDefault();
+
+
+    const form =
+        event.currentTarget;
+
+
+    const receiver =
+        document.getElementById(
+            "receiverUserId"
+        )?.value.trim();
+
+
+    const amount =
+        document.getElementById(
+            "sendAmount"
+        )?.value;
+
+
+    const description =
+        document.getElementById(
+            "sendDescription"
+        )?.value.trim();
+
+
+    if (
+        !receiver ||
+        !amount
+    ) {
+
+        showMessage(
+            "Enter receiver User ID and amount."
+        );
+
+        return;
+    }
+
+
+    const button =
+        form.querySelector(
+            "button[type='submit']"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Sending...";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                window.apiUrl(
+                    "/api/wallet/send"
+                ),
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json",
+
+                        "Idempotency-Key":
+                            crypto.randomUUID()
+                    },
+
+                    credentials:
+                        "include",
+
+                    body:
+                        JSON.stringify({
+
+                            receiverUserId:
+                                receiver,
+
+                            amount:
+                                Number(amount),
+
+                            description:
+                                description
+
+                        })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.message ||
+                "Transfer failed"
+            );
+        }
+
+
+        showMessage(
+            "Money sent successfully."
+        );
+
+
+        form.reset();
+
+
+        await loadWallet();
+
+        await loadTransactions();
+
+
+    } catch (error) {
+
+        console.error(
+            "SEND ERROR:",
+            error
+        );
+
+
+        showMessage(
+            error.message ||
+            "Unable to send money."
+        );
+
+
+    } finally {
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "Send Money";
+        }
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RECEIVE PANEL
+|--------------------------------------------------------------------------
+*/
+
+function showReceivePanel() {
+
+    const panel =
+        document.getElementById(
+            "receivePanel"
+        );
+
+
+    if (panel) {
+
+        panel.hidden =
+            false;
+    }
+}
+
+
+function hideReceivePanel() {
+
+    const panel =
+        document.getElementById(
+            "receivePanel"
+        );
+
+
+    if (panel) {
+
+        panel.hidden =
+            true;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT
+|--------------------------------------------------------------------------
+*/
+
+function setupLogout() {
+
+    const button =
+        document.getElementById(
+            "logoutButton"
+        );
+
+
+    if (!button) {
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        async function () {
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "Logging out...";
+
+
+            try {
+
+                await fetch(
+                    window.apiUrl(
+                        "/api/auth/logout"
+                    ),
+                    {
+                        method:
+                            "POST",
+
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        },
+
+                        credentials:
+                            "include"
+                    }
+                );
+
+            } catch (error) {
+
+                console.warn(
+                    error
+                );
+
+            } finally {
+
+                if (
+                    typeof window.clearAuthData ===
+                    "function"
+                ) {
+
+                    window.clearAuthData();
+                }
+
+
+                redirectToLogin();
+            }
+        }
+    );
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| HELPERS
+|--------------------------------------------------------------------------
+*/
 
 function setText(
     id,
@@ -276,251 +773,31 @@ function setText(
 
 
     element.textContent =
-        value !== undefined &&
-        value !== null &&
-        String(value).trim() !== ""
-            ? value
-            : "—";
+        value ??
+        "—";
 }
 
 
-/* =========================================================
-   NAVIGATION
-   ========================================================= */
-
-function setupNavigation() {
-
-    document
-        .querySelectorAll(
-            "[data-dashboard-link]"
-        )
-        .forEach(
-            element => {
-
-                element.addEventListener(
-                    "click",
-                    function () {
-
-                        const url =
-                            this.getAttribute(
-                                "data-dashboard-link"
-                            );
-
-
-                        if (url) {
-
-                            window.location.href =
-                                url;
-                        }
-                    }
-                );
-            }
-        );
-}
-
-
-/* =========================================================
-   UPDATE NAVIGATION
-   ========================================================= */
-
-function updateNavigation(user) {
-
-    const role =
-        String(
-            user?.role || "user"
-        )
-            .toLowerCase();
-
-
-    document
-        .querySelectorAll(
-            "[data-admin-only]"
-        )
-        .forEach(
-            element => {
-
-                element.hidden =
-                    role !== "admin";
-            }
-        );
-}
-
-
-/* =========================================================
-   LOGOUT
-   ========================================================= */
-
-function setupLogout() {
-
-    document
-        .querySelectorAll(
-            "[data-action='logout']"
-        )
-        .forEach(
-            button => {
-
-                button.addEventListener(
-                    "click",
-                    handleLogout
-                );
-            }
-        );
-}
-
-
-async function handleLogout(
-    event
+function formatAmount(
+    value
 ) {
 
-    event.preventDefault();
+    const amount =
+        Number(value) || 0;
 
 
-    const buttons =
-        document.querySelectorAll(
-            "[data-action='logout']"
-        );
-
-
-    buttons.forEach(
-        button => {
-
-            button.disabled =
-                true;
-
-            button.textContent =
-                "Logging out...";
-        }
-    );
-
-
-    try {
-
-        await window.apiRequest(
-            "/api/auth/logout",
-            {
-                method:
-                    "POST"
-            }
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "LOGOUT ERROR:",
-            error
-        );
-
-    } finally {
-
-        window.clearAuthData();
-
-        window.location.href =
-            "../login.html";
-    }
+    return amount.toFixed(2);
 }
 
-
-/* =========================================================
-   MOBILE MENU
-   ========================================================= */
-
-function setupMobileMenu() {
-
-    const button =
-        document.getElementById(
-            "mobileMenuButton"
-        );
-
-
-    const menu =
-        document.getElementById(
-            "dashboardNav"
-        );
-
-
-    if (!button || !menu) {
-        return;
-    }
-
-
-    button.addEventListener(
-        "click",
-        () => {
-
-            const open =
-                menu.classList.toggle(
-                    "open"
-                );
-
-
-            button.setAttribute(
-                "aria-expanded",
-                String(open)
-            );
-        }
-    );
-
-
-    menu
-        .querySelectorAll("a")
-        .forEach(
-            link => {
-
-                link.addEventListener(
-                    "click",
-                    () => {
-
-                        menu.classList.remove(
-                            "open"
-                        );
-
-                        button.setAttribute(
-                            "aria-expanded",
-                            "false"
-                        );
-                    }
-                );
-            }
-        );
-}
-
-
-/* =========================================================
-   MESSAGE
-   ========================================================= */
 
 function showMessage(
     message
 ) {
 
-    let element =
+    const element =
         document.getElementById(
             "dashboardMessage"
         );
-
-
-    if (!element) {
-
-        element =
-            document.createElement(
-                "div"
-            );
-
-        element.id =
-            "dashboardMessage";
-
-        element.className =
-            "dashboard-message";
-
-
-        document
-            .querySelector(
-                "main"
-            )
-            ?.prepend(
-                element
-            );
-    }
 
 
     if (element) {
@@ -528,16 +805,11 @@ function showMessage(
         element.textContent =
             message;
 
-        element.classList.add(
-            "show"
-        );
+        element.hidden =
+            false;
     }
 }
 
-
-/* =========================================================
-   LOGIN REDIRECT
-   ========================================================= */
 
 function redirectToLogin() {
 

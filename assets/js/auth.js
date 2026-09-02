@@ -3,8 +3,15 @@
 
 /* =========================================================
    SkillEarn Hub
+   assets/js/auth.js
+
    Authentication
-   Final Login + Register + Role Redirect
+   - Login
+   - Registration
+   - Role-based redirect
+   - Logout
+   - Field validation
+   - GitHub Pages compatible redirects
 ========================================================= */
 
 
@@ -20,7 +27,7 @@ function authElement(id) {
 
 
 /* =========================================================
-   MESSAGE
+   AUTH MESSAGE
 ========================================================= */
 
 function authMessage(
@@ -54,9 +61,7 @@ function authMessage(
     );
 
 
-    if (
-        type === "success"
-    ) {
+    if (type === "success") {
 
         element.classList.add(
             "success"
@@ -185,28 +190,33 @@ function normalizeUser(user) {
     }
 
 
+    const role =
+        String(
+            user.role ||
+            user.userRole ||
+            user.user_role ||
+            "user"
+        )
+        .trim()
+        .toLowerCase();
+
+
     return {
+
         ...user,
 
-        role:
-            String(
-                user.role ||
-                user.userRole ||
-                user.user_role ||
-                "user"
-            )
-            .trim()
-            .toLowerCase()
+        role
+
     };
 
 }
 
 
 /* =========================================================
-   EXTRACT USER
+   EXTRACT USER FROM API RESPONSE
 ========================================================= */
 
-function extractLoginUser(result) {
+function extractUser(result) {
 
     if (!result) {
         return null;
@@ -214,29 +224,58 @@ function extractLoginUser(result) {
 
 
     /*
-    ---------------------------------------------------------
-    Standard API response
-    ---------------------------------------------------------
+       Standard response:
+
+       {
+           user: { ... }
+       }
     */
 
-    if (result.user) {
+    if (
+        result.user &&
+        typeof result.user === "object"
+    ) {
+
         return result.user;
+
     }
 
 
     /*
-    ---------------------------------------------------------
-    Alternative API response structures
-    ---------------------------------------------------------
+       Alternative:
+
+       {
+           data: {
+               user: { ... }
+           }
+       }
     */
 
-    if (result.data?.user) {
+    if (
+        result.data?.user &&
+        typeof result.data.user === "object"
+    ) {
+
         return result.data.user;
+
     }
 
 
-    if (result.account) {
+    /*
+       Alternative:
+
+       {
+           account: { ... }
+       }
+    */
+
+    if (
+        result.account &&
+        typeof result.account === "object"
+    ) {
+
         return result.account;
+
     }
 
 
@@ -251,20 +290,45 @@ function extractLoginUser(result) {
 
 function getUserRole(user) {
 
+    if (!user) {
+        return "user";
+    }
+
+
     return String(
-        user?.role ||
-        user?.userRole ||
-        user?.user_role ||
+
+        user.role ||
+
+        user.userRole ||
+
+        user.user_role ||
+
         "user"
+
     )
-        .trim()
-        .toLowerCase();
+    .trim()
+    .toLowerCase();
 
 }
 
 
 /* =========================================================
-   GET REDIRECT
+   GET LOGIN REDIRECT
+
+   IMPORTANT:
+   No leading slash.
+
+   GitHub Pages project sites may be deployed like:
+
+   username.github.io/repository-name/
+
+   Therefore:
+
+   user/dashboard.html
+
+   is safer than:
+
+   /user/dashboard.html
 ========================================================= */
 
 function getRedirect(user) {
@@ -274,28 +338,48 @@ function getRedirect(user) {
 
 
     /*
-    =========================================================
-    ADMIN
-    =========================================================
+       ADMIN
     */
 
     if (
+
         role === "admin" ||
+
         role === "administrator"
+
     ) {
 
-        return "/admin/dashboard.html";
+        return "admin/dashboard.html";
 
     }
 
 
     /*
-    =========================================================
-    NORMAL USER
-    =========================================================
+       NORMAL USER
     */
 
-    return "/user/dashboard.html";
+    return "user/dashboard.html";
+
+}
+
+
+/* =========================================================
+   REDIRECT HELPER
+
+   Uses relative paths so GitHub Pages does not lose
+   the repository base path.
+========================================================= */
+
+function redirectTo(path) {
+
+    if (!path) {
+        return;
+    }
+
+
+    window.location.assign(
+        path
+    );
 
 }
 
@@ -332,14 +416,21 @@ async function handleLogin(event) {
         );
 
 
-    clearFieldErrors();
+    /*
+       Clear previous errors
+    */
 
+    clearFieldErrors();
 
     authMessage(
         message,
         ""
     );
 
+
+    /*
+       Read values
+    */
 
     const email =
         String(
@@ -359,6 +450,10 @@ async function handleLogin(event) {
         );
 
 
+    /*
+       Validation
+    */
+
     let hasError =
         false;
 
@@ -377,9 +472,11 @@ async function handleLogin(event) {
     }
 
     else if (
+
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
             email
         )
+
     ) {
 
         setFieldError(
@@ -413,6 +510,10 @@ async function handleLogin(event) {
     }
 
 
+    /*
+       Loading state
+    */
+
     setButtonLoading(
         button,
         "Signing in..."
@@ -420,6 +521,10 @@ async function handleLogin(event) {
 
 
     try {
+
+        /*
+           Login API request
+        */
 
         const result =
             await window.apiRequest(
@@ -442,21 +547,23 @@ async function handleLogin(event) {
 
 
         /*
-        =====================================================
-        EXTRACT USER
-        =====================================================
+           Extract user
         */
 
         const rawUser =
-            extractLoginUser(
+            extractUser(
                 result
             );
 
 
+        /*
+           User data is required for role-based redirect.
+        */
+
         if (!rawUser) {
 
             throw new Error(
-                "Login succeeded but user account data was not returned."
+                "Login was successful, but user account information was not returned by the server."
             );
 
         }
@@ -469,14 +576,14 @@ async function handleLogin(event) {
 
 
         /*
-        =====================================================
-        SAVE USER
-        =====================================================
+           Save user
         */
 
         if (
+
             typeof window.setSavedUser ===
             "function"
+
         ) {
 
             window.setSavedUser(
@@ -487,15 +594,20 @@ async function handleLogin(event) {
 
 
         /*
-        =====================================================
-        SAVE TOKEN
-        =====================================================
+           Save token.
+
+           config.js already saves data.token automatically
+           inside apiRequest(), but this keeps login safe
+           if the API helper behavior changes.
         */
 
         if (
+
             result?.token &&
+
             typeof window.setAuthToken ===
             "function"
+
         ) {
 
             window.setAuthToken(
@@ -506,9 +618,7 @@ async function handleLogin(event) {
 
 
         /*
-        =====================================================
-        SUCCESS MESSAGE
-        =====================================================
+           Success message
         */
 
         authMessage(
@@ -522,9 +632,7 @@ async function handleLogin(event) {
 
 
         /*
-        =====================================================
-        FRONTEND CONTROLLED REDIRECT
-        =====================================================
+           Determine dashboard from role
         */
 
         const redirect =
@@ -533,10 +641,14 @@ async function handleLogin(event) {
             );
 
 
+        /*
+           Redirect after message
+        */
+
         window.setTimeout(
             function () {
 
-                window.location.assign(
+                redirectTo(
                     redirect
                 );
 
@@ -606,14 +718,21 @@ async function handleRegister(event) {
         );
 
 
-    clearFieldErrors();
+    /*
+       Clear previous errors
+    */
 
+    clearFieldErrors();
 
     authMessage(
         message,
         ""
     );
 
+
+    /*
+       Read values
+    */
 
     const fullName =
         String(
@@ -667,6 +786,10 @@ async function handleRegister(event) {
         );
 
 
+    /*
+       Validation
+    */
+
     let hasError =
         false;
 
@@ -701,9 +824,11 @@ async function handleRegister(event) {
     }
 
     else if (
+
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
             email
         )
+
     ) {
 
         setFieldError(
@@ -784,6 +909,10 @@ async function handleRegister(event) {
     }
 
 
+    /*
+       Loading state
+    */
+
     setButtonLoading(
         button,
         "Creating account..."
@@ -791,6 +920,10 @@ async function handleRegister(event) {
 
 
     try {
+
+        /*
+           Registration API request
+        */
 
         const result =
             await window.apiRequest(
@@ -816,6 +949,10 @@ async function handleRegister(event) {
             );
 
 
+        /*
+           Success message
+        */
+
         authMessage(
             message,
 
@@ -826,14 +963,30 @@ async function handleRegister(event) {
         );
 
 
+        /*
+           Reset form after successful registration
+        */
+
         form.reset();
 
+
+        /*
+           IMPORTANT:
+
+           No leading slash here.
+
+           Correct:
+           login.html
+
+           Wrong for many GitHub Pages project sites:
+           /login.html
+        */
 
         window.setTimeout(
             function () {
 
-                window.location.assign(
-                    "/login.html"
+                redirectTo(
+                    "login.html"
                 );
 
             },
@@ -879,8 +1032,10 @@ async function logoutUser() {
     try {
 
         if (
+
             typeof window.apiRequest ===
             "function"
+
         ) {
 
             await window.apiRequest(
@@ -897,6 +1052,11 @@ async function logoutUser() {
 
     } catch (error) {
 
+        /*
+           Even if API logout fails,
+           local authentication should still be cleared.
+        */
+
         console.warn(
             "LOGOUT ERROR:",
             error
@@ -904,9 +1064,15 @@ async function logoutUser() {
 
     } finally {
 
+        /*
+           Clear local token and user
+        */
+
         if (
+
             typeof window.clearAuthData ===
             "function"
+
         ) {
 
             window.clearAuthData();
@@ -915,29 +1081,46 @@ async function logoutUser() {
 
 
         /*
-        -----------------------------------------------------
-        Determine correct login path
-        -----------------------------------------------------
+           Determine current folder.
+
+           Dashboard pages:
+
+           user/dashboard.html
+           admin/dashboard.html
+
+           Therefore go one level up.
         */
 
         const currentPath =
             window.location.pathname;
 
 
-        const isInsideFolder =
+        const insideDashboardFolder =
+
             currentPath.includes(
                 "/user/"
             ) ||
+
             currentPath.includes(
                 "/admin/"
             );
 
 
-        window.location.assign(
-            isInsideFolder
-                ? "../login.html"
-                : "/login.html"
-        );
+        if (
+            insideDashboardFolder
+        ) {
+
+            redirectTo(
+                "../login.html"
+            );
+
+        } else {
+
+            redirectTo(
+                "login.html"
+            );
+
+        }
 
     }
 
@@ -952,15 +1135,14 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
+
+        /*
+           LOGIN FORM
+        */
+
         const loginForm =
             authElement(
                 "loginForm"
-            );
-
-
-        const registerForm =
-            authElement(
-                "registerForm"
             );
 
 
@@ -974,6 +1156,16 @@ document.addEventListener(
         }
 
 
+        /*
+           REGISTER FORM
+        */
+
+        const registerForm =
+            authElement(
+                "registerForm"
+            );
+
+
         if (registerForm) {
 
             registerForm.addEventListener(
@@ -983,6 +1175,10 @@ document.addEventListener(
 
         }
 
+
+        /*
+           LOGOUT BUTTONS
+        */
 
         document
             .querySelectorAll(
@@ -1025,6 +1221,9 @@ window.SkillEarnAuth = {
         logoutUser,
 
     getRedirect:
-        getRedirect
+        getRedirect,
+
+    getUserRole:
+        getUserRole
 
 };

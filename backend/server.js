@@ -41,11 +41,6 @@ const PORT =
         process.env.PORT || 8080
     );
 
-const authRoutes =
-    require("./src/routes/auth.routes");
-
-const depositRoutes =
-    require("./src/routes/deposit.routes");
 
 /*
 |--------------------------------------------------------------------------
@@ -170,16 +165,7 @@ app.use(
     "/api/auth",
     authRoutes
 );
-/*
-|--------------------------------------------------------------------------
-| DEPOSIT ROUTES
-|--------------------------------------------------------------------------
-*/
 
-app.use(
-    "/api/deposits",
-    depositRoutes
-);
 
 /*
 |--------------------------------------------------------------------------

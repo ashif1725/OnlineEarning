@@ -1,22 +1,76 @@
 "use strict";
 
-const pool = require("../config/db");
+/* =========================================================
+   SkillEarn Hub
+   Authentication Service
+========================================================= */
+
+const pool =
+    require("../config/db");
+
 
 const {
     hashPassword,
     verifyPassword
 } = require("../utils/security");
 
+
 const {
     generatePublicUserId
 } = require("../utils/user-id");
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER USER
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   NORMALIZE ROLE
+========================================================= */
+
+function normalizeRole(role) {
+
+    const value =
+        String(
+            role ||
+            "user"
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        value === "admin" ||
+        value === "administrator"
+    ) {
+
+        return "admin";
+
+    }
+
+
+    return "user";
+
+}
+
+
+/* =========================================================
+   NORMALIZE ACCOUNT STATUS
+========================================================= */
+
+function normalizeAccountStatus(
+    status
+) {
+
+    return String(
+        status ||
+        "active"
+    )
+        .trim()
+        .toLowerCase();
+
+}
+
+
+/* =========================================================
+   REGISTER USER
+========================================================= */
 
 async function registerUser({
     fullName,
@@ -25,89 +79,101 @@ async function registerUser({
     password
 }) {
 
-    const client = await pool.connect();
+    const client =
+        await pool.connect();
+
 
     try {
 
-        /*
-        |--------------------------------------------------------------------------
-        | BEGIN TRANSACTION
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           BEGIN TRANSACTION
+        ================================================= */
 
-        await client.query("BEGIN");
+        await client.query(
+            "BEGIN"
+        );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | NORMALIZE INPUT
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           NORMALIZE INPUT
+        ================================================= */
 
         const normalizedEmail =
-            email.trim().toLowerCase();
+            String(email)
+                .trim()
+                .toLowerCase();
+
 
         const normalizedPhone =
-            phone.trim();
+            String(phone)
+                .trim();
+
 
         const normalizedFullName =
-            fullName.trim();
+            String(fullName)
+                .trim();
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK EXISTING ACCOUNT
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           CHECK EXISTING ACCOUNT
+        ================================================= */
 
         const existing =
             await client.query(
+
                 `
                 SELECT
                     id
                 FROM users
-                WHERE email = $1
-                   OR phone = $2
+                WHERE
+                    email = $1
+                    OR phone = $2
                 LIMIT 1
                 `,
+
                 [
                     normalizedEmail,
                     normalizedPhone
                 ]
+
             );
 
 
-        if (existing.rowCount > 0) {
+        if (
+            existing.rowCount > 0
+        ) {
 
             const error =
                 new Error(
                     "ACCOUNT_ALREADY_EXISTS"
                 );
 
+
             error.code =
                 "ACCOUNT_ALREADY_EXISTS";
 
+
             throw error;
+
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | HASH PASSWORD
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           HASH PASSWORD
+        ================================================= */
 
         const passwordHash =
-            await hashPassword(password);
+            await hashPassword(
+                password
+            );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | GENERATE PUBLIC USER ID
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           GENERATE UNIQUE PUBLIC USER ID
+        ================================================= */
 
-        let publicUserId;
+        let publicUserId =
+            null;
 
 
         for (
@@ -122,16 +188,20 @@ async function registerUser({
 
             const collision =
                 await client.query(
+
                     `
                     SELECT
                         1
                     FROM users
-                    WHERE public_user_id = $1
+                    WHERE
+                        public_user_id = $1
                     LIMIT 1
                     `,
+
                     [
                         candidate
                     ]
+
                 );
 
 
@@ -143,32 +213,42 @@ async function registerUser({
                     candidate;
 
                 break;
+
             }
+
         }
 
 
-        if (!publicUserId) {
+        if (
+            !publicUserId
+        ) {
 
             const error =
                 new Error(
                     "USER_ID_GENERATION_FAILED"
                 );
 
+
             error.code =
                 "USER_ID_GENERATION_FAILED";
 
+
             throw error;
+
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE USER
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           CREATE USER
+
+           New registrations are always normal users.
+           Admin role should only be assigned securely by
+           an administrator/database process.
+        ================================================= */
 
         const userResult =
             await client.query(
+
                 `
                 INSERT INTO users (
                     public_user_id,
@@ -198,6 +278,7 @@ async function registerUser({
                     account_status,
                     created_at
                 `,
+
                 [
                     publicUserId,
                     normalizedFullName,
@@ -205,40 +286,62 @@ async function registerUser({
                     normalizedPhone,
                     passwordHash
                 ]
+
             );
+
+
+        if (
+            userResult.rowCount === 0
+        ) {
+
+            const error =
+                new Error(
+                    "USER_CREATION_FAILED"
+                );
+
+
+            error.code =
+                "USER_CREATION_FAILED";
+
+
+            throw error;
+
+        }
 
 
         const user =
             userResult.rows[0];
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE USER SECURITY RECORD
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           CREATE USER SECURITY RECORD
+        ================================================= */
 
         await client.query(
+
             `
             INSERT INTO user_security (
                 user_id
             )
-            VALUES ($1)
+            VALUES (
+                $1
+            )
             `,
+
             [
                 user.id
             ]
+
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE WALLET
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           CREATE WALLET
+        ================================================= */
 
         const walletResult =
             await client.query(
+
                 `
                 INSERT INTO wallets (
                     user_id,
@@ -255,9 +358,11 @@ async function registerUser({
                     currency,
                     status
                 `,
+
                 [
                     user.id
                 ]
+
             );
 
 
@@ -270,10 +375,13 @@ async function registerUser({
                     "WALLET_CREATION_FAILED"
                 );
 
+
             error.code =
                 "WALLET_CREATION_FAILED";
 
+
             throw error;
+
         }
 
 
@@ -281,19 +389,12 @@ async function registerUser({
             walletResult.rows[0];
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE INITIAL WALLET BALANCE
-        |--------------------------------------------------------------------------
-        |
-        | New wallet always starts with:
-        |
-        | available_balance = 0
-        | pending_balance   = 0
-        |
-        */
+        /* =================================================
+           CREATE INITIAL WALLET BALANCE
+        ================================================= */
 
         await client.query(
+
             `
             INSERT INTO wallet_balances (
                 wallet_id,
@@ -307,23 +408,26 @@ async function registerUser({
                 0,
                 $2
             )
-            ON CONFLICT (wallet_id)
+            ON CONFLICT (
+                wallet_id
+            )
             DO NOTHING
             `,
+
             [
                 wallet.id,
                 wallet.currency
             ]
+
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE LEDGER ACCOUNT
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           CREATE LEDGER ACCOUNT
+        ================================================= */
 
         await client.query(
+
             `
             INSERT INTO ledger_accounts (
                 wallet_id,
@@ -336,66 +440,92 @@ async function registerUser({
                 'active'
             )
             `,
+
             [
                 wallet.id,
                 wallet.currency
             ]
+
         );
 
 
-        /*  
-|--------------------------------------------------------------------------
-| CREATE AUDIT LOG
-|--------------------------------------------------------------------------
-*/
+        /* =================================================
+           CREATE AUDIT LOG
+        ================================================= */
 
-await client.query(
-    `
-    INSERT INTO audit_logs (
-        actor_user_id,
-        action,
-        entity_type
-    )
-    VALUES (
-        $1::uuid,
-        'USER_REGISTERED',
-        'USER'
-    )
-    `,
-    [
-        user.id
-    ]
-);
+        await client.query(
 
+            `
+            INSERT INTO audit_logs (
+                actor_user_id,
+                action,
+                entity_type
+            )
+            VALUES (
+                $1::uuid,
+                'USER_REGISTERED',
+                'USER'
+            )
+            `,
 
-        /*
-        |--------------------------------------------------------------------------
-        | COMMIT
-        |--------------------------------------------------------------------------
-        */
+            [
+                user.id
+            ]
 
-        await client.query("COMMIT");
+        );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | RETURN SAFE USER DATA
-        |--------------------------------------------------------------------------
-        |
-        | password_hash is never returned.
-        |
-        */
+        /* =================================================
+           COMMIT
+        ================================================= */
 
-        return user;
+        await client.query(
+            "COMMIT"
+        );
+
+
+        /* =================================================
+           RETURN SAFE USER
+        ================================================= */
+
+        return {
+
+            id:
+                user.id,
+
+            publicUserId:
+                user.public_user_id,
+
+            fullName:
+                user.full_name,
+
+            email:
+                user.email,
+
+            phone:
+                user.phone,
+
+            role:
+                normalizeRole(
+                    user.role
+                ),
+
+            accountStatus:
+                normalizeAccountStatus(
+                    user.account_status
+                ),
+
+            createdAt:
+                user.created_at
+
+        };
 
 
     } catch (error) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | ROLLBACK
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           ROLLBACK
+        ================================================= */
 
         try {
 
@@ -403,24 +533,25 @@ await client.query(
                 "ROLLBACK"
             );
 
-        } catch (rollbackError) {
+        } catch (
+            rollbackError
+        ) {
 
             console.error(
                 "REGISTER ROLLBACK ERROR:",
                 rollbackError
             );
+
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | NORMALIZE POSTGRES UNIQUE VIOLATION
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           POSTGRES UNIQUE VIOLATION
+        ================================================= */
 
         if (
-            error &&
-            error.code === "23505"
+            error?.code ===
+            "23505"
         ) {
 
             const duplicateError =
@@ -428,10 +559,13 @@ await client.query(
                     "ACCOUNT_ALREADY_EXISTS"
                 );
 
+
             duplicateError.code =
                 "ACCOUNT_ALREADY_EXISTS";
 
+
             throw duplicateError;
+
         }
 
 
@@ -447,15 +581,15 @@ await client.query(
     } finally {
 
         client.release();
+
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| AUTHENTICATE USER
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   AUTHENTICATE USER
+========================================================= */
 
 async function authenticateUser({
     email,
@@ -463,17 +597,18 @@ async function authenticateUser({
 }) {
 
     const normalizedEmail =
-        email.trim().toLowerCase();
+        String(email)
+            .trim()
+            .toLowerCase();
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | FIND USER
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       FIND USER
+    ===================================================== */
 
     const result =
         await pool.query(
+
             `
             SELECT
                 id,
@@ -485,20 +620,21 @@ async function authenticateUser({
                 role,
                 account_status
             FROM users
-            WHERE email = $1
+            WHERE
+                email = $1
             LIMIT 1
             `,
+
             [
                 normalizedEmail
             ]
+
         );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | INVALID USER
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       USER NOT FOUND
+    ===================================================== */
 
     if (
         result.rowCount === 0
@@ -509,10 +645,13 @@ async function authenticateUser({
                 "INVALID_CREDENTIALS"
             );
 
+
         error.code =
             "INVALID_CREDENTIALS";
 
+
         throw error;
+
     }
 
 
@@ -520,14 +659,18 @@ async function authenticateUser({
         result.rows[0];
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | ACCOUNT STATUS
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       ACCOUNT STATUS
+    ===================================================== */
+
+    const accountStatus =
+        normalizeAccountStatus(
+            user.account_status
+        );
+
 
     if (
-        user.account_status !==
+        accountStatus !==
         "active"
     ) {
 
@@ -536,23 +679,27 @@ async function authenticateUser({
                 "ACCOUNT_DISABLED"
             );
 
+
         error.code =
             "ACCOUNT_DISABLED";
 
+
         throw error;
+
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | VERIFY PASSWORD
-    |--------------------------------------------------------------------------
-    */
+    /* =====================================================
+       VERIFY PASSWORD
+    ===================================================== */
 
     const valid =
         await verifyPassword(
+
             password,
+
             user.password_hash
+
         );
 
 
@@ -563,23 +710,24 @@ async function authenticateUser({
                 "INVALID_CREDENTIALS"
             );
 
+
         error.code =
             "INVALID_CREDENTIALS";
 
+
         throw error;
+
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | RETURN SAFE USER OBJECT
-    |--------------------------------------------------------------------------
-    |
-    | password_hash is deliberately excluded.
-    |
-    */
+    /* =====================================================
+       RETURN SAFE USER
+
+       Never return password_hash.
+    ===================================================== */
 
     return {
+
         id:
             user.id,
 
@@ -596,18 +744,29 @@ async function authenticateUser({
             user.phone,
 
         role:
-            user.role
+            normalizeRole(
+                user.role
+            ),
+
+        accountStatus
+
     };
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| EXPORTS
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   EXPORTS
+========================================================= */
 
 module.exports = {
+
     registerUser,
-    authenticateUser
+
+    authenticateUser,
+
+    normalizeRole,
+
+    normalizeAccountStatus
+
 };

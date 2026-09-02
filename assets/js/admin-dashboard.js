@@ -1,9 +1,15 @@
 "use strict";
 
 
+/* =========================================================
+   ADMIN ELEMENT
+========================================================= */
+
 function adminElement(id) {
 
-    return document.getElementById(id);
+    return document.getElementById(
+        id
+    );
 
 }
 
@@ -14,45 +20,232 @@ function setAdminText(
 ) {
 
     const element =
-        adminElement(id);
+        adminElement(
+            id
+        );
 
 
     if (!element) {
-
         return;
-
     }
 
 
     element.textContent =
-        value ||
-        "—";
+
+        value !== undefined &&
+        value !== null &&
+        String(value).trim()
+
+            ? value
+
+            : "—";
 
 }
 
 
+/* =========================================================
+   REDIRECT LOGIN
+========================================================= */
+
+function redirectToLogin() {
+
+    window.location.assign(
+        "../login.html"
+    );
+
+}
+
+
+/* =========================================================
+   GET SAVED ADMIN
+========================================================= */
+
+function getSavedAdmin() {
+
+    if (
+        typeof window.getSavedUser !==
+        "function"
+    ) {
+
+        return null;
+
+    }
+
+
+    const user =
+        window.getSavedUser();
+
+
+    if (!user) {
+        return null;
+    }
+
+
+    const role =
+        String(
+
+            user.role ||
+            ""
+
+        )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+
+        role === "admin" ||
+
+        role === "administrator"
+
+    ) {
+
+        return user;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   RENDER ADMIN
+========================================================= */
+
+function renderAdmin(
+    user
+) {
+
+    if (!user) {
+        return;
+    }
+
+
+    const name =
+
+        user.fullName ||
+
+        user.full_name ||
+
+        "Admin";
+
+
+    const email =
+
+        user.email ||
+
+        "—";
+
+
+    const role =
+
+        user.role ||
+
+        "admin";
+
+
+    setAdminText(
+        "adminName",
+        name
+    );
+
+
+    setAdminText(
+        "adminEmail",
+        email
+    );
+
+
+    setAdminText(
+        "adminWelcomeName",
+        name
+    );
+
+
+    setAdminText(
+        "adminProfileEmail",
+        email
+    );
+
+
+    setAdminText(
+        "adminRole",
+        role
+    );
+
+
+    const avatar =
+        adminElement(
+            "adminAvatar"
+        );
+
+
+    if (avatar) {
+
+        avatar.textContent =
+            String(
+                name
+            )
+            .charAt(0)
+            .toUpperCase();
+
+    }
+
+}
+
+
+/* =========================================================
+   LOAD ADMIN
+========================================================= */
+
 async function loadAdminDashboard() {
+
+    /*
+       Show saved admin immediately.
+    */
+
+    const savedAdmin =
+        getSavedAdmin();
+
+
+    if (savedAdmin) {
+
+        renderAdmin(
+            savedAdmin
+        );
+
+    }
+
 
     try {
 
         const result =
             await window.apiRequest(
+
                 "/api/auth/me",
+
                 {
+
                     method:
                         "GET"
+
                 }
+
             );
 
 
         const user =
-            result?.user;
+            window.extractUser(
+                result
+            );
 
 
         if (!user) {
 
             throw new Error(
-                "Unable to load user."
+                "Unable to load administrator account."
             );
 
         }
@@ -60,11 +253,14 @@ async function loadAdminDashboard() {
 
         const role =
             String(
+
                 user.role ||
+
                 ""
+
             )
-                .trim()
-                .toLowerCase();
+            .trim()
+            .toLowerCase();
 
 
         if (
@@ -75,13 +271,9 @@ async function loadAdminDashboard() {
 
         ) {
 
-            alert(
-                "Administrator access is required."
+            window.location.assign(
+                "../user/dashboard.html"
             );
-
-
-            window.location.href =
-                "../user/dashboard.html";
 
             return;
 
@@ -93,60 +285,9 @@ async function loadAdminDashboard() {
         );
 
 
-        const name =
-            user.fullName ||
-            "Admin";
-
-
-        const email =
-            user.email ||
-            "—";
-
-
-        setAdminText(
-            "adminName",
-            name
+        renderAdmin(
+            user
         );
-
-
-        setAdminText(
-            "adminEmail",
-            email
-        );
-
-
-        setAdminText(
-            "adminWelcomeName",
-            name
-        );
-
-
-        setAdminText(
-            "adminProfileEmail",
-            email
-        );
-
-
-        setAdminText(
-            "adminRole",
-            user.role
-        );
-
-
-        const avatar =
-            adminElement(
-                "adminAvatar"
-            );
-
-
-        if (avatar) {
-
-            avatar.textContent =
-                name
-                    .charAt(0)
-                    .toUpperCase();
-
-        }
 
 
     } catch (error) {
@@ -157,16 +298,179 @@ async function loadAdminDashboard() {
         );
 
 
-        window.clearAuthData();
+        /*
+           If token is invalid, login again.
+        */
+
+        if (
+
+            error?.status === 401 ||
+
+            error?.status === 403
+
+        ) {
+
+            window.clearAuthData();
+
+            redirectToLogin();
+
+            return;
+
+        }
 
 
-        window.location.href =
-            "../login.html";
+        /*
+           Network problem:
+           Keep saved admin visible.
+        */
+
+        if (!savedAdmin) {
+
+            redirectToLogin();
+
+        }
 
     }
 
 }
 
+
+/* =========================================================
+   ADMIN NAVIGATION
+========================================================= */
+
+function setupAdminNavigation() {
+
+    const items =
+        document.querySelectorAll(
+            ".dashboard-nav a[href^='#']"
+        );
+
+
+    items.forEach(
+
+        function (item) {
+
+            item.addEventListener(
+
+                "click",
+
+                function (event) {
+
+                    event.preventDefault();
+
+
+                    const targetId =
+                        item
+                            .getAttribute(
+                                "href"
+                            )
+                            .replace(
+                                "#",
+                                ""
+                            );
+
+
+                    const target =
+                        document.getElementById(
+                            targetId
+                        );
+
+
+                    if (!target) {
+                        return;
+                    }
+
+
+                    document
+                        .querySelectorAll(
+                            ".dashboard-content section"
+                        )
+                        .forEach(
+
+                            function (section) {
+
+                                section.style.display =
+                                    "none";
+
+                            }
+
+                        );
+
+
+                    target.style.display =
+                        "block";
+
+
+                    items.forEach(
+
+                        function (nav) {
+
+                            nav.classList.remove(
+                                "active"
+                            );
+
+                        }
+
+                    );
+
+
+                    item.classList.add(
+                        "active"
+                    );
+
+
+                    history.replaceState(
+
+                        null,
+
+                        "",
+
+                        "#" +
+                        targetId
+
+                    );
+
+                }
+
+            );
+
+        }
+
+    );
+
+
+    const sections =
+        document.querySelectorAll(
+            ".dashboard-content section"
+        );
+
+
+    sections.forEach(
+
+        function (
+            section,
+            index
+        ) {
+
+            section.style.display =
+
+                index === 0
+
+                    ? "block"
+
+                    : "none";
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
 
 function setupAdminLogout() {
 
@@ -177,14 +481,14 @@ function setupAdminLogout() {
 
 
     if (!button) {
-
         return;
-
     }
 
 
     button.addEventListener(
+
         "click",
+
         async function () {
 
             button.disabled =
@@ -194,11 +498,16 @@ function setupAdminLogout() {
             try {
 
                 await window.apiRequest(
+
                     "/api/auth/logout",
+
                     {
+
                         method:
                             "POST"
+
                     }
+
                 );
 
             } catch (error) {
@@ -212,25 +521,33 @@ function setupAdminLogout() {
 
                 window.clearAuthData();
 
-
-                window.location.href =
-                    "../login.html";
+                redirectToLogin();
 
             }
 
         }
+
     );
 
 }
 
 
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
 document.addEventListener(
+
     "DOMContentLoaded",
+
     async function () {
 
-        await loadAdminDashboard();
+        setupAdminNavigation();
 
         setupAdminLogout();
 
+        await loadAdminDashboard();
+
     }
+
 );

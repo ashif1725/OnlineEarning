@@ -19,24 +19,25 @@ const withdrawalController =
 
 /*
 |--------------------------------------------------------------------------
-| AUTHORIZATION MIDDLEWARE
+| AUTH MIDDLEWARE
 |--------------------------------------------------------------------------
-|
-| auth.middleware.js exports:
-|
-| - getRequestToken
-| - requireAuth
-| - requireAdmin
-| - optionalAuth
-|
 */
 
-const {
-    requireAuth,
-    requireAdmin
-} =
+const requireAuth =
     require(
-        "../middlewares/auth.middleware"
+        "../middleware/auth.middleware"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
+
+const requireAdmin =
+    require(
+        "../middleware/admin"
     );
 
 

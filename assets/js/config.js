@@ -1,26 +1,18 @@
+/* =========================================================
+   SkillEarn Hub
+   assets/js/config.js
+
+   STEP 5
+   Central frontend configuration
+   ========================================================= */
+
 "use strict";
-
-
-/*
-|--------------------------------------------------------------------------
-| SkillEarn Hub
-| Frontend Configuration
-|--------------------------------------------------------------------------
-*/
-
 
 const SKILLEARN_CONFIG = {
 
-    /*
-     * Production Backend
-     */
     API_BASE_URL:
         "https://skillearnhub-1.onrender.com",
 
-
-    /*
-     * Authentication endpoints
-     */
     AUTH: {
 
         REGISTER:
@@ -33,20 +25,10 @@ const SKILLEARN_CONFIG = {
             "/api/auth/logout",
 
         ME:
-            "/api/auth/me",
-
-        FORGOT_PASSWORD:
-            "/api/auth/forgot-password",
-
-        RESET_PASSWORD:
-            "/api/auth/reset-password"
+            "/api/auth/me"
 
     },
 
-
-    /*
-     * Request configuration
-     */
     REQUEST: {
 
         TIMEOUT:
@@ -60,99 +42,250 @@ const SKILLEARN_CONFIG = {
 };
 
 
-/*
-|--------------------------------------------------------------------------
-| API URL
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   API URL
+   ========================================================= */
 
 function apiUrl(endpoint) {
 
     const base =
-        SKILLEARN_CONFIG
-            .API_BASE_URL
+        SKILLEARN_CONFIG.API_BASE_URL
             .replace(/\/+$/, "");
-
 
     const path =
         String(endpoint || "")
             .replace(/^\/+/, "");
 
-
     return `${base}/${path}`;
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| API HEADERS
-|--------------------------------------------------------------------------
-|
-| IMPORTANT:
-| No Authorization token is required.
-|
-| Authentication is handled by the
-| HTTP-only skillearn_session cookie.
-|
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   API REQUEST
+   ========================================================= */
 
-function getApiHeaders() {
+async function apiRequest(endpoint, options = {}) {
 
-    return {
+    const controller =
+        new AbortController();
 
-        "Accept":
-            "application/json",
+    const timeout =
+        setTimeout(
+            () => controller.abort(),
+            SKILLEARN_CONFIG.REQUEST.TIMEOUT
+        );
 
-        "Content-Type":
-            "application/json"
+
+    const requestOptions = {
+
+        method:
+            options.method || "GET",
+
+        credentials:
+            SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
+
+        headers: {
+
+            "Accept":
+                "application/json",
+
+            ...(options.headers || {})
+
+        },
+
+        signal:
+            controller.signal
 
     };
-}
 
 
-/*
-|--------------------------------------------------------------------------
-| CLEAR OLD AUTH DATA
-|--------------------------------------------------------------------------
-|
-| This removes old token-based data from
-| your previous frontend version.
-|
-|--------------------------------------------------------------------------
-*/
+    if (options.body !== undefined) {
 
-function clearAuthData() {
+        requestOptions.headers[
+            "Content-Type"
+        ] =
+            "application/json";
+
+        requestOptions.body =
+            typeof options.body === "string"
+                ? options.body
+                : JSON.stringify(options.body);
+    }
+
 
     try {
 
-        localStorage.removeItem(
-            "skillearn_access_token"
-        );
+        const response =
+            await fetch(
+                apiUrl(endpoint),
+                requestOptions
+            );
 
-        localStorage.removeItem(
-            "skillearn_user"
-        );
+
+        let data = null;
+
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch {
+
+                data = null;
+            }
+
+        } else {
+
+            const text =
+                await response.text();
+
+            data =
+                text
+                    ? { message: text }
+                    : null;
+        }
+
+
+        if (!response.ok) {
+
+            const error =
+                new Error(
+                    data?.message ||
+                    data?.error ||
+                    "Request failed"
+                );
+
+            error.status =
+                response.status;
+
+            error.data =
+                data;
+
+            throw error;
+        }
+
+
+        return data;
+
+    } catch (error) {
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            throw new Error(
+                "Request timed out. Please try again."
+            );
+        }
+
+        throw error;
+
+    } finally {
+
+        clearTimeout(timeout);
+    }
+}
+
+
+/* =========================================================
+   SAVED USER
+   ========================================================= */
+
+function getSavedUser() {
+
+    try {
+
+        const data =
+            sessionStorage.getItem(
+                "skillEarnUser"
+            );
+
+        return data
+            ? JSON.parse(data)
+            : null;
+
+    } catch {
+
+        return null;
+    }
+}
+
+
+function setSavedUser(user) {
+
+    if (!user) {
 
         sessionStorage.removeItem(
             "skillEarnUser"
         );
 
+        return;
+    }
+
+
+    try {
+
+        sessionStorage.setItem(
+            "skillEarnUser",
+            JSON.stringify(user)
+        );
+
     } catch (error) {
 
         console.warn(
-            "Unable to clear local auth data:",
+            "Unable to save user:",
             error
         );
     }
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| GLOBAL CONFIG
-|--------------------------------------------------------------------------
-*/
+function removeSavedUser() {
+
+    sessionStorage.removeItem(
+        "skillEarnUser"
+    );
+}
+
+
+/* =========================================================
+   CLEAR AUTH
+   ========================================================= */
+
+function clearAuthData() {
+
+    removeSavedUser();
+
+    localStorage.removeItem(
+        "skillearn_access_token"
+    );
+
+    localStorage.removeItem(
+        "skillearn_user"
+    );
+}
+
+
+/* =========================================================
+   GLOBAL CONFIG
+   ========================================================= */
+
+window.SKILLEARN_CONFIG =
+    SKILLEARN_CONFIG;
 
 window.APP_CONFIG = {
 
@@ -161,18 +294,20 @@ window.APP_CONFIG = {
 
 };
 
-
-window.SKILLEARN_CONFIG =
-    SKILLEARN_CONFIG;
-
-
 window.apiUrl =
     apiUrl;
 
+window.apiRequest =
+    apiRequest;
 
-window.getApiHeaders =
-    getApiHeaders;
+window.getSavedUser =
+    getSavedUser;
 
+window.setSavedUser =
+    setSavedUser;
+
+window.removeSavedUser =
+    removeSavedUser;
 
 window.clearAuthData =
     clearAuthData;

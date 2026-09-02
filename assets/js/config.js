@@ -1,30 +1,14 @@
 "use strict";
 
+
 /* =========================================================
-   SkillEarn Hub
-   Global Configuration
+   SKILLEARN HUB CONFIG
 ========================================================= */
 
 const SKILLEARN_CONFIG = {
 
     API_BASE_URL:
         "https://skillearnhub-1.onrender.com",
-
-    AUTH: {
-
-        REGISTER:
-            "/api/auth/register",
-
-        LOGIN:
-            "/api/auth/login",
-
-        LOGOUT:
-            "/api/auth/logout",
-
-        ME:
-            "/api/auth/me"
-
-    },
 
     REQUEST: {
 
@@ -56,14 +40,27 @@ const SKILLEARN_CONFIG = {
 function apiUrl(endpoint) {
 
     const base =
-        SKILLEARN_CONFIG.API_BASE_URL
-            .replace(/\/+$/, "");
+        SKILLEARN_CONFIG
+            .API_BASE_URL
+            .replace(
+                /\/+$/,
+                ""
+            );
+
 
     const path =
-        String(endpoint || "")
-            .replace(/^\/+/, "");
+        String(
+            endpoint ||
+            ""
+        )
+        .replace(
+            /^\/+/,
+            ""
+        );
+
 
     return `${base}/${path}`;
+
 }
 
 
@@ -76,7 +73,9 @@ function getAuthToken() {
     try {
 
         return localStorage.getItem(
-            SKILLEARN_CONFIG.STORAGE.TOKEN
+            SKILLEARN_CONFIG
+                .STORAGE
+                .TOKEN
         );
 
     } catch (error) {
@@ -100,9 +99,17 @@ function setAuthToken(token) {
 
         }
 
+
         localStorage.setItem(
-            SKILLEARN_CONFIG.STORAGE.TOKEN,
-            String(token)
+
+            SKILLEARN_CONFIG
+                .STORAGE
+                .TOKEN,
+
+            String(
+                token
+            )
+
         );
 
     } catch (error) {
@@ -122,7 +129,11 @@ function removeAuthToken() {
     try {
 
         localStorage.removeItem(
-            SKILLEARN_CONFIG.STORAGE.TOKEN
+
+            SKILLEARN_CONFIG
+                .STORAGE
+                .TOKEN
+
         );
 
     } catch (error) {
@@ -147,8 +158,13 @@ function getSavedUser() {
 
         const value =
             localStorage.getItem(
-                SKILLEARN_CONFIG.STORAGE.USER
+
+                SKILLEARN_CONFIG
+                    .STORAGE
+                    .USER
+
             );
+
 
         if (!value) {
 
@@ -156,7 +172,11 @@ function getSavedUser() {
 
         }
 
-        return JSON.parse(value);
+
+        return JSON.parse(
+            value
+        );
+
 
     } catch (error) {
 
@@ -181,9 +201,17 @@ function setSavedUser(user) {
 
         }
 
+
         localStorage.setItem(
-            SKILLEARN_CONFIG.STORAGE.USER,
-            JSON.stringify(user)
+
+            SKILLEARN_CONFIG
+                .STORAGE
+                .USER,
+
+            JSON.stringify(
+                user
+            )
+
         );
 
     } catch (error) {
@@ -203,7 +231,11 @@ function removeSavedUser() {
     try {
 
         localStorage.removeItem(
-            SKILLEARN_CONFIG.STORAGE.USER
+
+            SKILLEARN_CONFIG
+                .STORAGE
+                .USER
+
         );
 
     } catch (error) {
@@ -228,6 +260,7 @@ function clearAuthData() {
 
     removeSavedUser();
 
+
     try {
 
         sessionStorage.removeItem(
@@ -237,7 +270,7 @@ function clearAuthData() {
     } catch (error) {
 
         console.warn(
-            "SESSION STORAGE CLEAR ERROR:",
+            "SESSION CLEAR ERROR:",
             error
         );
 
@@ -247,14 +280,14 @@ function clearAuthData() {
 
 
 /* =========================================================
-   API HEADERS
+   HEADERS
 ========================================================= */
 
 function getApiHeaders() {
 
     const headers = {
 
-        "Accept":
+        Accept:
             "application/json"
 
     };
@@ -298,8 +331,6 @@ function extractToken(data) {
 
         data.access_token ||
 
-        data.jwt ||
-
         data.data?.token ||
 
         data.data?.accessToken ||
@@ -324,14 +355,20 @@ function extractUser(data) {
     }
 
 
-    if (data.user) {
+    if (
+        data.user &&
+        typeof data.user === "object"
+    ) {
 
         return data.user;
 
     }
 
 
-    if (data.data?.user) {
+    if (
+        data.data?.user &&
+        typeof data.data.user === "object"
+    ) {
 
         return data.data.user;
 
@@ -353,7 +390,9 @@ async function apiRequest(
 ) {
 
     const url =
-        apiUrl(endpoint);
+        apiUrl(
+            endpoint
+        );
 
 
     const controller =
@@ -362,29 +401,40 @@ async function apiRequest(
 
     const timeout =
         setTimeout(
+
             function () {
 
                 controller.abort();
 
             },
-            SKILLEARN_CONFIG.REQUEST.TIMEOUT
+
+            SKILLEARN_CONFIG
+                .REQUEST
+                .TIMEOUT
+
         );
 
 
     const requestOptions = {
 
         method:
-            options.method || "GET",
+            options.method ||
+            "GET",
 
         credentials:
             options.credentials ||
-            SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
+            SKILLEARN_CONFIG
+                .REQUEST
+                .CREDENTIALS,
 
         headers: {
 
             ...getApiHeaders(),
 
-            ...(options.headers || {})
+            ...(
+                options.headers ||
+                {}
+            )
 
         },
 
@@ -396,16 +446,17 @@ async function apiRequest(
 
     if (
 
-        options.body !== undefined &&
+        options.body !==
+        undefined &&
 
-        options.body !== null
+        options.body !==
+        null
 
     ) {
 
         if (
-
-            options.body instanceof FormData
-
+            options.body instanceof
+            FormData
         ) {
 
             requestOptions.body =
@@ -414,9 +465,8 @@ async function apiRequest(
         }
 
         else if (
-
-            typeof options.body === "string"
-
+            typeof options.body ===
+            "string"
         ) {
 
             requestOptions.body =
@@ -449,17 +499,18 @@ async function apiRequest(
 
         response =
             await fetch(
+
                 url,
+
                 requestOptions
+
             );
 
     } catch (error) {
 
         if (
-
             error.name ===
             "AbortError"
-
         ) {
 
             throw new Error(
@@ -489,7 +540,8 @@ async function apiRequest(
     const contentType =
         response.headers.get(
             "content-type"
-        ) || "";
+        ) ||
+        "";
 
 
     try {
@@ -515,10 +567,12 @@ async function apiRequest(
 
             data =
                 text
+
                     ? {
                         message:
                             text
                     }
+
                     : null;
 
         }
@@ -539,7 +593,7 @@ async function apiRequest(
 
             data?.error ||
 
-            "The server returned an error.";
+            `Request failed (${response.status})`;
 
 
         const apiError =
@@ -560,6 +614,10 @@ async function apiRequest(
 
     }
 
+
+    /*
+       LOGIN TOKEN SAVE
+    */
 
     const token =
         extractToken(
@@ -582,19 +640,11 @@ async function apiRequest(
 
 
 /* =========================================================
-   GLOBAL EXPORTS
+   EXPORTS
 ========================================================= */
 
 window.SKILLEARN_CONFIG =
     SKILLEARN_CONFIG;
-
-
-window.APP_CONFIG = {
-
-    API_BASE_URL:
-        SKILLEARN_CONFIG.API_BASE_URL
-
-};
 
 
 window.apiUrl =

@@ -1,3 +1,11 @@
+/* =========================================================
+   SkillEarn Hub
+   assets/js/dashboard.js
+
+   STEP 5
+   User Dashboard Controller
+   ========================================================= */
+
 "use strict";
 
 
@@ -9,93 +17,88 @@ document.addEventListener(
 
 /* =========================================================
    INITIALIZE
-========================================================= */
+   ========================================================= */
 
 async function initDashboard() {
 
+    setupNavigation();
+
     setupLogout();
 
-    await loadDashboard();
+    setupMobileMenu();
 
+    await loadDashboard();
 }
 
 
 /* =========================================================
-   LOAD DASHBOARD
-========================================================= */
+   LOAD CURRENT USER
+   ========================================================= */
 
 async function loadDashboard() {
 
+    const loading =
+        document.getElementById(
+            "dashboardLoading"
+        );
+
+
     try {
 
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/me")
-                : "https://skillearnhub-1.onrender.com/api/auth/me";
+        if (loading) {
+
+            loading.hidden =
+                false;
+        }
 
 
-        const response =
-            await fetch(
-                url,
+        /*
+         * Server-side session
+         */
+
+        const result =
+            await window.apiRequest(
+                "/api/auth/me",
                 {
-                    method: "GET",
-
-                    headers: {
-                        "Accept":
-                            "application/json"
-                    },
-
-                    credentials:
-                        "include"
+                    method:
+                        "GET"
                 }
             );
 
 
-        if (response.status === 401) {
-
-            redirectToLogin();
-
-            return;
-        }
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Dashboard request failed"
-            );
-        }
-
-
-        const data =
-            await response.json();
-
-
-        if (
-            !data ||
-            !data.user
-        ) {
-
-            throw new Error(
-                "User information unavailable"
-            );
-        }
-
-
         const user =
-            data.user;
+            result?.user;
 
 
-        if (
-            typeof window.setSavedUser ===
-            "function"
-        ) {
+        if (!user) {
 
-            window.setSavedUser(user);
+            throw new Error(
+                "User session not found"
+            );
         }
 
 
-        renderUser(user);
+        /*
+         * Save non-sensitive display data
+         */
+
+        window.setSavedUser(
+            user
+        );
+
+
+        /*
+         * Render
+         */
+
+        renderUser(
+            user
+        );
+
+
+        updateNavigation(
+            user
+        );
 
 
     } catch (error) {
@@ -106,33 +109,59 @@ async function loadDashboard() {
         );
 
 
-        const savedUser =
-            typeof window.getSavedUser ===
-            "function"
-                ? window.getSavedUser()
-                : null;
+        if (
+            error.status ===
+            401
+        ) {
 
+            window.clearAuthData();
 
-        if (savedUser) {
-
-            renderUser(savedUser);
-
-            showDashboardMessage(
-                "Live account data could not be refreshed."
-            );
+            redirectToLogin();
 
             return;
         }
 
 
-        redirectToLogin();
+        /*
+         * Temporary network failure:
+         * show cached display information
+         */
+
+        const savedUser =
+            window.getSavedUser();
+
+
+        if (savedUser) {
+
+            renderUser(
+                savedUser
+            );
+
+            showMessage(
+                "Live account data could not be refreshed."
+            );
+
+        } else {
+
+            showMessage(
+                "Unable to load your account. Please try again."
+            );
+        }
+
+    } finally {
+
+        if (loading) {
+
+            loading.hidden =
+                true;
+        }
     }
 }
 
 
 /* =========================================================
    RENDER USER
-========================================================= */
+   ========================================================= */
 
 function renderUser(user) {
 
@@ -142,7 +171,7 @@ function renderUser(user) {
         "User";
 
 
-    const publicUserId =
+    const userId =
         user.publicUserId ||
         user.public_user_id ||
         "—";
@@ -153,32 +182,16 @@ function renderUser(user) {
         "—";
 
 
-    const accountStatus =
+    const status =
         user.accountStatus ||
         user.account_status ||
         "—";
 
 
-    let emailVerified =
-        user.emailVerified ??
-        user.email_verified;
-
-
-    if (emailVerified === true) {
-
-        emailVerified =
-            "Verified";
-
-    } else if (emailVerified === false) {
-
-        emailVerified =
-            "Not Verified";
-
-    } else {
-
-        emailVerified =
-            "—";
-    }
+    const verified =
+        user.emailVerified === true
+            ? "Verified"
+            : "Not Verified";
 
 
     setText(
@@ -188,8 +201,14 @@ function renderUser(user) {
 
 
     setText(
+        "welcomeName",
+        fullName
+    );
+
+
+    setText(
         "userId",
-        publicUserId
+        userId
     );
 
 
@@ -201,25 +220,54 @@ function renderUser(user) {
 
     setText(
         "accountStatus",
-        accountStatus
+        status
     );
 
 
     setText(
         "emailStatus",
-        emailVerified
+        verified
     );
+
+
+    /*
+     * Optional email verification badge
+     */
+
+    const badge =
+        document.getElementById(
+            "emailStatus"
+        );
+
+
+    if (badge) {
+
+        badge.classList.toggle(
+            "verified",
+            user.emailVerified === true
+        );
+
+        badge.classList.toggle(
+            "not-verified",
+            user.emailVerified !== true
+        );
+    }
 }
 
 
 /* =========================================================
    SAFE TEXT
-========================================================= */
+   ========================================================= */
 
-function setText(id, value) {
+function setText(
+    id,
+    value
+) {
 
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
 
     if (!element) {
@@ -237,44 +285,104 @@ function setText(id, value) {
 
 
 /* =========================================================
-   LOGOUT
-========================================================= */
+   NAVIGATION
+   ========================================================= */
 
-function setupLogout() {
+function setupNavigation() {
 
-    const button =
-        document.getElementById(
-            "logoutButton"
+    document
+        .querySelectorAll(
+            "[data-dashboard-link]"
+        )
+        .forEach(
+            element => {
+
+                element.addEventListener(
+                    "click",
+                    function () {
+
+                        const url =
+                            this.getAttribute(
+                                "data-dashboard-link"
+                            );
+
+
+                        if (url) {
+
+                            window.location.href =
+                                url;
+                        }
+                    }
+                );
+            }
         );
-
-
-    if (!button) {
-        return;
-    }
-
-
-    button.addEventListener(
-        "click",
-        logoutUser
-    );
 }
 
 
 /* =========================================================
-   LOGOUT USER
-========================================================= */
+   UPDATE NAVIGATION
+   ========================================================= */
 
-async function logoutUser() {
+function updateNavigation(user) {
 
-    const button =
-        document.getElementById(
-            "logoutButton"
+    const role =
+        String(
+            user?.role || "user"
+        )
+            .toLowerCase();
+
+
+    document
+        .querySelectorAll(
+            "[data-admin-only]"
+        )
+        .forEach(
+            element => {
+
+                element.hidden =
+                    role !== "admin";
+            }
+        );
+}
+
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+function setupLogout() {
+
+    document
+        .querySelectorAll(
+            "[data-action='logout']"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    handleLogout
+                );
+            }
+        );
+}
+
+
+async function handleLogout(
+    event
+) {
+
+    event.preventDefault();
+
+
+    const buttons =
+        document.querySelectorAll(
+            "[data-action='logout']"
         );
 
 
-    try {
-
-        if (button) {
+    buttons.forEach(
+        button => {
 
             button.disabled =
                 true;
@@ -282,107 +390,157 @@ async function logoutUser() {
             button.textContent =
                 "Logging out...";
         }
+    );
 
 
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/logout")
-                : "https://skillearnhub-1.onrender.com/api/auth/logout";
+    try {
 
-
-        await fetch(
-            url,
+        await window.apiRequest(
+            "/api/auth/logout",
             {
-                method: "POST",
-
-                headers: {
-                    "Accept":
-                        "application/json"
-                },
-
-                credentials:
-                    "include"
+                method:
+                    "POST"
             }
         );
 
-
     } catch (error) {
 
-        console.error(
+        console.warn(
             "LOGOUT ERROR:",
             error
         );
 
-
     } finally {
 
-        if (
-            typeof window.clearAuthData ===
-            "function"
-        ) {
+        window.clearAuthData();
 
-            window.clearAuthData();
-
-        } else {
-
-            localStorage.removeItem(
-                "skillearn_access_token"
-            );
-
-            localStorage.removeItem(
-                "skillearn_user"
-            );
-        }
-
-
-        try {
-
-            sessionStorage.removeItem(
-                "skillEarnUser"
-            );
-
-        } catch (error) {
-            console.warn(error);
-        }
-
-
-        redirectToLogin();
+        window.location.href =
+            "../login.html";
     }
 }
 
 
 /* =========================================================
-   REDIRECT
-========================================================= */
+   MOBILE MENU
+   ========================================================= */
 
-function redirectToLogin() {
+function setupMobileMenu() {
 
-    window.location.href =
-        "../login.html";
+    const button =
+        document.getElementById(
+            "mobileMenuButton"
+        );
+
+
+    const menu =
+        document.getElementById(
+            "dashboardNav"
+        );
+
+
+    if (!button || !menu) {
+        return;
+    }
+
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            const open =
+                menu.classList.toggle(
+                    "open"
+                );
+
+
+            button.setAttribute(
+                "aria-expanded",
+                String(open)
+            );
+        }
+    );
+
+
+    menu
+        .querySelectorAll("a")
+        .forEach(
+            link => {
+
+                link.addEventListener(
+                    "click",
+                    () => {
+
+                        menu.classList.remove(
+                            "open"
+                        );
+
+                        button.setAttribute(
+                            "aria-expanded",
+                            "false"
+                        );
+                    }
+                );
+            }
+        );
 }
 
 
 /* =========================================================
    MESSAGE
-========================================================= */
+   ========================================================= */
 
-function showDashboardMessage(message) {
+function showMessage(
+    message
+) {
 
-    const element =
+    let element =
         document.getElementById(
             "dashboardMessage"
         );
 
 
     if (!element) {
-        return;
+
+        element =
+            document.createElement(
+                "div"
+            );
+
+        element.id =
+            "dashboardMessage";
+
+        element.className =
+            "dashboard-message";
+
+
+        document
+            .querySelector(
+                "main"
+            )
+            ?.prepend(
+                element
+            );
     }
 
 
-    element.textContent =
-        message;
+    if (element) {
+
+        element.textContent =
+            message;
+
+        element.classList.add(
+            "show"
+        );
+    }
+}
 
 
-    element.style.display =
-        "block";
+/* =========================================================
+   LOGIN REDIRECT
+   ========================================================= */
+
+function redirectToLogin() {
+
+    window.location.href =
+        "../login.html";
 }

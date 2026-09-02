@@ -1,24 +1,38 @@
 "use strict";
 
-/* =========================================================
-   SkillEarn Hub
-   Session Service
-========================================================= */
+
+/*
+|--------------------------------------------------------------------------
+| DATABASE
+|--------------------------------------------------------------------------
+*/
 
 const pool =
-    require("../config/db");
+    require(
+        "../config/db"
+    );
 
+
+/*
+|--------------------------------------------------------------------------
+| SESSION UTILITIES
+|--------------------------------------------------------------------------
+*/
 
 const {
     generateSessionToken,
     hashToken,
     getSessionExpiry
-} = require("../utils/session");
+} = require(
+    "../utils/session"
+);
 
 
-/* =========================================================
-   CREATE SESSION
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| CREATE SESSION
+|--------------------------------------------------------------------------
+*/
 
 async function createSession({
     userId,
@@ -28,16 +42,22 @@ async function createSession({
 
     if (!userId) {
 
-        throw new Error(
-            "USER_ID_REQUIRED"
-        );
+        const error =
+            new Error(
+                "USER_ID_REQUIRED"
+            );
+
+        error.code =
+            "USER_ID_REQUIRED";
+
+        throw error;
 
     }
 
 
     /*
     ---------------------------------------------------------
-    Generate secure session token
+    Generate secure token
     ---------------------------------------------------------
     */
 
@@ -45,13 +65,25 @@ async function createSession({
         generateSessionToken();
 
 
+    /*
+    ---------------------------------------------------------
+    Store only hashed token in database
+    ---------------------------------------------------------
+    */
+
     const tokenHash =
         hashToken(
             token
         );
 
 
-    const expiry =
+    /*
+    ---------------------------------------------------------
+    Calculate expiry
+    ---------------------------------------------------------
+    */
+
+    const expiresAt =
         getSessionExpiry();
 
 
@@ -72,7 +104,6 @@ async function createSession({
                 user_agent,
                 expires_at
             )
-
             VALUES (
                 $1,
                 $2,
@@ -80,7 +111,6 @@ async function createSession({
                 $4,
                 $5
             )
-
             RETURNING
                 id,
                 user_id,
@@ -89,14 +119,37 @@ async function createSession({
             `,
 
             [
+
                 userId,
+
                 tokenHash,
+
                 ipAddress || null,
+
                 userAgent || null,
-                expiry
+
+                expiresAt
+
             ]
 
         );
+
+
+    if (
+        result.rowCount === 0
+    ) {
+
+        const error =
+            new Error(
+                "SESSION_CREATION_FAILED"
+            );
+
+        error.code =
+            "SESSION_CREATION_FAILED";
+
+        throw error;
+
+    }
 
 
     const session =
@@ -107,7 +160,7 @@ async function createSession({
     ---------------------------------------------------------
     Return RAW token only once.
 
-    Database stores only the hash.
+    Database stores only hash.
     ---------------------------------------------------------
     */
 
@@ -119,7 +172,8 @@ async function createSession({
         userId:
             session.user_id,
 
-        token,
+        token:
+            token,
 
         expiresAt:
             session.expires_at,
@@ -132,140 +186,36 @@ async function createSession({
 }
 
 
-/* =========================================================
-   NORMALIZE ROLE
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| GET SESSION
+|--------------------------------------------------------------------------
+|
+| Used by:
+|
+| - requireAuth middleware
+| - optionalAuth middleware
+|
+| Returns a FLAT session object containing:
+|
+| Session:
+| - session_id
+| - user_id
+| - expires_at
+|
+| User:
+| - public_user_id
+| - full_name
+| - email
+| - phone
+| - role
+| - account_status
+| - email_verified_at
+|
+|--------------------------------------------------------------------------
+*/
 
-function normalizeRole(
-    role
-) {
-
-    const value =
-        String(
-            role ||
-            "user"
-        )
-            .trim()
-            .toLowerCase();
-
-
-    if (
-
-        value === "admin" ||
-
-        value === "administrator"
-
-    ) {
-
-        return "admin";
-
-    }
-
-
-    return "user";
-
-}
-
-
-/* =========================================================
-   BUILD SESSION OBJECT
-========================================================= */
-
-function buildSession(
-    row
-) {
-
-    if (!row) {
-
-        return null;
-
-    }
-
-
-    return {
-
-        /*
-        -----------------------------------------------------
-        Session information
-        -----------------------------------------------------
-        */
-
-        id:
-            row.session_id,
-
-
-        sessionId:
-            row.session_id,
-
-
-        userId:
-            row.user_id,
-
-
-        expiresAt:
-            row.expires_at,
-
-
-        revokedAt:
-            row.revoked_at || null,
-
-
-        /*
-        -----------------------------------------------------
-        User information
-
-        IMPORTANT:
-        auth.middleware.js expects session.user
-        -----------------------------------------------------
-        */
-
-        user: {
-
-            id:
-                row.user_id,
-
-
-            publicUserId:
-                row.public_user_id || null,
-
-
-            fullName:
-                row.full_name || null,
-
-
-            email:
-                row.email || null,
-
-
-            phone:
-                row.phone || null,
-
-
-            role:
-                normalizeRole(
-                    row.role
-                ),
-
-
-            accountStatus:
-                row.account_status || null,
-
-
-            emailVerifiedAt:
-                row.email_verified_at || null
-
-        }
-
-    };
-
-}
-
-
-/* =========================================================
-   GET SESSION BY TOKEN
-========================================================= */
-
-async function getSessionByToken(
+async function getSession(
     token
 ) {
 
@@ -278,9 +228,7 @@ async function getSessionByToken(
 
     /*
     ---------------------------------------------------------
-    Hash incoming raw token.
-
-    Database never stores the raw token.
+    Hash incoming raw token before lookup
     ---------------------------------------------------------
     */
 
@@ -292,7 +240,7 @@ async function getSessionByToken(
 
     /*
     ---------------------------------------------------------
-    Find session + user
+    Find session and user
     ---------------------------------------------------------
     */
 
@@ -311,6 +259,11 @@ async function getSessionByToken(
 
                 s.revoked_at,
 
+                s.created_at
+                    AS session_created_at,
+
+                s.last_used_at,
+
                 u.public_user_id,
 
                 u.full_name,
@@ -327,8 +280,7 @@ async function getSessionByToken(
 
             FROM user_sessions s
 
-            JOIN users u
-
+            INNER JOIN users u
                 ON u.id = s.user_id
 
             WHERE
@@ -359,18 +311,18 @@ async function getSessionByToken(
     }
 
 
-    const row =
+    const session =
         result.rows[0];
 
 
     /*
     ---------------------------------------------------------
-    Revoked session
+    Session revoked
     ---------------------------------------------------------
     */
 
     if (
-        row.revoked_at
+        session.revoked_at
     ) {
 
         return null;
@@ -380,13 +332,13 @@ async function getSessionByToken(
 
     /*
     ---------------------------------------------------------
-    Expired session
+    Session expired
     ---------------------------------------------------------
     */
 
     const expiresAt =
         new Date(
-            row.expires_at
+            session.expires_at
         );
 
 
@@ -406,6 +358,42 @@ async function getSessionByToken(
         Date.now()
     ) {
 
+        /*
+        -----------------------------------------------------
+        Mark expired session as revoked.
+
+        This is not required for authentication, but keeps
+        database state clean.
+        -----------------------------------------------------
+        */
+
+        try {
+
+            await pool.query(
+
+                `
+                UPDATE user_sessions
+                SET revoked_at = NOW()
+                WHERE id = $1
+                  AND revoked_at IS NULL
+                `,
+
+                [
+                    session.session_id
+                ]
+
+            );
+
+        } catch (error) {
+
+            console.warn(
+                "SESSION EXPIRY CLEANUP ERROR:",
+                error.message
+            );
+
+        }
+
+
         return null;
 
     }
@@ -413,10 +401,7 @@ async function getSessionByToken(
 
     /*
     ---------------------------------------------------------
-    Update last used time
-
-    Authentication should not fail only because
-    last_used_at update has a temporary problem.
+    Update last used timestamp
     ---------------------------------------------------------
     */
 
@@ -426,21 +411,22 @@ async function getSessionByToken(
 
             `
             UPDATE user_sessions
-
-            SET
-                last_used_at = NOW()
-
-            WHERE
-                id = $1
+            SET last_used_at = NOW()
+            WHERE id = $1
             `,
 
             [
-                row.session_id
+                session.session_id
             ]
 
         );
 
     } catch (error) {
+
+        /*
+        Authentication should still work even if the
+        last_used_at update fails.
+        */
 
         console.warn(
             "SESSION LAST USED UPDATE ERROR:",
@@ -452,52 +438,63 @@ async function getSessionByToken(
 
     /*
     ---------------------------------------------------------
-    Return normalized session
+    Return session
     ---------------------------------------------------------
     */
 
-    return buildSession(
-        row
-    );
+    return {
+
+        session_id:
+            session.session_id,
+
+        user_id:
+            session.user_id,
+
+        expires_at:
+            session.expires_at,
+
+        created_at:
+            session.session_created_at,
+
+        last_used_at:
+            session.last_used_at,
+
+        public_user_id:
+            session.public_user_id,
+
+        full_name:
+            session.full_name,
+
+        email:
+            session.email,
+
+        phone:
+            session.phone,
+
+        role:
+            String(
+                session.role ||
+                "user"
+            )
+            .trim()
+            .toLowerCase(),
+
+        account_status:
+            session.account_status,
+
+        email_verified_at:
+            session.email_verified_at
+
+    };
 
 }
 
-
-/* =========================================================
-   GET SESSION
-========================================================= */
 
 /*
 |--------------------------------------------------------------------------
-| Backward compatibility
+| REVOKE SESSION
 |--------------------------------------------------------------------------
-|
-| Existing files may already use:
-|
-| getSession(token)
-|
-| New authentication middleware uses:
-|
-| getSessionByToken(token)
-|
-| Both now return the same normalized structure.
-|
 */
-
-async function getSession(
-    token
-) {
-
-    return getSessionByToken(
-        token
-    );
-
-}
-
-
-/* =========================================================
-   REVOKE SESSION
-========================================================= */
 
 async function revokeSession(
     token
@@ -510,11 +507,23 @@ async function revokeSession(
     }
 
 
+    /*
+    ---------------------------------------------------------
+    Hash raw token
+    ---------------------------------------------------------
+    */
+
     const tokenHash =
         hashToken(
             token
         );
 
+
+    /*
+    ---------------------------------------------------------
+    Revoke only active session
+    ---------------------------------------------------------
+    */
 
     const result =
         await pool.query(
@@ -522,16 +531,14 @@ async function revokeSession(
             `
             UPDATE user_sessions
 
-            SET
-                revoked_at = NOW()
+            SET revoked_at = NOW()
 
             WHERE
                 session_token_hash = $1
 
                 AND revoked_at IS NULL
 
-            RETURNING
-                id
+            RETURNING id
             `,
 
             [
@@ -548,17 +555,17 @@ async function revokeSession(
 }
 
 
-/* =========================================================
-   REVOKE ALL USER SESSIONS
-========================================================= */
-
 /*
 |--------------------------------------------------------------------------
-| This is useful for:
+| REVOKE ALL USER SESSIONS
+|--------------------------------------------------------------------------
 |
-| - Change password
-| - Admin force logout
-| - Security logout from all devices
+| Useful for:
+|
+| - Password change
+| - Security reset
+| - Force logout
+|
 |--------------------------------------------------------------------------
 */
 
@@ -568,9 +575,7 @@ async function revokeAllUserSessions(
 
     if (!userId) {
 
-        throw new Error(
-            "USER_ID_REQUIRED"
-        );
+        return false;
 
     }
 
@@ -581,16 +586,14 @@ async function revokeAllUserSessions(
             `
             UPDATE user_sessions
 
-            SET
-                revoked_at = NOW()
+            SET revoked_at = NOW()
 
             WHERE
                 user_id = $1
 
                 AND revoked_at IS NULL
 
-            RETURNING
-                id
+            RETURNING id
             `,
 
             [
@@ -605,83 +608,20 @@ async function revokeAllUserSessions(
 }
 
 
-/* =========================================================
-   CLEAN EXPIRED SESSIONS
-========================================================= */
-
 /*
 |--------------------------------------------------------------------------
-| Optional maintenance helper.
-|
-| Can later be called by a cron job.
+| EXPORTS
 |--------------------------------------------------------------------------
 */
 
-async function cleanExpiredSessions() {
-
-    const result =
-        await pool.query(
-
-            `
-            DELETE FROM user_sessions
-
-            WHERE
-                expires_at <= NOW()
-
-                OR revoked_at IS NOT NULL
-            `
-
-        );
-
-
-    return result.rowCount;
-
-}
-
-
-/* =========================================================
-   EXPORTS
-========================================================= */
-
 module.exports = {
-
-    /*
-    ---------------------------------------------------------
-    Create
-    ---------------------------------------------------------
-    */
 
     createSession,
 
-
-    /*
-    ---------------------------------------------------------
-    Read
-    ---------------------------------------------------------
-    */
-
     getSession,
-
-    getSessionByToken,
-
-
-    /*
-    ---------------------------------------------------------
-    Revoke
-    ---------------------------------------------------------
-    */
 
     revokeSession,
 
-    revokeAllUserSessions,
-
-
-    /*
-    ---------------------------------------------------------
-    Maintenance
-    ---------------------------------------------------------
-    */
-
-    cleanExpiredSessions
+    revokeAllUserSessions
 
 };

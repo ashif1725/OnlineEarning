@@ -87,6 +87,9 @@ app.disable(
 |--------------------------------------------------------------------------
 | TRUST PROXY
 |--------------------------------------------------------------------------
+|
+| Required when deployed behind Render / reverse proxy.
+|--------------------------------------------------------------------------
 */
 
 app.set(
@@ -102,18 +105,204 @@ app.set(
 */
 
 app.use(
-    helmet()
+    helmet({
+
+        crossOriginResourcePolicy:
+            false
+
+    })
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| CORS
+| ALLOWED FRONTEND ORIGINS
+|--------------------------------------------------------------------------
+|
+| FRONTEND_ORIGIN can contain one origin:
+|
+| https://example.com
+|
+| FRONTEND_ORIGINS can contain multiple origins:
+|
+| https://example.com,https://www.example.com
+|
 |--------------------------------------------------------------------------
 */
 
-const allowedOrigin =
-    process.env.FRONTEND_ORIGIN;
+const configuredOrigins =
+    [
+
+        process.env.FRONTEND_ORIGIN,
+
+        ...(String(
+            process.env.FRONTEND_ORIGINS ||
+            ""
+        )
+        .split(","))
+
+    ]
+    .map(
+        function (origin) {
+
+            return String(
+                origin || ""
+            )
+            .trim()
+            .replace(
+                /\/+$/,
+                ""
+            );
+
+        }
+    )
+    .filter(
+        Boolean
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| LOCAL DEVELOPMENT ORIGINS
+|--------------------------------------------------------------------------
+*/
+
+const developmentOrigins =
+    [
+
+        "http://localhost:3000",
+
+        "http://127.0.0.1:3000",
+
+        "http://localhost:5173",
+
+        "http://127.0.0.1:5173",
+
+        "http://localhost:5500",
+
+        "http://127.0.0.1:5500"
+
+    ];
+
+
+/*
+|--------------------------------------------------------------------------
+| FINAL ALLOWED ORIGINS
+|--------------------------------------------------------------------------
+*/
+
+const allowedOrigins =
+    Array.from(
+        new Set(
+            [
+
+                ...configuredOrigins,
+
+                ...(
+                    process.env.NODE_ENV !==
+                    "production"
+
+                        ? developmentOrigins
+
+                        : []
+                )
+
+            ]
+        )
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| CORS ORIGIN VALIDATION
+|--------------------------------------------------------------------------
+*/
+
+function validateCorsOrigin(
+    origin,
+    callback
+) {
+
+    /*
+    ----------------------------------------------------------------------
+    Requests without Origin header:
+    - Render health checks
+    - curl
+    - server-to-server requests
+    ----------------------------------------------------------------------
+    */
+
+    if (!origin) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    const normalizedOrigin =
+        String(origin)
+            .trim()
+            .replace(
+                /\/+$/,
+                ""
+            );
+
+
+    /*
+    ----------------------------------------------------------------------
+    Explicitly configured frontend
+    ----------------------------------------------------------------------
+    */
+
+    if (
+        allowedOrigins.includes(
+            normalizedOrigin
+        )
+    ) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    /*
+    ----------------------------------------------------------------------
+    Helpful development fallback
+    ----------------------------------------------------------------------
+    */
+
+    if (
+        process.env.NODE_ENV !==
+        "production"
+    ) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    console.warn(
+        "CORS BLOCKED ORIGIN:",
+        normalizedOrigin
+    );
+
+
+    return callback(
+        new Error(
+            "CORS origin is not allowed"
+        )
+    );
+
+}
 
 
 /*
@@ -125,8 +314,7 @@ const allowedOrigin =
 const corsOptions = {
 
     origin:
-        allowedOrigin ||
-        "http://localhost:3000",
+        validateCorsOrigin,
 
 
     credentials:
@@ -154,12 +342,31 @@ const corsOptions = {
 
         "Content-Type",
 
-        "Authorization"
+        "Authorization",
 
-    ]
+        "Accept"
+
+    ],
+
+
+    exposedHeaders: [
+
+        "Content-Type"
+
+    ],
+
+
+    optionsSuccessStatus:
+        204
 
 };
 
+
+/*
+|--------------------------------------------------------------------------
+| ENABLE CORS
+|--------------------------------------------------------------------------
+*/
 
 app.use(
     cors(
@@ -210,6 +417,71 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
+| REQUEST LOGGER
+|--------------------------------------------------------------------------
+|
+| Useful on Render logs while debugging API requests.
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+    function (
+        req,
+        res,
+        next
+    ) {
+
+        if (
+            process.env.NODE_ENV !==
+            "production"
+        ) {
+
+            console.log(
+                `${req.method} ${req.originalUrl}`
+            );
+
+        }
+
+
+        next();
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ROOT API INFORMATION
+|--------------------------------------------------------------------------
+*/
+
+app.get(
+    "/",
+
+    function (
+        req,
+        res
+    ) {
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            service:
+                "SkillEarn Hub API",
+
+            status:
+                "running"
+
+        });
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
 | HEALTH CHECK
 |--------------------------------------------------------------------------
 */
@@ -231,7 +503,11 @@ app.get(
                 "SkillEarn Hub API",
 
             status:
-                "healthy"
+                "healthy",
+
+            environment:
+                process.env.NODE_ENV ||
+                "development"
 
         });
 
@@ -244,10 +520,10 @@ app.get(
 | AUTH ROUTES
 |--------------------------------------------------------------------------
 |
-| /api/auth/register
-| /api/auth/login
-| /api/auth/logout
-| /api/auth/me
+| POST /api/auth/register
+| POST /api/auth/login
+| POST /api/auth/logout
+| GET  /api/auth/me
 |
 */
 
@@ -262,8 +538,6 @@ app.use(
 |--------------------------------------------------------------------------
 | DEPOSIT ROUTES
 |--------------------------------------------------------------------------
-|
-| Example:
 |
 | POST /api/deposits
 | GET  /api/deposits
@@ -282,12 +556,12 @@ app.use(
 | WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
 |
-| USER
+| USER:
 |
 | POST /api/withdrawals
 | GET  /api/withdrawals
 |
-| ADMIN
+| ADMIN:
 |
 | GET  /api/withdrawals/admin/pending
 |
@@ -306,7 +580,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| 404 HANDLER
+| API 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -325,7 +599,7 @@ app.use(
                 "NOT_FOUND",
 
             message:
-                "API endpoint not found"
+                `API endpoint not found: ${req.method} ${req.originalUrl}`
 
         });
 
@@ -364,7 +638,34 @@ app.use(
         }
 
 
-        const statusCode =
+        /*
+        ------------------------------------------------------------------
+        CORS error
+        ------------------------------------------------------------------
+        */
+
+        if (
+            err?.message ===
+            "CORS origin is not allowed"
+        ) {
+
+            return res.status(403).json({
+
+                success:
+                    false,
+
+                error:
+                    "CORS_NOT_ALLOWED",
+
+                message:
+                    "This frontend origin is not allowed to access the API."
+
+            });
+
+        }
+
+
+        const rawStatus =
             Number(
                 err?.status ||
                 err?.statusCode ||
@@ -372,32 +673,44 @@ app.use(
             );
 
 
-        return res.status(
-            statusCode
-        )
-        .json({
+        const statusCode =
 
-            success:
-                false,
+            rawStatus >= 400 &&
 
-            error:
+            rawStatus < 600
 
-                err?.code ||
+                ? rawStatus
 
-                "INTERNAL_SERVER_ERROR",
+                : 500;
 
 
-            message:
+        return res
+            .status(
+                statusCode
+            )
+            .json({
 
-                err?.message &&
+                success:
+                    false,
 
-                statusCode < 500
+                error:
 
-                    ? err.message
+                    err?.code ||
 
-                    : "Internal server error."
+                    "INTERNAL_SERVER_ERROR",
 
-        });
+
+                message:
+
+                    err?.message &&
+
+                    statusCode < 500
+
+                        ? err.message
+
+                        : "Internal server error."
+
+            });
 
     }
 );
@@ -410,6 +723,7 @@ app.use(
 */
 
 app.listen(
+
     PORT,
 
     "0.0.0.0",
@@ -417,8 +731,48 @@ app.listen(
     function () {
 
         console.log(
-            `SkillEarn Hub API running on port ${PORT}`
+            "========================================"
+        );
+
+
+        console.log(
+            "SkillEarn Hub API started successfully"
+        );
+
+
+        console.log(
+            `Port: ${PORT}`
+        );
+
+
+        console.log(
+            `Environment: ${
+                process.env.NODE_ENV ||
+                "development"
+            }`
+        );
+
+
+        console.log(
+            "Allowed frontend origins:"
+        );
+
+
+        console.log(
+            allowedOrigins.length
+
+                ? allowedOrigins
+
+                : [
+                    "No production origin configured"
+                ]
+        );
+
+
+        console.log(
+            "========================================"
         );
 
     }
+
 );

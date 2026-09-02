@@ -3,19 +3,27 @@
 const {
     registerUser,
     authenticateUser
-} = require("../services/auth.service");
+} =
+    require("../services/auth.service");
+
 
 const {
     createSession,
     revokeSession
-} = require("../services/session.service");
+} =
+    require("../services/session.service");
 
 
-/* =========================================================
-   REGISTER
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| REGISTER
+|--------------------------------------------------------------------------
+*/
 
-async function register(req, res) {
+async function register(
+    req,
+    res
+) {
 
     try {
 
@@ -25,20 +33,6 @@ async function register(req, res) {
             phone,
             password
         } = req.body;
-
-
-        if (
-            !fullName ||
-            !email ||
-            !phone ||
-            !password
-        ) {
-
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required"
-            });
-        }
 
 
         const user =
@@ -51,12 +45,16 @@ async function register(req, res) {
 
 
         return res.status(201).json({
-            success: true,
+
+            success:
+                true,
+
             message:
                 "Account created successfully",
-            user
-        });
 
+            user
+
+        });
 
     } catch (error) {
 
@@ -72,27 +70,40 @@ async function register(req, res) {
         ) {
 
             return res.status(409).json({
-                success: false,
+
+                success:
+                    false,
+
                 message:
                     "Email or phone already registered"
+
             });
         }
 
 
         return res.status(500).json({
-            success: false,
+
+            success:
+                false,
+
             message:
                 "Registration failed"
+
         });
     }
 }
 
 
-/* =========================================================
-   LOGIN
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
-async function login(req, res) {
+async function login(
+    req,
+    res
+) {
 
     try {
 
@@ -100,16 +111,6 @@ async function login(req, res) {
             email,
             password
         } = req.body;
-
-
-        if (!email || !password) {
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Email and password are required"
-            });
-        }
 
 
         const user =
@@ -122,15 +123,20 @@ async function login(req, res) {
         if (!user) {
 
             return res.status(401).json({
-                success: false,
+
+                success:
+                    false,
+
                 message:
                     "Invalid email or password"
+
             });
         }
 
 
         const session =
             await createSession({
+
                 userId:
                     user.id,
 
@@ -138,7 +144,10 @@ async function login(req, res) {
                     req.ip,
 
                 userAgent:
-                    req.get("user-agent")
+                    req.get(
+                        "user-agent"
+                    )
+
             });
 
 
@@ -160,24 +169,30 @@ async function login(req, res) {
             "skillearn_session",
             session.token,
             {
-                httpOnly: true,
+
+                httpOnly:
+                    true,
 
                 secure:
                     process.env.NODE_ENV ===
                     "production",
 
-                sameSite: "lax",
+                sameSite:
+                    "lax",
 
                 maxAge,
 
-                path: "/"
+                path:
+                    "/"
+
             }
         );
 
 
         return res.status(200).json({
 
-            success: true,
+            success:
+                true,
 
             message:
                 "Login successful",
@@ -204,9 +219,10 @@ async function login(req, res) {
 
                 role:
                     user.role
-            }
-        });
 
+            }
+
+        });
 
     } catch (error) {
 
@@ -222,9 +238,13 @@ async function login(req, res) {
         ) {
 
             return res.status(401).json({
-                success: false,
+
+                success:
+                    false,
+
                 message:
                     "Invalid email or password"
+
             });
         }
 
@@ -235,9 +255,13 @@ async function login(req, res) {
         ) {
 
             return res.status(423).json({
-                success: false,
+
+                success:
+                    false,
+
                 message:
                     "Account is temporarily locked"
+
             });
         }
 
@@ -248,31 +272,45 @@ async function login(req, res) {
         ) {
 
             return res.status(403).json({
-                success: false,
+
+                success:
+                    false,
+
                 message:
                     "Account is disabled"
+
             });
         }
 
 
         return res.status(500).json({
-            success: false,
+
+            success:
+                false,
+
             message:
                 "Login failed"
+
         });
     }
 }
 
 
-/* =========================================================
-   CURRENT USER
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| CURRENT USER
+|--------------------------------------------------------------------------
+*/
 
-async function me(req, res) {
+async function me(
+    req,
+    res
+) {
 
     return res.status(200).json({
 
-        success: true,
+        success:
+            true,
 
         user: {
 
@@ -296,16 +334,23 @@ async function me(req, res) {
 
             emailVerified:
                 req.auth.emailVerified
+
         }
+
     });
 }
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
+/*
+|--------------------------------------------------------------------------
+| LOGOUT
+|--------------------------------------------------------------------------
+*/
 
-async function logout(req, res) {
+async function logout(
+    req,
+    res
+) {
 
     try {
 
@@ -316,32 +361,42 @@ async function logout(req, res) {
 
         if (token) {
 
-            await revokeSession(token);
+            await revokeSession(
+                token
+            );
         }
 
 
         res.clearCookie(
             "skillearn_session",
             {
-                httpOnly: true,
+
+                httpOnly:
+                    true,
 
                 secure:
                     process.env.NODE_ENV ===
                     "production",
 
-                sameSite: "lax",
+                sameSite:
+                    "lax",
 
-                path: "/"
+                path:
+                    "/"
+
             }
         );
 
 
         return res.status(200).json({
-            success: true,
+
+            success:
+                true,
+
             message:
                 "Logout successful"
-        });
 
+        });
 
     } catch (error) {
 
@@ -352,17 +407,23 @@ async function logout(req, res) {
 
 
         return res.status(500).json({
-            success: false,
+
+            success:
+                false,
+
             message:
                 "Logout failed"
+
         });
     }
 }
 
 
 module.exports = {
+
     register,
     login,
     logout,
     me
+
 };

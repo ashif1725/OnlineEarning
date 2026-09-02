@@ -78,31 +78,101 @@ async function loadDashboard() {
 
     try {
 
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/me")
-                : "https://skillearnhub-1.onrender.com/api/auth/me";
-
-
-        const response =
-            await fetch(
-                url,
+        const data =
+            await window.apiRequest(
+                "/api/auth/me",
                 {
-
                     method:
-                        "GET",
-
-                    credentials:
-                        "include",
-
-                    headers:
-                        {
-                            "Accept":
-                                "application/json"
-                        }
-
+                        "GET"
                 }
             );
+
+
+        const user =
+            data?.user ||
+            null;
+
+
+        if (!user) {
+
+            throw new Error(
+                "User data not found"
+            );
+
+        }
+
+
+        if (
+
+            typeof window.setSavedUser ===
+            "function"
+
+        ) {
+
+            window.setSavedUser(
+                user
+            );
+
+        }
+
+
+        renderUser(
+            user
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "DASHBOARD LOAD ERROR:",
+            error
+        );
+
+
+        if (
+
+            error?.status === 401
+
+        ) {
+
+            clearLocalAuth();
+
+            redirectToLogin();
+
+            return;
+
+        }
+
+
+        const savedUser =
+            typeof window.getSavedUser ===
+            "function"
+
+                ? window.getSavedUser()
+
+                : null;
+
+
+        if (savedUser) {
+
+            renderUser(
+                savedUser
+            );
+
+            showDashboardMessage(
+                "Live account data could not be refreshed."
+            );
+
+            return;
+
+        }
+
+
+        redirectToLogin();
+
+    }
+
+}
 
 
         /*
@@ -866,29 +936,12 @@ async function logoutUser() {
         }
 
 
-        const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl(
-                    "/api/auth/logout"
-                )
-                : "https://skillearnhub-1.onrender.com/api/auth/logout";
-
-
-        await fetch(
-            url,
+        await window.apiRequest(
+            "/api/auth/logout",
             {
 
                 method:
-                    "POST",
-
-                credentials:
-                    "include",
-
-                headers:
-                    {
-                        "Accept":
-                            "application/json"
-                    }
+                    "POST"
 
             }
         );
@@ -900,7 +953,6 @@ async function logoutUser() {
             "LOGOUT ERROR:",
             error
         );
-
 
     } finally {
 

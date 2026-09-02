@@ -16,11 +16,11 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| EXTRACT TOKEN
+| EXTRACT AUTH TOKEN
 |--------------------------------------------------------------------------
 */
 
-function extractToken(
+function getAuthToken(
     req
 ) {
 
@@ -30,7 +30,7 @@ function extractToken(
 
     /*
     ---------------------------------------------------------
-    Authorization Header
+    Authorization Bearer Token
     ---------------------------------------------------------
     */
 
@@ -40,6 +40,7 @@ function extractToken(
 
     if (
         authorization &&
+        typeof authorization === "string" &&
         authorization.startsWith(
             "Bearer "
         )
@@ -79,6 +80,72 @@ function extractToken(
 
 /*
 |--------------------------------------------------------------------------
+| CREATE AUTHENTICATED USER
+|--------------------------------------------------------------------------
+*/
+
+function createAuthenticatedUser(
+    session
+) {
+
+    if (!session) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        id:
+            session.user_id,
+
+        userId:
+            session.user_id,
+
+        user_id:
+            session.user_id,
+
+        publicUserId:
+            session.public_user_id,
+
+        public_user_id:
+            session.public_user_id,
+
+        fullName:
+            session.full_name,
+
+        full_name:
+            session.full_name,
+
+        email:
+            session.email,
+
+        phone:
+            session.phone,
+
+        role:
+            session.role,
+
+        accountStatus:
+            session.account_status,
+
+        account_status:
+            session.account_status,
+
+        emailVerifiedAt:
+            session.email_verified_at,
+
+        email_verified_at:
+            session.email_verified_at
+
+    };
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | REQUIRE AUTH
 |--------------------------------------------------------------------------
 */
@@ -93,12 +160,12 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Extract token
+        Get token
         -----------------------------------------------------
         */
 
         const token =
-            extractToken(
+            getAuthToken(
                 req
             );
 
@@ -138,7 +205,7 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Invalid session
+        Invalid or expired session
         -----------------------------------------------------
         */
 
@@ -159,55 +226,40 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Attach authenticated user
-        -----------------------------------------------------
-
-        getSession() returns a flat session object.
-
-        Therefore req.user must be created explicitly.
+        Create authenticated user
         -----------------------------------------------------
         */
 
-        req.user = {
+        const user =
+            createAuthenticatedUser(
+                session
+            );
 
-            id:
-                session.user_id,
 
-            userId:
-                session.user_id,
+        if (!user) {
 
-            user_id:
-                session.user_id,
+            return res.status(401).json({
 
-            public_user_id:
-                session.public_user_id,
+                success:
+                    false,
 
-            full_name:
-                session.full_name,
+                message:
+                    "User not found."
 
-            email:
-                session.email,
+            });
 
-            phone:
-                session.phone,
-
-            role:
-                session.role,
-
-            account_status:
-                session.account_status,
-
-            email_verified_at:
-                session.email_verified_at
-
-        };
+        }
 
 
         /*
         -----------------------------------------------------
-        Attach session
+        Attach authentication data
         -----------------------------------------------------
         */
+
+        req.user =
+            user;
+
 
         req.session =
             session;
@@ -261,7 +313,7 @@ function requireAdmin(
 
         /*
         -----------------------------------------------------
-        User missing
+        Authentication check
         -----------------------------------------------------
         */
 
@@ -302,7 +354,7 @@ function requireAdmin(
 
         /*
         -----------------------------------------------------
-        Verify admin
+        Admin check
         -----------------------------------------------------
         */
 
@@ -323,12 +375,6 @@ function requireAdmin(
 
         }
 
-
-        /*
-        -----------------------------------------------------
-        Continue
-        -----------------------------------------------------
-        */
 
         return next();
 
@@ -372,21 +418,19 @@ async function optionalAuth(
 
         /*
         -----------------------------------------------------
-        Extract token
+        Get token
         -----------------------------------------------------
         */
 
         const token =
-            extractToken(
+            getAuthToken(
                 req
             );
 
 
         /*
         -----------------------------------------------------
-        No token
-
-        Authentication is optional, so continue normally.
+        Authentication is optional
         -----------------------------------------------------
         */
 
@@ -411,45 +455,24 @@ async function optionalAuth(
 
         /*
         -----------------------------------------------------
-        Attach user if valid session exists
+        Attach user if session is valid
         -----------------------------------------------------
         */
 
         if (session) {
 
-            req.user = {
+            const user =
+                createAuthenticatedUser(
+                    session
+                );
 
-                id:
-                    session.user_id,
 
-                userId:
-                    session.user_id,
+            if (user) {
 
-                user_id:
-                    session.user_id,
+                req.user =
+                    user;
 
-                public_user_id:
-                    session.public_user_id,
-
-                full_name:
-                    session.full_name,
-
-                email:
-                    session.email,
-
-                phone:
-                    session.phone,
-
-                role:
-                    session.role,
-
-                account_status:
-                    session.account_status,
-
-                email_verified_at:
-                    session.email_verified_at
-
-            };
+            }
 
 
             req.session =
@@ -458,19 +481,14 @@ async function optionalAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Continue
-        -----------------------------------------------------
-        */
-
         return next();
 
 
     } catch (error) {
 
         /*
-        Optional authentication must never block request.
+        Optional authentication should not
+        block the request.
         */
 
         return next();

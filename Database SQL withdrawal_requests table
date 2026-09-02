@@ -1,0 +1,146 @@
+BEGIN;
+
+
+CREATE TABLE IF NOT EXISTS withdrawal_requests (
+
+    id UUID
+        PRIMARY KEY
+        DEFAULT gen_random_uuid(),
+
+
+    user_id UUID
+        NOT NULL
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+
+    wallet_id UUID
+        NOT NULL
+        REFERENCES wallets(id)
+        ON DELETE RESTRICT,
+
+
+    amount NUMERIC(14, 2)
+        NOT NULL
+        CHECK (
+            amount > 0
+        ),
+
+
+    currency VARCHAR(10)
+        NOT NULL
+        DEFAULT 'INR',
+
+
+    payment_method VARCHAR(50)
+        NOT NULL,
+
+
+    payment_details TEXT
+        NOT NULL,
+
+
+    status VARCHAR(30)
+        NOT NULL
+        DEFAULT 'pending'
+        CHECK (
+            status IN (
+                'pending',
+                'approved',
+                'rejected'
+            )
+        ),
+
+
+    requested_at TIMESTAMPTZ
+        NOT NULL
+        DEFAULT NOW(),
+
+
+    processed_at TIMESTAMPTZ
+        NULL,
+
+
+    processed_by UUID
+        NULL
+        REFERENCES users(id)
+        ON DELETE SET NULL,
+
+
+    rejection_reason TEXT
+        NULL,
+
+
+
+    CONSTRAINT withdrawal_requests_processed_state_check
+    CHECK (
+
+        (
+
+            status = 'pending'
+
+            AND
+
+            processed_at IS NULL
+
+        )
+
+        OR
+
+        (
+
+            status IN (
+                'approved',
+                'rejected'
+            )
+
+        )
+
+    )
+
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_withdrawal_requests_user_id
+
+ON withdrawal_requests (
+    user_id
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_withdrawal_requests_wallet_id
+
+ON withdrawal_requests (
+    wallet_id
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_withdrawal_requests_status
+
+ON withdrawal_requests (
+    status
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_withdrawal_requests_requested_at
+
+ON withdrawal_requests (
+    requested_at DESC
+);
+
+
+CREATE INDEX IF NOT EXISTS
+    idx_withdrawal_requests_admin_pending
+
+ON withdrawal_requests (
+    status,
+    requested_at ASC
+)
+WHERE status = 'pending';
+
+
+COMMIT;

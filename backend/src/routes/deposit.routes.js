@@ -26,6 +26,24 @@ const {
     );
 
 
+router.post(
+    "/",
+    requireAuth,
+    createDeposit
+);
+
+
+router.get(
+    "/",
+    requireAuth,
+    getMyDeposits
+);
+
+
+module.exports =
+    router;
+
+
 /*
 |--------------------------------------------------------------------------
 | CREATE DEPOSIT REQUEST

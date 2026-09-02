@@ -189,6 +189,12 @@ app.use(
 );
 
 
+app.use(
+    "/api/admin/deposit-requests",
+    adminDepositRequestRoutes
+);
+
+
 /*
 |--------------------------------------------------------------------------
 | 404 HANDLER

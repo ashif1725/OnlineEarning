@@ -1,10 +1,80 @@
 "use strict";
 
+
+/*
+|--------------------------------------------------------------------------
+| SESSION SERVICE
+|--------------------------------------------------------------------------
+*/
+
 const {
-    getSessionByToken
+    getSession
 } = require(
     "../services/session.service"
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| EXTRACT TOKEN
+|--------------------------------------------------------------------------
+*/
+
+function extractToken(
+    req
+) {
+
+    let token =
+        null;
+
+
+    /*
+    ---------------------------------------------------------
+    Authorization Header
+    ---------------------------------------------------------
+    */
+
+    const authorization =
+        req.headers.authorization;
+
+
+    if (
+        authorization &&
+        authorization.startsWith(
+            "Bearer "
+        )
+    ) {
+
+        token =
+            authorization
+                .slice(7)
+                .trim();
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Cookie Token
+    ---------------------------------------------------------
+    */
+
+    if (
+        !token &&
+        req.cookies
+    ) {
+
+        token =
+            req.cookies.access_token ||
+            req.cookies.token ||
+            null;
+
+    }
+
+
+    return token;
+
+}
 
 
 /*
@@ -21,125 +91,135 @@ async function requireAuth(
 
     try {
 
-        let token =
-            null;
+        /*
+        -----------------------------------------------------
+        Extract token
+        -----------------------------------------------------
+        */
+
+        const token =
+            extractToken(
+                req
+            );
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Authorization Bearer Token
-        |--------------------------------------------------------------------------
+        -----------------------------------------------------
+        Token missing
+        -----------------------------------------------------
         */
-
-        const authorization =
-            req.headers.authorization;
-
-
-        if (
-            authorization &&
-            authorization.startsWith(
-                "Bearer "
-            )
-        ) {
-
-            token =
-                authorization.slice(
-                    7
-                );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Cookie Token
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            !token &&
-            req.cookies
-        ) {
-
-            token =
-                req.cookies.access_token ||
-                req.cookies.token ||
-                null;
-
-        }
-
 
         if (!token) {
 
-            return res.status(
-                401
-            ).json(
-                {
-                    success:
-                        false,
+            return res.status(401).json({
 
-                    message:
-                        "Authentication required."
-                }
-            );
+                success:
+                    false,
+
+                message:
+                    "Authentication required."
+
+            });
 
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get session
+        -----------------------------------------------------
+        */
+
         const session =
-            await getSessionByToken(
+            await getSession(
                 token
             );
 
 
+        /*
+        -----------------------------------------------------
+        Invalid session
+        -----------------------------------------------------
+        */
+
         if (!session) {
 
-            return res.status(
-                401
-            ).json(
-                {
-                    success:
-                        false,
+            return res.status(401).json({
 
-                    message:
-                        "Invalid or expired session."
-                }
-            );
+                success:
+                    false,
+
+                message:
+                    "Invalid or expired session."
+
+            });
 
         }
 
 
-        const user =
-            session.user ||
-            session;
+        /*
+        -----------------------------------------------------
+        Attach authenticated user
+        -----------------------------------------------------
+
+        getSession() returns a flat session object.
+
+        Therefore req.user must be created explicitly.
+        -----------------------------------------------------
+        */
+
+        req.user = {
+
+            id:
+                session.user_id,
+
+            userId:
+                session.user_id,
+
+            user_id:
+                session.user_id,
+
+            public_user_id:
+                session.public_user_id,
+
+            full_name:
+                session.full_name,
+
+            email:
+                session.email,
+
+            phone:
+                session.phone,
+
+            role:
+                session.role,
+
+            account_status:
+                session.account_status,
+
+            email_verified_at:
+                session.email_verified_at
+
+        };
 
 
-        if (!user) {
-
-            return res.status(
-                401
-            ).json(
-                {
-                    success:
-                        false,
-
-                    message:
-                        "User not found."
-                }
-            );
-
-        }
-
-
-        req.user =
-            user;
-
+        /*
+        -----------------------------------------------------
+        Attach session
+        -----------------------------------------------------
+        */
 
         req.session =
             session;
 
 
-        next();
+        /*
+        -----------------------------------------------------
+        Continue
+        -----------------------------------------------------
+        */
+
+        return next();
 
 
     } catch (error) {
@@ -150,17 +230,15 @@ async function requireAuth(
         );
 
 
-        return res.status(
-            401
-        ).json(
-            {
-                success:
-                    false,
+        return res.status(401).json({
 
-                message:
-                    "Authentication failed."
-            }
-        );
+            success:
+                false,
+
+            message:
+                "Authentication failed."
+
+        });
 
     }
 
@@ -181,53 +259,78 @@ function requireAdmin(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        User missing
+        -----------------------------------------------------
+        */
+
         if (!req.user) {
 
-            return res.status(
-                401
-            ).json(
-                {
-                    success:
-                        false,
+            return res.status(401).json({
 
-                    message:
-                        "Authentication required."
-                }
-            );
+                success:
+                    false,
+
+                message:
+                    "Authentication required."
+
+            });
 
         }
 
+
+        /*
+        -----------------------------------------------------
+        Get role
+        -----------------------------------------------------
+        */
 
         const role =
             String(
-                req.user.role ||
-                req.user.account_role ||
-                ""
-            )
-                .trim()
-                .toLowerCase();
 
+                req.user.role ||
+
+                req.user.account_role ||
+
+                ""
+
+            )
+            .trim()
+            .toLowerCase();
+
+
+        /*
+        -----------------------------------------------------
+        Verify admin
+        -----------------------------------------------------
+        */
 
         if (
-            role !== "admin"
+            role !== "admin" &&
+            role !== "administrator"
         ) {
 
-            return res.status(
-                403
-            ).json(
-                {
-                    success:
-                        false,
+            return res.status(403).json({
 
-                    message:
-                        "Admin access required."
-                }
-            );
+                success:
+                    false,
+
+                message:
+                    "Admin access required."
+
+            });
 
         }
 
 
-        next();
+        /*
+        -----------------------------------------------------
+        Continue
+        -----------------------------------------------------
+        */
+
+        return next();
 
 
     } catch (error) {
@@ -238,17 +341,15 @@ function requireAdmin(
         );
 
 
-        return res.status(
-            403
-        ).json(
-            {
-                success:
-                    false,
+        return res.status(403).json({
 
-                message:
-                    "Unable to verify admin access."
-            }
-        );
+            success:
+                false,
+
+            message:
+                "Unable to verify admin access."
+
+        });
 
     }
 
@@ -269,41 +370,25 @@ async function optionalAuth(
 
     try {
 
-        let token =
-            null;
+        /*
+        -----------------------------------------------------
+        Extract token
+        -----------------------------------------------------
+        */
+
+        const token =
+            extractToken(
+                req
+            );
 
 
-        const authorization =
-            req.headers.authorization;
+        /*
+        -----------------------------------------------------
+        No token
 
-
-        if (
-            authorization &&
-            authorization.startsWith(
-                "Bearer "
-            )
-        ) {
-
-            token =
-                authorization.slice(
-                    7
-                );
-
-        }
-
-
-        if (
-            !token &&
-            req.cookies
-        ) {
-
-            token =
-                req.cookies.access_token ||
-                req.cookies.token ||
-                null;
-
-        }
-
+        Authentication is optional, so continue normally.
+        -----------------------------------------------------
+        */
 
         if (!token) {
 
@@ -312,31 +397,83 @@ async function optionalAuth(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get session
+        -----------------------------------------------------
+        */
+
         const session =
-            await getSessionByToken(
+            await getSession(
                 token
             );
 
 
+        /*
+        -----------------------------------------------------
+        Attach user if valid session exists
+        -----------------------------------------------------
+        */
+
         if (session) {
 
+            req.user = {
+
+                id:
+                    session.user_id,
+
+                userId:
+                    session.user_id,
+
+                user_id:
+                    session.user_id,
+
+                public_user_id:
+                    session.public_user_id,
+
+                full_name:
+                    session.full_name,
+
+                email:
+                    session.email,
+
+                phone:
+                    session.phone,
+
+                role:
+                    session.role,
+
+                account_status:
+                    session.account_status,
+
+                email_verified_at:
+                    session.email_verified_at
+
+            };
+
+
             req.session =
-                session;
-
-
-            req.user =
-                session.user ||
                 session;
 
         }
 
 
-        next();
+        /*
+        -----------------------------------------------------
+        Continue
+        -----------------------------------------------------
+        */
+
+        return next();
 
 
     } catch (error) {
 
-        next();
+        /*
+        Optional authentication must never block request.
+        */
+
+        return next();
 
     }
 
@@ -349,9 +486,12 @@ async function optionalAuth(
 |--------------------------------------------------------------------------
 */
 
-module.exports =
-    {
-        requireAuth,
-        requireAdmin,
-        optionalAuth
-    };
+module.exports = {
+
+    requireAuth,
+
+    requireAdmin,
+
+    optionalAuth
+
+};

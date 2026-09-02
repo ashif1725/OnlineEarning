@@ -1,5 +1,6 @@
 "use strict";
 
+
 const depositService =
     require(
         "../services/deposit.service"
@@ -40,7 +41,8 @@ async function createDeposit(
             message:
                 "Deposit request created successfully",
 
-            deposit
+            deposit:
+                deposit
 
         });
 
@@ -63,7 +65,8 @@ async function createDeposit(
                 "DEPOSIT_REQUEST_FAILED",
 
             message:
-                error.message
+                error.message ||
+                "Unable to create deposit request"
 
         });
 
@@ -100,12 +103,19 @@ async function getMyDeposits(
             success:
                 true,
 
-            deposits
+            deposits:
+                deposits
 
         });
 
 
     } catch (error) {
+
+        console.error(
+            "GET DEPOSITS ERROR:",
+            error
+        );
+
 
         return res.status(500).json({
 

@@ -2,41 +2,32 @@
 
 
 /* =========================================================
-   SkillEarn Hub
-   Authentication
-========================================================= */
-
-
-/* =========================================================
-   ELEMENT
+   HELPERS
 ========================================================= */
 
 function authElement(id) {
 
-    return document.getElementById(id);
+    return document.getElementById(
+        id
+    );
 
 }
 
 
-/* =========================================================
-   MESSAGE
-========================================================= */
-
-function showAuthMessage(
+function showMessage(
     element,
     message,
-    type = "error"
+    success = false
 ) {
 
     if (!element) {
-
         return;
-
     }
 
 
     element.textContent =
-        message || "";
+        message ||
+        "";
 
 
     element.classList.remove(
@@ -46,9 +37,7 @@ function showAuthMessage(
 
 
     if (!message) {
-
         return;
-
     }
 
 
@@ -57,7 +46,7 @@ function showAuthMessage(
     );
 
 
-    if (type === "success") {
+    if (success) {
 
         element.classList.add(
             "success"
@@ -68,37 +57,27 @@ function showAuthMessage(
 }
 
 
-/* =========================================================
-   FIELD ERROR
-========================================================= */
-
 function setFieldError(
-    fieldName,
+    field,
     message
 ) {
 
     const element =
         document.querySelector(
-            `[data-error-for="${fieldName}"]`
+            `[data-error-for="${field}"]`
         );
 
 
-    if (!element) {
+    if (element) {
 
-        return;
+        element.textContent =
+            message ||
+            "";
 
     }
 
-
-    element.textContent =
-        message || "";
-
 }
 
-
-/* =========================================================
-   CLEAR ERRORS
-========================================================= */
 
 function clearFieldErrors() {
 
@@ -107,34 +86,33 @@ function clearFieldErrors() {
             ".field-error"
         )
         .forEach(
+
             function (element) {
 
                 element.textContent =
                     "";
 
             }
+
         );
 
 }
 
 
-/* =========================================================
-   BUTTON LOADING
-========================================================= */
-
-function setButtonLoading(
+function setLoading(
     button,
     text
 ) {
 
     if (!button) {
-
         return;
-
     }
 
 
-    if (!button.dataset.originalText) {
+    if (
+        !button.dataset
+            .originalText
+    ) {
 
         button.dataset.originalText =
             button.textContent;
@@ -154,13 +132,11 @@ function setButtonLoading(
 
 function restoreButton(
     button,
-    fallbackText
+    fallback
 ) {
 
     if (!button) {
-
         return;
-
     }
 
 
@@ -169,14 +145,17 @@ function restoreButton(
 
 
     button.textContent =
-        button.dataset.originalText ||
-        fallbackText;
+
+        button.dataset
+            .originalText ||
+
+        fallback;
 
 }
 
 
 /* =========================================================
-   GET ROLE
+   USER ROLE
 ========================================================= */
 
 function getUserRole(user) {
@@ -192,20 +171,22 @@ function getUserRole(user) {
         "user"
 
     )
-        .trim()
-        .toLowerCase();
+    .trim()
+    .toLowerCase();
 
 }
 
 
 /* =========================================================
-   GET REDIRECT
+   REDIRECT
 ========================================================= */
 
-function getRedirectByRole(user) {
+function getDashboardUrl(user) {
 
     const role =
-        getUserRole(user);
+        getUserRole(
+            user
+        );
 
 
     if (
@@ -236,18 +217,20 @@ async function handleLogin(event) {
 
 
     const form =
-        authElement("loginForm");
+        authElement(
+            "loginForm"
+        );
 
 
     if (!form) {
-
         return;
-
     }
 
 
     const message =
-        authElement("loginMessage");
+        authElement(
+            "loginMessage"
+        );
 
 
     const button =
@@ -259,7 +242,7 @@ async function handleLogin(event) {
     clearFieldErrors();
 
 
-    showAuthMessage(
+    showMessage(
         message,
         ""
     );
@@ -267,21 +250,31 @@ async function handleLogin(event) {
 
     const email =
         String(
-            authElement("loginEmail")?.value ||
+
+            authElement(
+                "loginEmail"
+            )?.value ||
+
             ""
+
         )
-            .trim()
-            .toLowerCase();
+        .trim()
+        .toLowerCase();
 
 
     const password =
         String(
-            authElement("loginPassword")?.value ||
+
+            authElement(
+                "loginPassword"
+            )?.value ||
+
             ""
+
         );
 
 
-    let hasError =
+    let invalid =
         false;
 
 
@@ -292,24 +285,7 @@ async function handleLogin(event) {
             "Please enter your email address."
         );
 
-        hasError =
-            true;
-
-    }
-
-    else if (
-
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email)
-
-    ) {
-
-        setFieldError(
-            "loginEmail",
-            "Please enter a valid email address."
-        );
-
-        hasError =
+        invalid =
             true;
 
     }
@@ -322,20 +298,18 @@ async function handleLogin(event) {
             "Please enter your password."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
 
 
-    if (hasError) {
-
+    if (invalid) {
         return;
-
     }
 
 
-    setButtonLoading(
+    setLoading(
         button,
         "Signing in..."
     );
@@ -345,7 +319,9 @@ async function handleLogin(event) {
 
         const result =
             await window.apiRequest(
+
                 "/api/auth/login",
+
                 {
 
                     method:
@@ -359,58 +335,80 @@ async function handleLogin(event) {
                     }
 
                 }
+
             );
 
 
         const user =
-            window.extractUser
-                ? window.extractUser(result)
-                : result?.user;
+            window.extractUser(
+                result
+            );
 
 
         if (!user) {
 
             throw new Error(
-                "Login succeeded but user data was not returned."
+                "Login succeeded but user information was missing."
             );
 
         }
 
+
+        /*
+           IMPORTANT:
+           Save authenticated user.
+        */
 
         window.setSavedUser(
             user
         );
 
 
-        const role =
-            getUserRole(
-                user
+        /*
+           IMPORTANT:
+           apiRequest automatically saves result.token.
+        */
+
+        if (
+            result?.token
+        ) {
+
+            window.setAuthToken(
+                result.token
             );
 
+        }
 
-        showAuthMessage(
+
+        showMessage(
+
             message,
-            role === "admin"
-                ? "Admin login successful. Redirecting..."
-                : "Login successful. Redirecting...",
-            "success"
+
+            "Login successful. Redirecting...",
+
+            true
+
         );
 
 
         const redirect =
-            getRedirectByRole(
+            getDashboardUrl(
                 user
             );
 
 
         setTimeout(
+
             function () {
 
-                window.location.href =
-                    redirect;
+                window.location.assign(
+                    redirect
+                );
 
             },
+
             700
+
         );
 
 
@@ -422,10 +420,14 @@ async function handleLogin(event) {
         );
 
 
-        showAuthMessage(
+        showMessage(
+
             message,
-            error.message ||
+
+            error?.message ||
+
             "Login failed. Please try again."
+
         );
 
     } finally {
@@ -450,18 +452,20 @@ async function handleRegister(event) {
 
 
     const form =
-        authElement("registerForm");
+        authElement(
+            "registerForm"
+        );
 
 
     if (!form) {
-
         return;
-
     }
 
 
     const message =
-        authElement("registerMessage");
+        authElement(
+            "registerMessage"
+        );
 
 
     const button =
@@ -472,8 +476,7 @@ async function handleRegister(event) {
 
     clearFieldErrors();
 
-
-    showAuthMessage(
+    showMessage(
         message,
         ""
     );
@@ -481,59 +484,73 @@ async function handleRegister(event) {
 
     const fullName =
         String(
-            authElement("fullName")?.value ||
+            authElement(
+                "fullName"
+            )?.value ||
             ""
         ).trim();
 
 
     const email =
         String(
-            authElement("email")?.value ||
+            authElement(
+                "email"
+            )?.value ||
             ""
         )
-            .trim()
-            .toLowerCase();
+        .trim()
+        .toLowerCase();
 
 
     const phone =
         String(
-            authElement("phone")?.value ||
+            authElement(
+                "phone"
+            )?.value ||
             ""
         ).trim();
 
 
     const password =
         String(
-            authElement("password")?.value ||
+            authElement(
+                "password"
+            )?.value ||
             ""
         );
 
 
     const confirmPassword =
         String(
-            authElement("confirmPassword")?.value ||
+            authElement(
+                "confirmPassword"
+            )?.value ||
             ""
         );
 
 
     const terms =
         Boolean(
-            authElement("terms")?.checked
+            authElement(
+                "terms"
+            )?.checked
         );
 
 
-    let hasError =
+    let invalid =
         false;
 
 
-    if (fullName.length < 2) {
+    if (
+        fullName.length < 2
+    ) {
 
         setFieldError(
             "fullName",
             "Please enter your full name."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
@@ -546,63 +563,51 @@ async function handleRegister(event) {
             "Please enter your email address."
         );
 
-        hasError =
-            true;
-
-    }
-
-    else if (
-
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email)
-
-    ) {
-
-        setFieldError(
-            "email",
-            "Please enter a valid email address."
-        );
-
-        hasError =
+        invalid =
             true;
 
     }
 
 
-    if (phone.length < 8) {
+    if (!phone) {
 
         setFieldError(
             "phone",
-            "Please enter a valid mobile number."
+            "Please enter your mobile number."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
 
 
-    if (password.length < 12) {
+    if (
+        password.length < 12
+    ) {
 
         setFieldError(
             "password",
             "Password must contain at least 12 characters."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
 
 
-    if (password !== confirmPassword) {
+    if (
+        password !==
+        confirmPassword
+    ) {
 
         setFieldError(
             "confirmPassword",
             "Passwords do not match."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
@@ -610,25 +615,23 @@ async function handleRegister(event) {
 
     if (!terms) {
 
-        showAuthMessage(
+        showMessage(
             message,
             "Please accept the Terms and Privacy Policy."
         );
 
-        hasError =
+        invalid =
             true;
 
     }
 
 
-    if (hasError) {
-
+    if (invalid) {
         return;
-
     }
 
 
-    setButtonLoading(
+    setLoading(
         button,
         "Creating account..."
     );
@@ -638,7 +641,9 @@ async function handleRegister(event) {
 
         const result =
             await window.apiRequest(
+
                 "/api/auth/register",
+
                 {
 
                     method:
@@ -654,14 +659,19 @@ async function handleRegister(event) {
                     }
 
                 }
+
             );
 
 
-        showAuthMessage(
+        showMessage(
+
             message,
+
             result?.message ||
-            "Account created successfully.",
-            "success"
+            "Account created successfully. Redirecting to login...",
+
+            true
+
         );
 
 
@@ -669,13 +679,17 @@ async function handleRegister(event) {
 
 
         setTimeout(
+
             function () {
 
-                window.location.href =
-                    "login.html";
+                window.location.assign(
+                    "login.html"
+                );
 
             },
+
             1000
+
         );
 
 
@@ -687,10 +701,14 @@ async function handleRegister(event) {
         );
 
 
-        showAuthMessage(
+        showMessage(
+
             message,
-            error.message ||
+
+            error?.message ||
+
             "Unable to create account."
+
         );
 
     } finally {
@@ -714,13 +732,16 @@ async function logoutUser() {
     try {
 
         await window.apiRequest(
+
             "/api/auth/logout",
+
             {
 
                 method:
                     "POST"
 
             }
+
         );
 
     } catch (error) {
@@ -741,21 +762,27 @@ async function logoutUser() {
 
         if (
 
-            path.includes("/user/") ||
+            path.includes(
+                "/user/"
+            ) ||
 
-            path.includes("/admin/")
+            path.includes(
+                "/admin/"
+            )
 
         ) {
 
-            window.location.href =
-                "../login.html";
+            window.location.assign(
+                "../login.html"
+            );
 
         }
 
         else {
 
-            window.location.href =
-                "login.html";
+            window.location.assign(
+                "login.html"
+            );
 
         }
 
@@ -769,11 +796,15 @@ async function logoutUser() {
 ========================================================= */
 
 document.addEventListener(
+
     "DOMContentLoaded",
+
     function () {
 
         const loginForm =
-            authElement("loginForm");
+            authElement(
+                "loginForm"
+            );
 
 
         if (loginForm) {
@@ -787,7 +818,9 @@ document.addEventListener(
 
 
         const registerForm =
-            authElement("registerForm");
+            authElement(
+                "registerForm"
+            );
 
 
         if (registerForm) {
@@ -805,10 +838,13 @@ document.addEventListener(
                 "[data-action='logout']"
             )
             .forEach(
+
                 function (button) {
 
                     button.addEventListener(
+
                         "click",
+
                         function (event) {
 
                             event.preventDefault();
@@ -816,17 +852,20 @@ document.addEventListener(
                             logoutUser();
 
                         }
+
                     );
 
                 }
+
             );
 
     }
+
 );
 
 
 /* =========================================================
-   PUBLIC API
+   PUBLIC
 ========================================================= */
 
 window.SkillEarnAuth = {

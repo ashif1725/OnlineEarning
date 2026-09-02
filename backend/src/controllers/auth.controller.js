@@ -1,5 +1,10 @@
 "use strict";
 
+/* =========================================================
+   SkillEarn Hub
+   Authentication Controller
+========================================================= */
+
 const {
     registerUser,
     authenticateUser
@@ -20,7 +25,8 @@ function getCookieOptions(maxAge) {
     const production =
         process.env.NODE_ENV === "production";
 
-    return {
+
+    const options = {
 
         httpOnly:
             true,
@@ -33,10 +39,105 @@ function getCookieOptions(maxAge) {
                 ? "none"
                 : "lax",
 
-        maxAge,
-
         path:
             "/"
+
+    };
+
+
+    if (
+        Number.isFinite(maxAge) &&
+        maxAge > 0
+    ) {
+
+        options.maxAge =
+            maxAge;
+
+    }
+
+
+    return options;
+
+}
+
+
+/* =========================================================
+   NORMALIZE ROLE
+========================================================= */
+
+function normalizeRole(role) {
+
+    const normalized =
+        String(
+            role ||
+            "user"
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (
+        normalized === "admin" ||
+        normalized === "administrator"
+    ) {
+
+        return "admin";
+
+    }
+
+
+    return "user";
+
+}
+
+
+/* =========================================================
+   CREATE SAFE USER RESPONSE
+========================================================= */
+
+function createUserResponse(user) {
+
+    if (!user) {
+
+        return null;
+
+    }
+
+
+    return {
+
+        id:
+            user.id,
+
+        publicUserId:
+            user.publicUserId ||
+            user.public_user_id ||
+            null,
+
+        fullName:
+            user.fullName ||
+            user.full_name ||
+            null,
+
+        email:
+            user.email ||
+            null,
+
+        phone:
+            user.phone ||
+            null,
+
+        role:
+            normalizeRole(
+                user.role ||
+                user.userRole ||
+                user.user_role
+            ),
+
+        accountStatus:
+            user.accountStatus ||
+            user.account_status ||
+            null
 
     };
 
@@ -62,9 +163,17 @@ function getRequestToken(req) {
             .startsWith("bearer ")
     ) {
 
-        return authorization
-            .slice(7)
-            .trim();
+        const token =
+            authorization
+                .slice(7)
+                .trim();
+
+
+        if (token) {
+
+            return token;
+
+        }
 
     }
 
@@ -74,8 +183,9 @@ function getRequestToken(req) {
         req.cookies.skillearn_session
     ) {
 
-        return req.cookies
-            .skillearn_session;
+        return String(
+            req.cookies.skillearn_session
+        ).trim();
 
     }
 
@@ -113,8 +223,11 @@ async function register(req, res) {
                 success:
                     false,
 
+                error:
+                    "INVALID_REQUEST",
+
                 message:
-                    "All fields are required"
+                    "All fields are required."
 
             });
 
@@ -124,9 +237,19 @@ async function register(req, res) {
         const user =
             await registerUser({
 
-                fullName,
-                email,
-                phone,
+                fullName:
+                    String(fullName)
+                        .trim(),
+
+                email:
+                    String(email)
+                        .trim()
+                        .toLowerCase(),
+
+                phone:
+                    String(phone)
+                        .trim(),
+
                 password
 
             });
@@ -138,10 +261,12 @@ async function register(req, res) {
                 true,
 
             message:
-                "Account created successfully",
+                "Account created successfully.",
 
             user:
-                user
+                createUserResponse(
+                    user
+                )
 
         });
 
@@ -155,7 +280,7 @@ async function register(req, res) {
 
 
         if (
-            error.code ===
+            error?.code ===
             "ACCOUNT_ALREADY_EXISTS"
         ) {
 
@@ -164,8 +289,11 @@ async function register(req, res) {
                 success:
                     false,
 
+                error:
+                    "ACCOUNT_ALREADY_EXISTS",
+
                 message:
-                    "Email or phone already registered"
+                    "Email or phone already registered."
 
             });
 
@@ -177,8 +305,11 @@ async function register(req, res) {
             success:
                 false,
 
+            error:
+                "REGISTER_FAILED",
+
             message:
-                "Registration failed"
+                "Registration failed. Please try again."
 
         });
 
@@ -211,18 +342,33 @@ async function login(req, res) {
                 success:
                     false,
 
+                error:
+                    "INVALID_REQUEST",
+
                 message:
-                    "Email and password are required"
+                    "Email and password are required."
 
             });
 
         }
 
 
+        const normalizedEmail =
+            String(email)
+                .trim()
+                .toLowerCase();
+
+
+        /* =================================================
+           AUTHENTICATE USER
+        ================================================= */
+
         const user =
             await authenticateUser({
 
-                email,
+                email:
+                    normalizedEmail,
+
                 password
 
             });
@@ -235,17 +381,20 @@ async function login(req, res) {
                 success:
                     false,
 
+                error:
+                    "INVALID_CREDENTIALS",
+
                 message:
-                    "Invalid email or password"
+                    "Invalid email or password."
 
             });
 
         }
 
 
-        /* =====================================================
+        /* =================================================
            CREATE SESSION
-        ===================================================== */
+        ================================================= */
 
         const session =
             await createSession({
@@ -259,7 +408,7 @@ async function login(req, res) {
                 userAgent:
                     req.get(
                         "user-agent"
-                    )
+                    ) || null
 
             });
 
@@ -270,29 +419,52 @@ async function login(req, res) {
         ) {
 
             throw new Error(
-                "Unable to create login session"
+                "Unable to create login session."
             );
 
         }
 
 
-        const expiresAt =
-            new Date(
-                session.expiresAt
-            );
+        /* =================================================
+           CALCULATE COOKIE MAX AGE
+        ================================================= */
+
+        let maxAge;
 
 
-        const maxAge =
-            Math.max(
-                0,
+        if (
+            session.expiresAt
+        ) {
+
+            const expiresAt =
+                new Date(
+                    session.expiresAt
+                );
+
+
+            const difference =
                 expiresAt.getTime() -
-                Date.now()
-            );
+                Date.now();
 
 
-        /* =====================================================
-           COOKIE
-        ===================================================== */
+            if (
+                Number.isFinite(
+                    difference
+                ) &&
+                difference > 0
+            ) {
+
+                maxAge =
+                    difference;
+
+            }
+
+        }
+
+
+        /* =================================================
+           SET SESSION COOKIE
+        ================================================= */
 
         res.cookie(
 
@@ -307,14 +479,38 @@ async function login(req, res) {
         );
 
 
-        /* =====================================================
-           IMPORTANT
+        /* =================================================
+           SAFE USER
+        ================================================= */
 
-           Token is also returned to frontend.
+        const safeUser =
+            createUserResponse(
+                user
+            );
 
-           config.js automatically saves this token and then
-           sends Authorization: Bearer TOKEN on dashboard APIs.
-        ===================================================== */
+
+        /* =================================================
+           REDIRECT VALUE
+           
+           Frontend can use this if needed.
+        ================================================= */
+
+        const redirect =
+            safeUser.role === "admin"
+                ? "admin/dashboard.html"
+                : "user/dashboard.html";
+
+
+        /* =================================================
+           LOGIN RESPONSE
+
+           IMPORTANT:
+           token is returned because GitHub Pages frontend
+           and Render backend are different origins.
+
+           config.js stores this token and sends:
+           Authorization: Bearer TOKEN
+        ================================================= */
 
         return res.status(200).json({
 
@@ -322,40 +518,19 @@ async function login(req, res) {
                 true,
 
             message:
-                "Login successful",
+                "Login successful.",
 
             token:
                 session.token,
 
             expiresAt:
-                session.expiresAt,
+                session.expiresAt ||
+                null,
 
-            user: {
+            redirect,
 
-                id:
-                    user.id,
-
-                publicUserId:
-                    user.publicUserId,
-
-                fullName:
-                    user.fullName,
-
-                email:
-                    user.email,
-
-                phone:
-                    user.phone,
-
-                role:
-                    String(
-                        user.role ||
-                        "user"
-                    )
-                    .trim()
-                    .toLowerCase()
-
-            }
+            user:
+                safeUser
 
         });
 
@@ -369,7 +544,7 @@ async function login(req, res) {
 
 
         if (
-            error.code ===
+            error?.code ===
             "INVALID_CREDENTIALS"
         ) {
 
@@ -378,8 +553,11 @@ async function login(req, res) {
                 success:
                     false,
 
+                error:
+                    "INVALID_CREDENTIALS",
+
                 message:
-                    "Invalid email or password"
+                    "Invalid email or password."
 
             });
 
@@ -387,7 +565,7 @@ async function login(req, res) {
 
 
         if (
-            error.code ===
+            error?.code ===
             "ACCOUNT_LOCKED"
         ) {
 
@@ -396,8 +574,11 @@ async function login(req, res) {
                 success:
                     false,
 
+                error:
+                    "ACCOUNT_LOCKED",
+
                 message:
-                    "Account is temporarily locked"
+                    "Account is temporarily locked."
 
             });
 
@@ -405,7 +586,7 @@ async function login(req, res) {
 
 
         if (
-            error.code ===
+            error?.code ===
             "ACCOUNT_DISABLED"
         ) {
 
@@ -414,8 +595,11 @@ async function login(req, res) {
                 success:
                     false,
 
+                error:
+                    "ACCOUNT_DISABLED",
+
                 message:
-                    "Account is disabled"
+                    "Account is disabled."
 
             });
 
@@ -427,8 +611,11 @@ async function login(req, res) {
             success:
                 false,
 
+            error:
+                "LOGIN_FAILED",
+
             message:
-                "Login failed"
+                "Login failed. Please try again."
 
         });
 
@@ -438,7 +625,7 @@ async function login(req, res) {
 
 
 /* =========================================================
-   CURRENT USER
+   CURRENT AUTHENTICATED USER
 ========================================================= */
 
 async function me(req, res) {
@@ -463,6 +650,12 @@ async function me(req, res) {
         }
 
 
+        const safeUser =
+            createUserResponse(
+                req.user
+            );
+
+
         return res.status(200).json({
 
             success:
@@ -470,30 +663,12 @@ async function me(req, res) {
 
             user: {
 
-                id:
-                    req.user.id,
-
-                publicUserId:
-                    req.user.publicUserId,
-
-                fullName:
-                    req.user.fullName,
-
-                email:
-                    req.user.email,
-
-                phone:
-                    req.user.phone,
-
-                role:
-                    req.user.role,
-
-                accountStatus:
-                    req.user.accountStatus,
+                ...safeUser,
 
                 emailVerified:
                     Boolean(
-                        req.user.emailVerifiedAt
+                        req.user.emailVerifiedAt ||
+                        req.user.email_verified_at
                     )
 
             },
@@ -501,10 +676,12 @@ async function me(req, res) {
             session: {
 
                 id:
-                    req.auth.sessionId,
+                    req.auth?.sessionId ||
+                    null,
 
                 expiresAt:
-                    req.auth.expiresAt
+                    req.auth?.expiresAt ||
+                    null
 
             }
 
@@ -524,8 +701,11 @@ async function me(req, res) {
             success:
                 false,
 
+            error:
+                "ME_FAILED",
+
             message:
-                "Unable to load account information"
+                "Unable to load account information."
 
         });
 
@@ -550,9 +730,20 @@ async function logout(req, res) {
 
         if (token) {
 
-            await revokeSession(
-                token
-            );
+            try {
+
+                await revokeSession(
+                    token
+                );
+
+            } catch (sessionError) {
+
+                console.warn(
+                    "SESSION REVOKE ERROR:",
+                    sessionError
+                );
+
+            }
 
         }
 
@@ -561,9 +752,25 @@ async function logout(req, res) {
 
             "skillearn_session",
 
-            getCookieOptions(
-                undefined
-            )
+            {
+
+                httpOnly:
+                    true,
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                sameSite:
+                    process.env.NODE_ENV ===
+                    "production"
+                        ? "none"
+                        : "lax",
+
+                path:
+                    "/"
+
+            }
 
         );
 
@@ -574,7 +781,7 @@ async function logout(req, res) {
                 true,
 
             message:
-                "Logout successful"
+                "Logout successful."
 
         });
 
@@ -587,15 +794,44 @@ async function logout(req, res) {
         );
 
 
-        res.clearCookie(
+        try {
 
-            "skillearn_session",
+            res.clearCookie(
 
-            getCookieOptions(
-                undefined
-            )
+                "skillearn_session",
 
-        );
+                {
+
+                    httpOnly:
+                        true,
+
+                    secure:
+                        process.env.NODE_ENV ===
+                        "production",
+
+                    sameSite:
+                        process.env.NODE_ENV ===
+                        "production"
+                            ? "none"
+                            : "lax",
+
+                    path:
+                        "/"
+
+                }
+
+            );
+
+        } catch (
+            clearCookieError
+        ) {
+
+            console.warn(
+                "CLEAR COOKIE ERROR:",
+                clearCookieError
+            );
+
+        }
 
 
         return res.status(200).json({
@@ -604,7 +840,7 @@ async function logout(req, res) {
                 true,
 
             message:
-                "Logged out"
+                "Logged out."
 
         });
 
@@ -625,6 +861,8 @@ module.exports = {
 
     me,
 
-    logout
+    logout,
+
+    getRequestToken
 
 };

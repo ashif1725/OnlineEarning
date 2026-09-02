@@ -1,64 +1,94 @@
-if (depositForm) {
+/*
+|--------------------------------------------------------------------------
+| FORM HANDLERS
+|--------------------------------------------------------------------------
+*/
 
-    depositForm.addEventListener(
-        "submit",
+function setupDemoForms() {
 
-        async function (event) {
-
-            event.preventDefault();
-
-
-            const amountInput =
-                document.getElementById(
-                    "depositAmount"
-                );
+    const sendForm =
+        document.getElementById(
+            "sendMoneyForm"
+        );
 
 
-            const amount =
-                Number(
-                    amountInput.value
-                );
+    const depositForm =
+        document.getElementById(
+            "depositForm"
+        );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | VALIDATION
-            |--------------------------------------------------------------------------
-            */
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
-
-                showDashboardMessage(
-                    "Please enter a valid deposit amount."
-                );
-
-                return;
-
-            }
+    const withdrawForm =
+        document.getElementById(
+            "withdrawForm"
+        );
 
 
-            const submitButton =
-                depositForm.querySelector(
-                    'button[type="submit"]'
-                );
+    /*
+    |--------------------------------------------------------------------------
+    | CREATE DEPOSIT REQUEST
+    |--------------------------------------------------------------------------
+    */
+
+    if (depositForm) {
+
+        depositForm.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
 
 
-            const originalText =
-                submitButton
-                    ? submitButton.textContent
-                    : "Create Deposit Request";
+                const amountInput =
+                    document.getElementById(
+                        "depositAmount"
+                    );
 
 
-            try {
+                const submitButton =
+                    depositForm.querySelector(
+                        'button[type="submit"]'
+                    );
+
+
+                const amount =
+                    Number(
+                        amountInput.value
+                    );
+
 
                 /*
-                |--------------------------------------------------------------------------
-                | LOADING STATE
-                |--------------------------------------------------------------------------
+                ----------------------------------------------------------
+                Validate amount
+                ----------------------------------------------------------
                 */
+
+                if (
+                    !Number.isFinite(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
+
+                    showDashboardMessage(
+                        "Please enter a valid deposit amount."
+                    );
+
+                    return;
+                }
+
+
+                /*
+                ----------------------------------------------------------
+                Disable button
+                ----------------------------------------------------------
+                */
+
+                const originalButtonText =
+                    submitButton
+                        ? submitButton.textContent
+                        : "Create Deposit Request";
+
 
                 if (submitButton) {
 
@@ -67,165 +97,198 @@ if (depositForm) {
 
 
                     submitButton.textContent =
-                        "Creating Request...";
+                        "Creating request...";
 
                 }
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | API URL
-                |--------------------------------------------------------------------------
-                */
+                try {
 
-                const url =
-                    typeof window.apiUrl ===
-                    "function"
+                    /*
+                    ------------------------------------------------------
+                    API URL
+                    ------------------------------------------------------
+                    */
 
-                        ? window.apiUrl(
-                            "/api/deposits"
-                        )
-
-                        : "https://skillearnhub-1.onrender.com/api/deposits";
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | CREATE REQUEST
-                |--------------------------------------------------------------------------
-                */
-
-                const response =
-                    await fetch(
-
-                        url,
-
-                        {
-
-                            method:
-                                "POST",
-
-                            credentials:
-                                "include",
-
-                            headers:
-                                {
-
-                                    "Content-Type":
-                                        "application/json",
-
-                                    "Accept":
-                                        "application/json"
-
-                                },
-
-                            body:
-                                JSON.stringify({
-
-                                    amount:
-                                        amount
-
-                                })
-
-                        }
-
-                    );
+                    const url =
+                        typeof window.apiUrl ===
+                        "function"
+                            ? window.apiUrl(
+                                "/api/deposits"
+                            )
+                            : "https://skillearnhub-1.onrender.com/api/deposits";
 
 
-                const data =
-                    await response.json()
-                        .catch(
-                            function () {
+                    /*
+                    ------------------------------------------------------
+                    Send request
+                    ------------------------------------------------------
+                    */
 
-                                return {};
+                    const response =
+                        await fetch(
+                            url,
+                            {
+
+                                method:
+                                    "POST",
+
+                                credentials:
+                                    "include",
+
+                                headers:
+                                    {
+                                        "Content-Type":
+                                            "application/json",
+
+                                        "Accept":
+                                            "application/json"
+                                    },
+
+                                body:
+                                    JSON.stringify(
+                                        {
+                                            amount:
+                                                amount
+                                        }
+                                    )
+
                             }
                         );
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | ERROR
-                |--------------------------------------------------------------------------
-                */
+                    /*
+                    ------------------------------------------------------
+                    Parse response
+                    ------------------------------------------------------
+                    */
 
-                if (!response.ok) {
+                    const data =
+                        await response.json();
 
-                    throw new Error(
 
-                        data.message ||
+                    /*
+                    ------------------------------------------------------
+                    Handle API error
+                    ------------------------------------------------------
+                    */
 
-                        data.error ||
+                    if (!response.ok) {
 
-                        "Unable to create deposit request."
+                        throw new Error(
+                            data.message ||
+                            "Unable to create deposit request"
+                        );
 
+                    }
+
+
+                    /*
+                    ------------------------------------------------------
+                    Success
+                    ------------------------------------------------------
+                    */
+
+                    amountInput.value =
+                        "";
+
+
+                    showDashboardMessage(
+                        "Deposit request created successfully. It is now pending admin verification."
                     );
 
-                }
+
+                    /*
+                    ------------------------------------------------------
+                    Refresh deposit history
+                    ------------------------------------------------------
+                    */
+
+                    await loadMyDeposits();
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | SUCCESS
-                |--------------------------------------------------------------------------
-                */
+                } catch (error) {
 
-                amountInput.value =
-                    "";
+                    console.error(
+                        "CREATE DEPOSIT REQUEST ERROR:",
+                        error
+                    );
 
 
-                showDashboardMessage(
-
-                    "Deposit request created successfully. Your request is now pending admin verification."
-
-                );
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | REFRESH DEPOSIT DATA
-                |--------------------------------------------------------------------------
-                */
-
-                console.log(
-                    "DEPOSIT CREATED:",
-                    data
-                );
+                    showDashboardMessage(
+                        error.message ||
+                        "Unable to create deposit request."
+                    );
 
 
-            } catch (error) {
+                } finally {
 
-                console.error(
-                    "DEPOSIT REQUEST ERROR:",
-                    error
-                );
+                    if (submitButton) {
 
-
-                showDashboardMessage(
-
-                    error.message ||
-
-                    "Unable to create deposit request."
-
-                );
+                        submitButton.disabled =
+                            false;
 
 
-            } finally {
+                        submitButton.textContent =
+                            originalButtonText;
 
-                if (submitButton) {
-
-                    submitButton.disabled =
-                        false;
-
-
-                    submitButton.textContent =
-                        originalText;
+                    }
 
                 }
 
             }
+        );
 
-        }
+    }
 
-    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEND MONEY
+    |--------------------------------------------------------------------------
+    */
+
+    if (sendForm) {
+
+        sendForm.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+
+                showDashboardMessage(
+                    "Send Money API will be connected next."
+                );
+
+            }
+        );
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | WITHDRAW
+    |--------------------------------------------------------------------------
+    */
+
+    if (withdrawForm) {
+
+        withdrawForm.addEventListener(
+            "submit",
+            function (event) {
+
+                event.preventDefault();
+
+
+                showDashboardMessage(
+                    "Withdrawal API will be connected next."
+                );
+
+            }
+        );
+
+    }
 
 }

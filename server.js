@@ -61,6 +61,40 @@ const kycRoutes =
 const adminKycRoutes =
     require("./src/routes/admin-kyc.routes");
 
+const depositRoutes =
+    require(
+        "./routes/deposit.routes"
+    );
+
+
+const adminDepositRoutes =
+    require(
+        "./routes/admin.deposit.routes"
+    );
+
+
+const walletRoutes =
+    require(
+        "./routes/wallet.routes"
+    );
+
+
+app.use(
+    "/api/deposits",
+    depositRoutes
+);
+
+
+app.use(
+    "/api/admin",
+    adminDepositRoutes
+);
+
+
+app.use(
+    "/api/wallet",
+    walletRoutes
+);
 
 app.use(
     "/api/admin/kyc",

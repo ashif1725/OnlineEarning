@@ -29,7 +29,7 @@ const SKILLEARN_CONFIG = {
     REQUEST: {
 
         TIMEOUT:
-            15000,
+            30000,
 
         CREDENTIALS:
             "include"
@@ -85,16 +85,14 @@ function setAuthToken(token) {
 
     if (!token) {
 
-        localStorage.removeItem(
-            SKILLEARN_CONFIG.STORAGE.TOKEN
-        );
+        removeAuthToken();
 
         return;
     }
 
     localStorage.setItem(
         SKILLEARN_CONFIG.STORAGE.TOKEN,
-        token
+        String(token)
     );
 
 }
@@ -110,7 +108,7 @@ function removeAuthToken() {
 
 
 /* =========================================================
-   USER
+   USER STORAGE
 ========================================================= */
 
 function getSavedUser() {
@@ -121,20 +119,24 @@ function getSavedUser() {
         );
 
     if (!value) {
+
         return null;
+
     }
+
 
     try {
 
-        return JSON.parse(value);
+        return JSON.parse(
+            value
+        );
 
     } catch (error) {
 
-        localStorage.removeItem(
-            SKILLEARN_CONFIG.STORAGE.USER
-        );
+        removeSavedUser();
 
         return null;
+
     }
 
 }
@@ -147,7 +149,9 @@ function setSavedUser(user) {
         removeSavedUser();
 
         return;
+
     }
+
 
     localStorage.setItem(
         SKILLEARN_CONFIG.STORAGE.USER,
@@ -176,15 +180,26 @@ function clearAuthData() {
 
     removeSavedUser();
 
-    sessionStorage.removeItem(
-        "skillEarnUser"
-    );
+    try {
+
+        sessionStorage.removeItem(
+            "skillEarnUser"
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "Unable to clear session storage:",
+            error
+        );
+
+    }
 
 }
 
 
 /* =========================================================
-   API HEADERS
+   GET API HEADERS
 ========================================================= */
 
 function getApiHeaders() {
@@ -196,8 +211,10 @@ function getApiHeaders() {
 
     };
 
+
     const token =
         getAuthToken();
+
 
     if (token) {
 
@@ -206,12 +223,74 @@ function getApiHeaders() {
 
     }
 
+
     return headers;
+
 }
 
 
 /* =========================================================
-   GLOBAL API REQUEST HELPER
+   EXTRACT TOKEN
+========================================================= */
+
+function extractToken(data) {
+
+    if (!data) {
+
+        return null;
+
+    }
+
+
+    return (
+
+        data.token ||
+
+        data.accessToken ||
+
+        data.access_token ||
+
+        data.jwt ||
+
+        data.access?.token ||
+
+        null
+
+    );
+
+}
+
+
+/* =========================================================
+   EXTRACT USER
+========================================================= */
+
+function extractUser(data) {
+
+    if (!data) {
+
+        return null;
+
+    }
+
+
+    return (
+
+        data.user ||
+
+        data.data?.user ||
+
+        data.data ||
+
+        null
+
+    );
+
+}
+
+
+/* =========================================================
+   API REQUEST
 ========================================================= */
 
 async function apiRequest(
@@ -229,8 +308,10 @@ async function apiRequest(
 
     const timeout =
         setTimeout(
-            () => {
+            function () {
+
                 controller.abort();
+
             },
             SKILLEARN_CONFIG
                 .REQUEST
@@ -244,6 +325,7 @@ async function apiRequest(
             options.method || "GET",
 
         credentials:
+            options.credentials ||
             SKILLEARN_CONFIG
                 .REQUEST
                 .CREDENTIALS,
@@ -262,29 +344,45 @@ async function apiRequest(
     };
 
 
-    /*
-       Add request body
-    */
+    /* =====================================================
+       REQUEST BODY
+    ===================================================== */
 
     if (
+
         options.body !== undefined &&
+
         options.body !== null
+
     ) {
 
         if (
-            typeof options.body === "string"
+            options.body instanceof FormData
         ) {
 
             requestOptions.body =
                 options.body;
 
-        } else {
 
-            /*
-               IMPORTANT:
-               Backend Express JSON parser needs
-               Content-Type: application/json
-            */
+            delete requestOptions.headers[
+                "Content-Type"
+            ];
+
+        }
+
+        else if (
+
+            typeof options.body ===
+            "string"
+
+        ) {
+
+            requestOptions.body =
+                options.body;
+
+        }
+
+        else {
 
             requestOptions.headers[
                 "Content-Type"
@@ -340,7 +438,12 @@ async function apiRequest(
     }
 
 
-    let data = null;
+    /* =====================================================
+       RESPONSE
+    ===================================================== */
+
+    let data =
+        null;
 
 
     const contentType =
@@ -352,40 +455,51 @@ async function apiRequest(
     try {
 
         if (
+
             contentType.includes(
                 "application/json"
             )
+
         ) {
 
             data =
                 await response.json();
 
-        } else {
+        }
+
+        else {
 
             const text =
                 await response.text();
 
+
             data =
                 text
+
                     ? {
-                        message: text
+                        message:
+                            text
                     }
+
                     : null;
 
         }
 
     } catch (error) {
 
-        data = null;
+        data =
+            null;
 
     }
 
 
-    /*
-       Handle API errors
-    */
+    /* =====================================================
+       ERROR RESPONSE
+    ===================================================== */
 
-    if (!response.ok) {
+    if (
+        !response.ok
+    ) {
 
         const message =
 
@@ -417,17 +531,20 @@ async function apiRequest(
     }
 
 
-    /*
-       Save token if backend returns one
-    */
+    /* =====================================================
+       SAVE TOKEN AUTOMATICALLY
+    ===================================================== */
 
-    if (
-        data &&
-        data.token
-    ) {
+    const token =
+        extractToken(
+            data
+        );
+
+
+    if (token) {
 
         setAuthToken(
-            data.token
+            token
         );
 
     }
@@ -493,3 +610,11 @@ window.clearAuthData =
 
 window.getApiHeaders =
     getApiHeaders;
+
+
+window.extractToken =
+    extractToken;
+
+
+window.extractUser =
+    extractUser;

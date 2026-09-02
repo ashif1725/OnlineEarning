@@ -454,83 +454,77 @@ async function apiRequest(
    API REQUEST
 ========================================================= */
 
-async function apiRequest(
-    endpoint,
-    options = {}
-) {
-    const controller =
-        new AbortController();
+async function apiRequest(endpoint, options = {}) {
 
-    const timeout =
-        setTimeout(
-            () => controller.abort(),
-            SKILLEARN_CONFIG.REQUEST.TIMEOUT
-        );
+    const controller = new AbortController();
+
+    const timeout = setTimeout(
+        () => controller.abort(),
+        SKILLEARN_CONFIG.REQUEST.TIMEOUT
+    );
 
     try {
+
+        const headers = {
+            ...getApiHeaders(),
+            ...(options.headers || {})
+        };
+
         const requestOptions = {
-            method:
-                options.method ||
-                "GET",
-
-            headers: {
-                ...getApiHeaders(),
-                ...(options.headers || {})
-            },
-
+            method: options.method || "GET",
+            headers: headers,
             credentials:
                 SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
-
             signal:
                 controller.signal
         };
+
 
         if (
             options.body !== undefined &&
             options.body !== null
         ) {
+
             requestOptions.body =
                 typeof options.body === "string"
                     ? options.body
-                    : JSON.stringify(
-                        options.body
-                    );
+                    : JSON.stringify(options.body);
         }
 
-        const response =
-            await fetch(
-                apiUrl(endpoint),
-                requestOptions
-            );
+
+        const response = await fetch(
+            apiUrl(endpoint),
+            requestOptions
+        );
+
 
         const contentType =
-            response.headers.get(
-                "content-type"
-            ) || "";
+            response.headers.get("content-type") || "";
 
-        let data = null;
+
+        let data;
+
 
         if (
-            contentType.includes(
-                "application/json"
-            )
+            contentType.includes("application/json")
         ) {
-            data =
-                await response.json();
+
+            data = await response.json();
+
         } else {
-            const text =
-                await response.text();
 
             data = {
-                message: text
+                message:
+                    await response.text()
             };
         }
 
+
         if (!response.ok) {
+
             const error =
                 new Error(
                     data?.message ||
-                    data?.error ||
                     "Request failed"
                 );
 
@@ -543,26 +537,12 @@ async function apiRequest(
             throw error;
         }
 
+
         return data;
-
-    } catch (error) {
-
-        if (
-            error.name ===
-            "AbortError"
-        ) {
-            throw new Error(
-                "Request timed out. Please try again."
-            );
-        }
-
-        throw error;
 
     } finally {
 
-        clearTimeout(
-            timeout
-        );
+        clearTimeout(timeout);
     }
 }
 

@@ -28,11 +28,6 @@ const authRoutes =
 
 const depositRoutes =
     require(
-        "./src/routes/deposit.routes"
-    );
-
-
-require(
     "./src/routes/admin-deposit-requests"
 );
 

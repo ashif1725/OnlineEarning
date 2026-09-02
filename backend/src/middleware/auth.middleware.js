@@ -7,8 +7,12 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| REQUIRE AUTHENTICATION
+| REQUIRE AUTHENTICATED SESSION
 |--------------------------------------------------------------------------
+|
+| Reads the HTTP-only skillearn_session cookie and verifies it
+| against the database.
+|
 */
 
 async function requireAuth(req, res, next) {
@@ -20,14 +24,27 @@ async function requireAuth(req, res, next) {
             req.cookies.skillearn_session;
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | No session cookie
+        |--------------------------------------------------------------------------
+        */
+
         if (!token) {
 
             return res.status(401).json({
                 success: false,
-                message: "Authentication required"
+                error: "AUTHENTICATION_REQUIRED",
+                message: "Please sign in to continue."
             });
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find valid session
+        |--------------------------------------------------------------------------
+        */
 
         const session =
             await getSession(token);
@@ -37,33 +54,15 @@ async function requireAuth(req, res, next) {
 
             return res.status(401).json({
                 success: false,
-                message: "Session expired or invalid"
+                error: "INVALID_SESSION",
+                message: "Your session has expired. Please sign in again."
             });
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Account status
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            session.account_status &&
-            session.account_status !== "active"
-        ) {
-
-            return res.status(403).json({
-                success: false,
-                message:
-                    "Your account is not active"
-            });
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Attach authenticated session
+        | Attach authenticated user/session
         |--------------------------------------------------------------------------
         */
 
@@ -73,6 +72,17 @@ async function requireAuth(req, res, next) {
                 session.session_id,
 
             userId:
+                session.user_id,
+
+            expiresAt:
+                session.expires_at
+
+        };
+
+
+        req.user = {
+
+            id:
                 session.user_id,
 
             publicUserId:
@@ -93,10 +103,9 @@ async function requireAuth(req, res, next) {
             accountStatus:
                 session.account_status,
 
-            emailVerified:
-                Boolean(
-                    session.email_verified_at
-                )
+            emailVerifiedAt:
+                session.email_verified_at
+
         };
 
 
@@ -112,8 +121,8 @@ async function requireAuth(req, res, next) {
 
         return res.status(500).json({
             success: false,
-            message:
-                "Authentication service unavailable"
+            error: "AUTHENTICATION_ERROR",
+            message: "Unable to verify your session."
         });
     }
 }

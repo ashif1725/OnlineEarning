@@ -1,23 +1,110 @@
 "use strict";
 
+
 const {
     registerUser,
     authenticateUser
-} = require("../services/auth.service");
+} = require(
+    "../services/auth.service"
+);
+
 
 const {
     createSession,
     revokeSession
-} = require("../services/session.service");
+} = require(
+    "../services/session.service"
+);
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   TOKEN FROM REQUEST
+========================================================= */
 
-async function register(req, res) {
+function getRequestToken(req) {
+
+    const authorization =
+        String(
+            req.get("authorization") ||
+            ""
+        ).trim();
+
+
+    if (
+
+        authorization
+            .toLowerCase()
+            .startsWith("bearer ")
+
+    ) {
+
+        return authorization
+            .slice(7)
+            .trim();
+
+    }
+
+
+    if (
+
+        req.cookies &&
+        req.cookies.skillearn_session
+
+    ) {
+
+        return req.cookies.skillearn_session;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   COOKIE OPTIONS
+========================================================= */
+
+function getCookieOptions(maxAge) {
+
+    const production =
+        process.env.NODE_ENV ===
+        "production";
+
+
+    return {
+
+        httpOnly:
+            true,
+
+        secure:
+            production,
+
+        sameSite:
+            production
+                ? "none"
+                : "lax",
+
+        maxAge:
+            maxAge,
+
+        path:
+            "/"
+
+    };
+
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function register(
+    req,
+    res
+) {
 
     try {
 
@@ -26,25 +113,8 @@ async function register(req, res) {
             email,
             phone,
             password
-        } = req.body;
-
-
-        if (
-            !fullName ||
-            !email ||
-            !phone ||
-            !password
-        ) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message:
-                    "All fields are required"
-
-            });
-        }
+        } =
+            req.body;
 
 
         const user =
@@ -60,7 +130,8 @@ async function register(req, res) {
 
         return res.status(201).json({
 
-            success: true,
+            success:
+                true,
 
             message:
                 "Account created successfully",
@@ -68,6 +139,7 @@ async function register(req, res) {
             user
 
         });
+
 
     } catch (error) {
 
@@ -78,63 +150,56 @@ async function register(req, res) {
 
 
         if (
+
             error.code ===
             "ACCOUNT_ALREADY_EXISTS"
+
         ) {
 
             return res.status(409).json({
 
-                success: false,
+                success:
+                    false,
 
                 message:
                     "Email or phone already registered"
 
             });
+
         }
 
 
         return res.status(500).json({
 
-            success: false,
+            success:
+                false,
 
             message:
                 "Registration failed"
 
         });
+
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOGIN
+========================================================= */
 
-async function login(req, res) {
+async function login(
+    req,
+    res
+) {
 
     try {
 
         const {
             email,
             password
-        } = req.body;
-
-
-        if (
-            !email ||
-            !password
-        ) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message:
-                    "Email and password are required"
-
-            });
-        }
+        } =
+            req.body;
 
 
         const user =
@@ -146,25 +211,6 @@ async function login(req, res) {
             });
 
 
-        if (!user) {
-
-            return res.status(401).json({
-
-                success: false,
-
-                message:
-                    "Invalid email or password"
-
-            });
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CREATE SESSION
-        |--------------------------------------------------------------------------
-        */
-
         const session =
             await createSession({
 
@@ -175,7 +221,9 @@ async function login(req, res) {
                     req.ip,
 
                 userAgent:
-                    req.get("user-agent")
+                    req.get(
+                        "user-agent"
+                    )
 
             });
 
@@ -188,47 +236,27 @@ async function login(req, res) {
 
         const maxAge =
             Math.max(
+
                 0,
+
                 expiresAt.getTime() -
                 Date.now()
+
             );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | HTTP-ONLY COOKIE
-        |--------------------------------------------------------------------------
-        */
-
         res.cookie(
+
             "skillearn_session",
+
             session.token,
-            {
 
-                httpOnly:
-                    true,
+            getCookieOptions(
+                maxAge
+            )
 
-                secure:
-                    process.env.NODE_ENV ===
-                    "production",
-
-                sameSite:
-                    "lax",
-
-                maxAge,
-
-                path:
-                    "/"
-
-            }
         );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESPONSE
-        |--------------------------------------------------------------------------
-        */
 
         return res.status(200).json({
 
@@ -237,6 +265,9 @@ async function login(req, res) {
 
             message:
                 "Login successful",
+
+            token:
+                session.token,
 
             expiresAt:
                 session.expiresAt,
@@ -265,6 +296,7 @@ async function login(req, res) {
 
         });
 
+
     } catch (error) {
 
         console.error(
@@ -274,8 +306,10 @@ async function login(req, res) {
 
 
         if (
+
             error.code ===
             "INVALID_CREDENTIALS"
+
         ) {
 
             return res.status(401).json({
@@ -287,12 +321,15 @@ async function login(req, res) {
                     "Invalid email or password"
 
             });
+
         }
 
 
         if (
+
             error.code ===
             "ACCOUNT_LOCKED"
+
         ) {
 
             return res.status(423).json({
@@ -304,12 +341,15 @@ async function login(req, res) {
                     "Account is temporarily locked"
 
             });
+
         }
 
 
         if (
+
             error.code ===
             "ACCOUNT_DISABLED"
+
         ) {
 
             return res.status(403).json({
@@ -321,6 +361,7 @@ async function login(req, res) {
                     "Account is disabled"
 
             });
+
         }
 
 
@@ -333,24 +374,22 @@ async function login(req, res) {
                 "Login failed"
 
         });
+
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CURRENT USER / ME
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   CURRENT USER
+========================================================= */
 
-async function me(req, res) {
+async function me(
+    req,
+    res
+) {
 
     try {
-
-        /*
-         * requireAuth middleware has already
-         * verified the session and populated req.user.
-         */
 
         if (!req.user) {
 
@@ -359,13 +398,11 @@ async function me(req, res) {
                 success:
                     false,
 
-                error:
-                    "AUTHENTICATION_REQUIRED",
-
                 message:
                     "Please sign in again."
 
             });
+
         }
 
 
@@ -416,6 +453,7 @@ async function me(req, res) {
 
         });
 
+
     } catch (error) {
 
         console.error(
@@ -433,23 +471,27 @@ async function me(req, res) {
                 "Unable to load account information"
 
         });
+
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOGOUT
+========================================================= */
 
-async function logout(req, res) {
+async function logout(
+    req,
+    res
+) {
 
     try {
 
         const token =
-            req.cookies &&
-            req.cookies.skillearn_session;
+            getRequestToken(
+                req
+            );
 
 
         if (token) {
@@ -457,27 +499,18 @@ async function logout(req, res) {
             await revokeSession(
                 token
             );
+
         }
 
 
         res.clearCookie(
+
             "skillearn_session",
-            {
 
-                httpOnly:
-                    true,
+            getCookieOptions(
+                0
+            )
 
-                secure:
-                    process.env.NODE_ENV ===
-                    "production",
-
-                sameSite:
-                    "lax",
-
-                path:
-                    "/"
-
-            }
         );
 
 
@@ -491,37 +524,12 @@ async function logout(req, res) {
 
         });
 
+
     } catch (error) {
 
         console.error(
             "LOGOUT ERROR:",
             error
-        );
-
-
-        /*
-         * Even if session revocation encounters
-         * an error, clear the browser cookie.
-         */
-
-        res.clearCookie(
-            "skillearn_session",
-            {
-
-                httpOnly:
-                    true,
-
-                secure:
-                    process.env.NODE_ENV ===
-                    "production",
-
-                sameSite:
-                    "lax",
-
-                path:
-                    "/"
-
-            }
         );
 
 
@@ -534,15 +542,11 @@ async function logout(req, res) {
                 "Logout failed"
 
         });
+
     }
+
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| EXPORTS
-|--------------------------------------------------------------------------
-*/
 
 module.exports = {
 

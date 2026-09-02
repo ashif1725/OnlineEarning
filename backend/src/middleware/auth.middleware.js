@@ -1,72 +1,120 @@
 "use strict";
 
+
 const {
     getSession
-} = require("../services/session.service");
+} = require(
+    "../services/session.service"
+);
 
 
-/*
-|--------------------------------------------------------------------------
-| REQUIRE AUTHENTICATED SESSION
-|--------------------------------------------------------------------------
-|
-| Reads the HTTP-only skillearn_session cookie and verifies it
-| against the database.
-|
-*/
+/* =========================================================
+   EXTRACT TOKEN
+========================================================= */
 
-async function requireAuth(req, res, next) {
+function getRequestToken(req) {
+
+    const authorization =
+        String(
+            req.get("authorization") ||
+            ""
+        ).trim();
+
+
+    if (
+
+        authorization.toLowerCase()
+            .startsWith("bearer ")
+
+    ) {
+
+        return authorization
+            .slice(7)
+            .trim();
+
+    }
+
+
+    if (
+
+        req.cookies &&
+        req.cookies.skillearn_session
+
+    ) {
+
+        return req.cookies.skillearn_session;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   REQUIRE AUTH
+========================================================= */
+
+async function requireAuth(
+    req,
+    res,
+    next
+) {
 
     try {
 
         const token =
-            req.cookies &&
-            req.cookies.skillearn_session;
+            getRequestToken(
+                req
+            );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | No session cookie
-        |--------------------------------------------------------------------------
-        */
 
         if (!token) {
 
             return res.status(401).json({
-                success: false,
-                error: "AUTHENTICATION_REQUIRED",
-                message: "Please sign in to continue."
+
+                success:
+                    false,
+
+                error:
+                    "AUTHENTICATION_REQUIRED",
+
+                message:
+                    "Please sign in to continue."
+
             });
+
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Find valid session
-        |--------------------------------------------------------------------------
-        */
-
         const session =
-            await getSession(token);
+            await getSession(
+                token
+            );
 
 
         if (!session) {
 
             return res.status(401).json({
-                success: false,
-                error: "INVALID_SESSION",
-                message: "Your session has expired. Please sign in again."
+
+                success:
+                    false,
+
+                error:
+                    "INVALID_SESSION",
+
+                message:
+                    "Your session has expired. Please sign in again."
+
             });
+
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Attach authenticated user/session
-        |--------------------------------------------------------------------------
-        */
-
         req.auth = {
+
+            token,
 
             sessionId:
                 session.session_id,
@@ -111,6 +159,7 @@ async function requireAuth(req, res, next) {
 
         next();
 
+
     } catch (error) {
 
         console.error(
@@ -120,14 +169,27 @@ async function requireAuth(req, res, next) {
 
 
         return res.status(500).json({
-            success: false,
-            error: "AUTHENTICATION_ERROR",
-            message: "Unable to verify your session."
+
+            success:
+                false,
+
+            error:
+                "AUTHENTICATION_ERROR",
+
+            message:
+                "Unable to verify your session."
+
         });
+
     }
+
 }
 
 
 module.exports = {
-    requireAuth
+
+    requireAuth,
+
+    getRequestToken
+
 };

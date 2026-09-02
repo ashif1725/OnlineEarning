@@ -9,32 +9,22 @@ const router =
 
 
 const {
+
     createDeposit,
-    getDeposits,
-    approveDeposit
-} = require(
-    "../controllers/deposit.controller"
-);
+
+    getMyDeposits
+
+} =
+    require(
+        "../controllers/deposit.controller"
+    );
 
 
-/*
-|--------------------------------------------------------------------------
-| AUTH MIDDLEWARE
-|--------------------------------------------------------------------------
-*/
+const requireAuth =
+    require(
+        "../middleware/auth.middleware"
+    );
 
-const {
-    requireAuth
-} = require(
-    "../middleware/auth.middleware"
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| CREATE DEPOSIT REQUEST
-|--------------------------------------------------------------------------
-*/
 
 router.post(
     "/",
@@ -43,29 +33,10 @@ router.post(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| USER DEPOSIT HISTORY
-|--------------------------------------------------------------------------
-*/
-
 router.get(
     "/",
     requireAuth,
-    getDeposits
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN APPROVE
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/:depositId/approve",
-    requireAuth,
-    approveDeposit
+    getMyDeposits
 );
 
 

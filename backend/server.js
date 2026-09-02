@@ -32,10 +32,9 @@ const depositRoutes =
     );
 
 
-const adminDepositRequestRoutes =
-    require(
-        "./src/routes/admin-deposit-requests.routes"
-    );
+require(
+    "./src/routes/admin-deposit-requests"
+);
 
 
 const app =

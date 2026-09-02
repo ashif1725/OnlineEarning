@@ -5,8 +5,13 @@
    Authentication Middleware
 ========================================================= */
 
+
+/* =========================================================
+   IMPORTS
+========================================================= */
+
 const {
-    getSessionByToken
+    getSession
 } = require(
     "../services/session.service"
 );
@@ -27,6 +32,8 @@ function getRequestToken(req) {
 
     /*
     ---------------------------------------------------------
+    Authorization Header
+
     Authorization: Bearer TOKEN
     ---------------------------------------------------------
     */
@@ -56,7 +63,7 @@ function getRequestToken(req) {
 
     /*
     ---------------------------------------------------------
-    Cookie fallback
+    Cookie Fallback
     ---------------------------------------------------------
     */
 
@@ -98,13 +105,22 @@ function normalizeRole(role) {
             role ||
             "user"
         )
-            .trim()
-            .toLowerCase();
+        .trim()
+        .toLowerCase();
 
+
+    /*
+    ---------------------------------------------------------
+    Admin aliases
+    ---------------------------------------------------------
+    */
 
     if (
+
         value === "admin" ||
+
         value === "administrator"
+
     ) {
 
         return "admin";
@@ -112,18 +128,89 @@ function normalizeRole(role) {
     }
 
 
+    /*
+    ---------------------------------------------------------
+    Default role
+    ---------------------------------------------------------
+    */
+
     return "user";
 
 }
 
 
 /* =========================================================
-   NORMALIZE USER
+   NORMALIZE ACCOUNT STATUS
 ========================================================= */
 
-function normalizeUser(user) {
+function normalizeAccountStatus(
+    status
+) {
 
-    if (!user) {
+    const value =
+        String(
+            status ||
+            "active"
+        )
+        .trim()
+        .toLowerCase();
+
+
+    return value;
+
+}
+
+
+/* =========================================================
+   NORMALIZE SESSION USER
+========================================================= */
+
+/*
+|--------------------------------------------------------------------------
+| IMPORTANT
+|--------------------------------------------------------------------------
+|
+| session.service.js returns PostgreSQL fields directly:
+|
+| session_id
+| user_id
+| public_user_id
+| full_name
+| email
+| phone
+| role
+| account_status
+| email_verified_at
+| expires_at
+|
+| Therefore we convert database field names to the frontend/
+| controller friendly camelCase format here.
+|--------------------------------------------------------------------------
+*/
+
+function normalizeSessionUser(
+    session
+) {
+
+    if (!session) {
+
+        return null;
+
+    }
+
+
+    const userId =
+
+        session.userId ||
+
+        session.user_id ||
+
+        session.id ||
+
+        null;
+
+
+    if (!userId) {
 
         return null;
 
@@ -132,61 +219,123 @@ function normalizeUser(user) {
 
     return {
 
-        ...user,
+        /*
+        -----------------------------------------------------
+        Primary user ID
+        -----------------------------------------------------
+        */
 
         id:
-            user.id,
+            userId,
+
+
+        /*
+        -----------------------------------------------------
+        Public User ID
+        -----------------------------------------------------
+        */
 
         publicUserId:
 
-            user.publicUserId ||
+            session.publicUserId ||
 
-            user.public_user_id ||
+            session.public_user_id ||
 
             null,
 
+
+        /*
+        -----------------------------------------------------
+        Full Name
+        -----------------------------------------------------
+        */
 
         fullName:
 
-            user.fullName ||
+            session.fullName ||
 
-            user.full_name ||
+            session.full_name ||
 
             null,
 
+
+        /*
+        -----------------------------------------------------
+        Email
+        -----------------------------------------------------
+        */
 
         email:
 
-            user.email ||
+            session.email ||
 
             null,
 
+
+        /*
+        -----------------------------------------------------
+        Phone
+        -----------------------------------------------------
+        */
 
         phone:
 
-            user.phone ||
+            session.phone ||
 
             null,
 
+
+        /*
+        -----------------------------------------------------
+        Role
+        -----------------------------------------------------
+        */
 
         role:
 
             normalizeRole(
 
-                user.role ||
+                session.role ||
 
-                user.userRole ||
+                session.userRole ||
 
-                user.user_role
+                session.user_role ||
+
+                "user"
 
             ),
 
 
+        /*
+        -----------------------------------------------------
+        Account Status
+        -----------------------------------------------------
+        */
+
         accountStatus:
 
-            user.accountStatus ||
+            normalizeAccountStatus(
 
-            user.account_status ||
+                session.accountStatus ||
+
+                session.account_status ||
+
+                "active"
+
+            ),
+
+
+        /*
+        -----------------------------------------------------
+        Email Verification
+        -----------------------------------------------------
+        */
+
+        emailVerifiedAt:
+
+            session.emailVerifiedAt ||
+
+            session.email_verified_at ||
 
             null
 
@@ -212,9 +361,46 @@ function unauthorized(
         error:
             "AUTHENTICATION_REQUIRED",
 
-        message
+        message:
+            message
 
     });
+
+}
+
+
+/* =========================================================
+   ACCOUNT STATUS CHECK
+========================================================= */
+
+function isAccountBlocked(
+    user
+) {
+
+    if (!user) {
+
+        return true;
+
+    }
+
+
+    const status =
+        normalizeAccountStatus(
+            user.accountStatus
+        );
+
+
+    return (
+
+        status === "disabled" ||
+
+        status === "suspended" ||
+
+        status === "blocked" ||
+
+        status === "inactive"
+
+    );
 
 }
 
@@ -233,7 +419,8 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Get token
+        STEP 1
+        Extract token
         -----------------------------------------------------
         */
 
@@ -246,8 +433,11 @@ async function requireAuth(
         if (!token) {
 
             return unauthorized(
+
                 res,
+
                 "Authentication token is missing. Please sign in again."
+
             );
 
         }
@@ -255,22 +445,18 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Find active session
+        STEP 2
+        Get active session
 
-        session.service.js must return:
-        {
-            id,
-            token,
-            expiresAt,
-            user
-        }
+        IMPORTANT:
 
-        OR an equivalent object containing user data.
+        session.service.js exports getSession()
+        NOT getSessionByToken()
         -----------------------------------------------------
         */
 
         const session =
-            await getSessionByToken(
+            await getSession(
                 token
             );
 
@@ -278,8 +464,11 @@ async function requireAuth(
         if (!session) {
 
             return unauthorized(
+
                 res,
-                "Your session has expired. Please sign in again."
+
+                "Your session has expired or is no longer valid. Please sign in again."
+
             );
 
         }
@@ -287,47 +476,26 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Session user extraction
-        -----------------------------------------------------
-        */
-
-        const rawUser =
-
-            session.user ||
-
-            session.account ||
-
-            session.userData ||
-
-            null;
-
-
-        if (!rawUser) {
-
-            return unauthorized(
-                res,
-                "Unable to load your account. Please sign in again."
-            );
-
-        }
-
-
-        /*
-        -----------------------------------------------------
-        Normalize user
+        STEP 3
+        Convert flat PostgreSQL session result
+        into authenticated user
         -----------------------------------------------------
         */
 
         const user =
-            normalizeUser(
-                rawUser
+            normalizeSessionUser(
+                session
             );
 
 
         if (!user) {
 
             return unauthorized(
-                res
+
+                res,
+
+                "Unable to load your account. Please sign in again."
+
             );
 
         }
@@ -335,26 +503,15 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Check account status
-
-        Allow null because older accounts may not yet have
-        an explicit accountStatus field.
+        STEP 4
+        Account status
         -----------------------------------------------------
         */
 
-        const status =
-            String(
-                user.accountStatus ||
-                ""
-            )
-            .trim()
-            .toLowerCase();
-
-
         if (
-            status === "disabled" ||
-            status === "suspended" ||
-            status === "blocked"
+            isAccountBlocked(
+                user
+            )
         ) {
 
             return res.status(403).json({
@@ -375,6 +532,7 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
+        STEP 5
         Attach authenticated user
         -----------------------------------------------------
         */
@@ -385,21 +543,29 @@ async function requireAuth(
 
         /*
         -----------------------------------------------------
-        Attach authentication/session data
+        STEP 6
+        Attach authentication/session information
         -----------------------------------------------------
         */
 
         req.auth = {
 
-            token,
+            token:
+                token,
+
 
             sessionId:
 
-                session.id ||
-
                 session.sessionId ||
 
+                session.session_id ||
+
                 null,
+
+
+            userId:
+
+                user.id,
 
 
             expiresAt:
@@ -413,6 +579,13 @@ async function requireAuth(
         };
 
 
+        /*
+        -----------------------------------------------------
+        STEP 7
+        Continue request
+        -----------------------------------------------------
+        */
+
         return next();
 
 
@@ -425,8 +598,11 @@ async function requireAuth(
 
 
         return unauthorized(
+
             res,
+
             "Unable to verify your session. Please sign in again."
+
         );
 
     }
@@ -448,33 +624,40 @@ function requireAdmin(
 
         /*
         -----------------------------------------------------
-        User must already be authenticated.
+        Authentication must run first
         -----------------------------------------------------
         */
 
         if (!req.user) {
 
-            return res.status(401).json({
+            return unauthorized(
 
-                success:
-                    false,
+                res,
 
-                error:
-                    "AUTHENTICATION_REQUIRED",
+                "Please sign in again."
 
-                message:
-                    "Please sign in again."
-
-            });
+            );
 
         }
 
+
+        /*
+        -----------------------------------------------------
+        Normalize role
+        -----------------------------------------------------
+        */
 
         const role =
             normalizeRole(
                 req.user.role
             );
 
+
+        /*
+        -----------------------------------------------------
+        Admin check
+        -----------------------------------------------------
+        */
 
         if (
             role !== "admin"
@@ -537,6 +720,12 @@ async function optionalAuth(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Get token
+        -----------------------------------------------------
+        */
+
         const token =
             getRequestToken(
                 req
@@ -545,7 +734,7 @@ async function optionalAuth(
 
         /*
         -----------------------------------------------------
-        No token = continue as guest
+        Guest request
         -----------------------------------------------------
         */
 
@@ -556,11 +745,25 @@ async function optionalAuth(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get session
+        -----------------------------------------------------
+        */
+
         const session =
-            await getSessionByToken(
+            await getSession(
                 token
             );
 
+
+        /*
+        -----------------------------------------------------
+        Invalid session
+
+        Continue as guest.
+        -----------------------------------------------------
+        */
 
         if (!session) {
 
@@ -569,60 +772,81 @@ async function optionalAuth(
         }
 
 
-        const rawUser =
+        /*
+        -----------------------------------------------------
+        Normalize user
+        -----------------------------------------------------
+        */
 
-            session.user ||
-
-            session.account ||
-
-            session.userData ||
-
-            null;
+        const user =
+            normalizeSessionUser(
+                session
+            );
 
 
-        if (!rawUser) {
+        if (!user) {
 
             return next();
 
         }
 
 
-        const user =
-            normalizeUser(
-                rawUser
-            );
+        /*
+        -----------------------------------------------------
+        Do not attach blocked users
+        -----------------------------------------------------
+        */
 
+        if (
+            isAccountBlocked(
+                user
+            )
+        ) {
 
-        if (user) {
-
-            req.user =
-                user;
-
-
-            req.auth = {
-
-                token,
-
-                sessionId:
-
-                    session.id ||
-
-                    session.sessionId ||
-
-                    null,
-
-
-                expiresAt:
-
-                    session.expiresAt ||
-
-                    session.expires_at ||
-
-                    null
-
-            };
+            return next();
 
         }
+
+
+        /*
+        -----------------------------------------------------
+        Attach user
+        -----------------------------------------------------
+        */
+
+        req.user =
+            user;
+
+
+        req.auth = {
+
+            token:
+                token,
+
+
+            sessionId:
+
+                session.sessionId ||
+
+                session.session_id ||
+
+                null,
+
+
+            userId:
+
+                user.id,
+
+
+            expiresAt:
+
+                session.expiresAt ||
+
+                session.expires_at ||
+
+                null
+
+        };
 
 
         return next();
@@ -631,9 +855,17 @@ async function optionalAuth(
     } catch (error) {
 
         /*
-        Optional authentication must never
-        block a public request.
+        -----------------------------------------------------
+        Optional authentication must never block
+        public routes.
+        -----------------------------------------------------
         */
+
+        console.warn(
+            "OPTIONAL AUTH ERROR:",
+            error.message
+        );
+
 
         return next();
 
@@ -649,6 +881,10 @@ async function optionalAuth(
 module.exports = {
 
     getRequestToken,
+
+    normalizeRole,
+
+    normalizeSessionUser,
 
     requireAuth,
 

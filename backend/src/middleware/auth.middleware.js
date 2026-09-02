@@ -5,6 +5,12 @@ const {
 } = require("../services/session.service");
 
 
+/*
+|--------------------------------------------------------------------------
+| REQUIRE AUTHENTICATION
+|--------------------------------------------------------------------------
+*/
+
 async function requireAuth(req, res, next) {
 
     try {
@@ -37,11 +43,32 @@ async function requireAuth(req, res, next) {
 
 
         /*
-         * Attach authenticated session
-         * to request.
-         */
+        |--------------------------------------------------------------------------
+        | Account status
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            session.account_status &&
+            session.account_status !== "active"
+        ) {
+
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Your account is not active"
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Attach authenticated session
+        |--------------------------------------------------------------------------
+        */
 
         req.auth = {
+
             sessionId:
                 session.session_id,
 
@@ -75,7 +102,6 @@ async function requireAuth(req, res, next) {
 
         next();
 
-
     } catch (error) {
 
         console.error(
@@ -83,9 +109,11 @@ async function requireAuth(req, res, next) {
             error
         );
 
+
         return res.status(500).json({
             success: false,
-            message: "Authentication service error"
+            message:
+                "Authentication service unavailable"
         });
     }
 }

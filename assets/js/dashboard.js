@@ -1,25 +1,10 @@
 "use strict";
 
-/*
-|--------------------------------------------------------------------------
-| SkillEarn Hub
-| User Dashboard
-|--------------------------------------------------------------------------
-|
-| Authentication:
-| HTTP-only skillearn_session cookie
-|
-| IMPORTANT:
-| No password/token is stored in localStorage.
-|--------------------------------------------------------------------------
-*/
-
 
 document.addEventListener(
     "DOMContentLoaded",
     initDashboard
 );
-
 
 
 /* =========================================================
@@ -28,14 +13,11 @@ document.addEventListener(
 
 async function initDashboard() {
 
-    setCurrentYear();
-
     setupLogout();
 
     await loadDashboard();
 
 }
-
 
 
 /* =========================================================
@@ -45,12 +27,6 @@ async function initDashboard() {
 async function loadDashboard() {
 
     try {
-
-        showDashboardMessage(
-            "Loading your account...",
-            false
-        );
-
 
         const url =
             typeof window.apiUrl === "function"
@@ -64,27 +40,18 @@ async function loadDashboard() {
                 {
                     method: "GET",
 
-                    credentials: "include",
-
                     headers: {
                         "Accept":
                             "application/json"
                     },
 
-                    cache: "no-store"
+                    credentials:
+                        "include"
                 }
             );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Session expired / missing
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            response.status === 401
-        ) {
+        if (response.status === 401) {
 
             redirectToLogin();
 
@@ -92,17 +59,10 @@ async function loadDashboard() {
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Other server errors
-        |--------------------------------------------------------------------------
-        */
-
         if (!response.ok) {
 
             throw new Error(
-                "Dashboard request failed: " +
-                response.status
+                "Dashboard request failed"
             );
         }
 
@@ -111,62 +71,31 @@ async function loadDashboard() {
             await response.json();
 
 
-        const user =
-            data?.user ||
-            data?.data?.user ||
-            null;
-
-
-        if (!user) {
-
-            throw new Error(
-                "User information was not returned by the server."
-            );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Render
-        |--------------------------------------------------------------------------
-        */
-
-        renderUser(user);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Optional wallet data
-        |--------------------------------------------------------------------------
-        */
-
-        if (data.wallet) {
-
-            renderWallet(
-                data.wallet
-            );
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Optional transactions
-        |--------------------------------------------------------------------------
-        */
-
         if (
-            Array.isArray(
-                data.transactions
-            )
+            !data ||
+            !data.user
         ) {
 
-            renderTransactions(
-                data.transactions
+            throw new Error(
+                "User information unavailable"
             );
         }
 
 
-        hideDashboardMessage();
+        const user =
+            data.user;
+
+
+        if (
+            typeof window.setSavedUser ===
+            "function"
+        ) {
+
+            window.setSavedUser(user);
+        }
+
+
+        renderUser(user);
 
 
     } catch (error) {
@@ -177,14 +106,28 @@ async function loadDashboard() {
         );
 
 
-        showDashboardMessage(
-            "Unable to refresh your account right now. Please try again.",
-            true
-        );
+        const savedUser =
+            typeof window.getSavedUser ===
+            "function"
+                ? window.getSavedUser()
+                : null;
+
+
+        if (savedUser) {
+
+            renderUser(savedUser);
+
+            showDashboardMessage(
+                "Live account data could not be refreshed."
+            );
+
+            return;
+        }
+
+
+        redirectToLogin();
     }
-
 }
-
 
 
 /* =========================================================
@@ -196,14 +139,12 @@ function renderUser(user) {
     const fullName =
         user.fullName ||
         user.full_name ||
-        user.name ||
         "User";
 
 
     const publicUserId =
         user.publicUserId ||
         user.public_user_id ||
-        user.userId ||
         "—";
 
 
@@ -218,32 +159,25 @@ function renderUser(user) {
         "—";
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Email verification
-    |--------------------------------------------------------------------------
-    */
-
-    let verified =
-        user.emailVerified;
+    let emailVerified =
+        user.emailVerified ??
+        user.email_verified;
 
 
-    if (
-        verified === undefined
-    ) {
-        verified =
-            user.email_verified;
-    }
+    if (emailVerified === true) {
 
+        emailVerified =
+            "Verified";
 
-    if (
-        verified === undefined
-    ) {
-        verified =
-            Boolean(
-                user.emailVerifiedAt ||
-                user.email_verified_at
-            );
+    } else if (emailVerified === false) {
+
+        emailVerified =
+            "Not Verified";
+
+    } else {
+
+        emailVerified =
+            "—";
     }
 
 
@@ -271,232 +205,18 @@ function renderUser(user) {
     );
 
 
-    renderVerificationStatus(
-        verified
-    );
-
-}
-
-
-
-/* =========================================================
-   EMAIL VERIFICATION
-========================================================= */
-
-function renderVerificationStatus(
-    verified
-) {
-
-    const element =
-        document.getElementById(
-            "emailStatus"
-        );
-
-
-    if (!element) {
-        return;
-    }
-
-
-    element.classList.remove(
-        "verified",
-        "not-verified"
-    );
-
-
-    if (verified === true) {
-
-        element.textContent =
-            "Verified";
-
-        element.classList.add(
-            "verified"
-        );
-
-        return;
-    }
-
-
-    element.textContent =
-        "Not Verified";
-
-    element.classList.add(
-        "not-verified"
-    );
-}
-
-
-
-/* =========================================================
-   WALLET
-========================================================= */
-
-function renderWallet(wallet) {
-
-    const balance =
-        wallet.balance ??
-        wallet.availableBalance ??
-        wallet.available_balance ??
-        0;
-
-
-    const numericBalance =
-        Number(balance);
-
-
-    const formatted =
-        Number.isFinite(
-            numericBalance
-        )
-            ? numericBalance.toLocaleString(
-                "en-IN",
-                {
-                    style: "currency",
-                    currency: "INR"
-                }
-            )
-            : "₹0.00";
-
-
     setText(
-        "walletBalance",
-        formatted
-    );
-
-}
-
-
-
-/* =========================================================
-   TRANSACTIONS
-========================================================= */
-
-function renderTransactions(
-    transactions
-) {
-
-    const container =
-        document.getElementById(
-            "transactionsList"
-        );
-
-
-    if (!container) {
-        return;
-    }
-
-
-    if (
-        !transactions ||
-        transactions.length === 0
-    ) {
-
-        return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    transactions
-        .slice(0, 5)
-        .forEach(
-            function (transaction) {
-
-                const item =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                item.className =
-                    "transaction-item";
-
-
-                const title =
-                    document.createElement(
-                        "strong"
-                    );
-
-
-                title.textContent =
-                    transaction.title ||
-                    transaction.type ||
-                    "Transaction";
-
-
-                const amount =
-                    document.createElement(
-                        "span"
-                    );
-
-
-                amount.textContent =
-                    transaction.amount !== undefined
-                        ? formatCurrency(
-                            transaction.amount
-                        )
-                        : "—";
-
-
-                item.appendChild(
-                    title
-                );
-
-
-                item.appendChild(
-                    amount
-                );
-
-
-                container.appendChild(
-                    item
-                );
-
-            }
-        );
-}
-
-
-
-/* =========================================================
-   CURRENCY
-========================================================= */
-
-function formatCurrency(
-    value
-) {
-
-    const number =
-        Number(value);
-
-
-    if (
-        !Number.isFinite(number)
-    ) {
-        return "₹0.00";
-    }
-
-
-    return number.toLocaleString(
-        "en-IN",
-        {
-            style: "currency",
-            currency: "INR"
-        }
+        "emailStatus",
+        emailVerified
     );
 }
-
 
 
 /* =========================================================
    SAFE TEXT
 ========================================================= */
 
-function setText(
-    id,
-    value
-) {
+function setText(id, value) {
 
     const element =
         document.getElementById(id);
@@ -507,18 +227,13 @@ function setText(
     }
 
 
-    const text =
+    element.textContent =
         value !== undefined &&
         value !== null &&
         String(value).trim() !== ""
-            ? String(value)
+            ? value
             : "—";
-
-
-    element.textContent =
-        text;
 }
-
 
 
 /* =========================================================
@@ -545,6 +260,9 @@ function setupLogout() {
 }
 
 
+/* =========================================================
+   LOGOUT USER
+========================================================= */
 
 async function logoutUser() {
 
@@ -554,17 +272,17 @@ async function logoutUser() {
         );
 
 
-    if (button) {
-
-        button.disabled =
-            true;
-
-        button.textContent =
-            "Logging out...";
-    }
-
-
     try {
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+            button.textContent =
+                "Logging out...";
+        }
+
 
         const url =
             typeof window.apiUrl === "function"
@@ -577,12 +295,13 @@ async function logoutUser() {
             {
                 method: "POST",
 
-                credentials: "include",
-
                 headers: {
                     "Accept":
                         "application/json"
-                }
+                },
+
+                credentials:
+                    "include"
             }
         );
 
@@ -597,11 +316,39 @@ async function logoutUser() {
 
     } finally {
 
+        if (
+            typeof window.clearAuthData ===
+            "function"
+        ) {
+
+            window.clearAuthData();
+
+        } else {
+
+            localStorage.removeItem(
+                "skillearn_access_token"
+            );
+
+            localStorage.removeItem(
+                "skillearn_user"
+            );
+        }
+
+
+        try {
+
+            sessionStorage.removeItem(
+                "skillEarnUser"
+            );
+
+        } catch (error) {
+            console.warn(error);
+        }
+
+
         redirectToLogin();
     }
-
 }
-
 
 
 /* =========================================================
@@ -610,22 +357,16 @@ async function logoutUser() {
 
 function redirectToLogin() {
 
-    window.location.replace(
-        "../login.html"
-    );
-
+    window.location.href =
+        "../login.html";
 }
-
 
 
 /* =========================================================
    MESSAGE
 ========================================================= */
 
-function showDashboardMessage(
-    message,
-    isError
-) {
+function showDashboardMessage(message) {
 
     const element =
         document.getElementById(
@@ -639,69 +380,9 @@ function showDashboardMessage(
 
 
     element.textContent =
-        message || "";
+        message;
 
 
-    element.classList.toggle(
-        "show",
-        Boolean(message)
-    );
-
-
-    if (isError) {
-
-        element.style.border =
-            "1px solid rgba(255,80,100,.3)";
-
-    } else {
-
-        element.style.border =
-            "1px solid rgba(130,110,255,.2)";
-    }
-
-}
-
-
-
-function hideDashboardMessage() {
-
-    const element =
-        document.getElementById(
-            "dashboardMessage"
-        );
-
-
-    if (!element) {
-        return;
-    }
-
-
-    element.textContent =
-        "";
-
-    element.classList.remove(
-        "show"
-    );
-}
-
-
-
-/* =========================================================
-   YEAR
-========================================================= */
-
-function setCurrentYear() {
-
-    const element =
-        document.getElementById(
-            "currentYear"
-        );
-
-
-    if (element) {
-
-        element.textContent =
-            new Date().getFullYear();
-    }
-
+    element.style.display =
+        "block";
 }

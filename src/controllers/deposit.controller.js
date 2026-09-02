@@ -1,12 +1,9 @@
 "use strict";
 
-const {
-    createDepositRequest,
-    approveDepositRequest,
-    getUserDeposits
-} = require(
-    "../services/deposit.service"
-);
+const depositService =
+    require(
+        "../services/deposit.service"
+    );
 
 
 /*
@@ -22,62 +19,66 @@ async function createDeposit(
 
     try {
 
-        const result =
-            await createDepositRequest(
-                {
+        const deposit =
+            await depositService
+                .createDepositRequest({
+
                     userId:
                         req.user.id,
 
                     amount:
                         req.body.amount
-                }
-            );
+
+                });
 
 
-        return res.status(201).json(
-            {
-                success: true,
+        return res.status(201).json({
 
-                message:
-                    "Deposit request created successfully",
+            success:
+                true,
 
-                deposit:
-                    result
-            }
-        );
+            message:
+                "Deposit request created successfully",
+
+            deposit
+
+        });
 
 
     } catch (error) {
 
         console.error(
-            "CREATE DEPOSIT ERROR:",
+            "CREATE DEPOSIT CONTROLLER ERROR:",
             error
         );
 
 
-        return res.status(400).json(
-            {
-                success: false,
+        return res.status(400).json({
 
-                code:
-                    error.code ||
-                    "DEPOSIT_REQUEST_FAILED",
+            success:
+                false,
 
-                message:
-                    error.message
-            }
-        );
+            code:
+                error.code ||
+                "DEPOSIT_REQUEST_FAILED",
+
+            message:
+                error.message
+
+        });
+
     }
+
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| USER DEPOSIT HISTORY
+| GET MY DEPOSITS
 |--------------------------------------------------------------------------
 */
 
-async function getDeposits(
+async function getMyDeposits(
     req,
     res
 ) {
@@ -85,106 +86,46 @@ async function getDeposits(
     try {
 
         const deposits =
-            await getUserDeposits(
-                {
+            await depositService
+                .getUserDepositRequests({
+
                     userId:
                         req.user.id
-                }
-            );
+
+                });
 
 
-        return res.json(
-            {
-                success: true,
+        return res.json({
 
-                deposits
-            }
-        );
+            success:
+                true,
 
+            deposits
 
-    } catch (error) {
-
-        console.error(
-            "GET DEPOSITS ERROR:",
-            error
-        );
-
-
-        return res.status(500).json(
-            {
-                success: false,
-
-                code:
-                    "DEPOSITS_FETCH_FAILED"
-            }
-        );
-    }
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN APPROVE DEPOSIT
-|--------------------------------------------------------------------------
-*/
-
-async function approveDeposit(
-    req,
-    res
-) {
-
-    try {
-
-        const result =
-            await approveDepositRequest(
-                {
-                    depositId:
-                        req.params.depositId,
-
-                    adminUserId:
-                        req.user.id
-                }
-            );
-
-
-        return res.json(
-            {
-                success: true,
-
-                message:
-                    "Deposit approved successfully",
-
-                result
-            }
-        );
+        });
 
 
     } catch (error) {
 
-        console.error(
-            "APPROVE DEPOSIT ERROR:",
-            error
-        );
+        return res.status(500).json({
 
+            success:
+                false,
 
-        return res.status(400).json(
-            {
-                success: false,
+            message:
+                "Unable to load deposits"
 
-                code:
-                    error.code ||
-                    "DEPOSIT_APPROVAL_FAILED",
+        });
 
-                message:
-                    error.message
-            }
-        );
     }
+
 }
 
 
 module.exports = {
+
     createDeposit,
-    getDeposits,
-    approveDeposit
+
+    getMyDeposits
+
 };

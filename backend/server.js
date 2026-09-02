@@ -28,8 +28,14 @@ const authRoutes =
 
 const depositRoutes =
     require(
-    "./src/routes/admin-deposit-requests"
-);
+        "./src/routes/deposit.routes"
+    );
+
+
+const adminDepositRoutes =
+    require(
+        "./src/routes/admin-deposit.routes"
+    );
 
 
 const app =
@@ -88,7 +94,6 @@ const allowedOrigin =
 
 app.use(
     cors({
-
         origin:
             allowedOrigin ||
             "http://localhost:3000",
@@ -183,9 +188,20 @@ app.use(
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN DEPOSIT ROUTES
+|--------------------------------------------------------------------------
+|
+| GET  /api/admin/deposits/pending
+| POST /api/admin/deposits/:depositId/approve
+| POST /api/admin/deposits/:depositId/reject
+|
+*/
+
 app.use(
-    "/api/admin/deposit-requests",
-    adminDepositRequestRoutes
+    "/api/admin/deposits",
+    adminDepositRoutes
 );
 
 

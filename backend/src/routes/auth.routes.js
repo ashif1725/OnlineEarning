@@ -1,32 +1,28 @@
 "use strict";
 
-const express =
-    require("express");
-
-const { z } =
-    require("zod");
+const express = require("express");
+const { z } = require("zod");
 
 const {
     register,
     login,
     logout,
     me
-} =
-    require("../controllers/auth.controller");
+} = require("../controllers/auth.controller");
 
 const {
     requireAuth
-} =
-    require("../middleware/auth.middleware");
+} = require("../middleware/auth.middleware");
 
 
-const router =
-    express.Router();
+const router = express.Router();
 
 
-/* =========================================================
-   REGISTER VALIDATION
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| REGISTER VALIDATION
+|--------------------------------------------------------------------------
+*/
 
 const registerSchema =
     z.object({
@@ -57,9 +53,11 @@ const registerSchema =
     });
 
 
-/* =========================================================
-   LOGIN VALIDATION
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| LOGIN VALIDATION
+|--------------------------------------------------------------------------
+*/
 
 const loginSchema =
     z.object({
@@ -78,22 +76,18 @@ const loginSchema =
     });
 
 
-/* =========================================================
-   VALIDATOR
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| VALIDATION MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
 
 function validate(schema) {
 
-    return (
-        req,
-        res,
-        next
-    ) => {
+    return (req, res, next) => {
 
         const result =
-            schema.safeParse(
-                req.body
-            );
+            schema.safeParse(req.body);
 
 
         if (!result.success) {
@@ -103,7 +97,10 @@ function validate(schema) {
                 success: false,
 
                 error:
-                    "INVALID_REQUEST"
+                    "INVALID_REQUEST",
+
+                message:
+                    "Please check the submitted information."
 
             });
         }
@@ -118,9 +115,11 @@ function validate(schema) {
 }
 
 
-/* =========================================================
-   PUBLIC ROUTES
-   ========================================================= */
+/*
+|--------------------------------------------------------------------------
+| REGISTER
+|--------------------------------------------------------------------------
+*/
 
 router.post(
     "/register",
@@ -129,6 +128,12 @@ router.post(
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
+
 router.post(
     "/login",
     validate(loginSchema),
@@ -136,15 +141,14 @@ router.post(
 );
 
 
-/* =========================================================
-   PROTECTED ROUTES
-   ========================================================= */
-
-router.post(
-    "/logout",
-    logout
-);
-
+/*
+|--------------------------------------------------------------------------
+| CURRENT USER
+|--------------------------------------------------------------------------
+|
+| GET /api/auth/me
+|
+*/
 
 router.get(
     "/me",
@@ -152,6 +156,27 @@ router.get(
     me
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT
+|--------------------------------------------------------------------------
+|
+| POST /api/auth/logout
+|
+*/
+
+router.post(
+    "/logout",
+    logout
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
 
 module.exports =
     router;

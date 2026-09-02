@@ -31,7 +31,7 @@ async function initDashboard() {
 
     setupCopyUserId();
 
-    setupDemoForms();
+    setupDashboardForms();
 
 
     const savedUser =
@@ -62,6 +62,74 @@ async function initDashboard() {
 
 /*
 |--------------------------------------------------------------------------
+| API HELPER
+|--------------------------------------------------------------------------
+*/
+
+function getApiUrl(
+    path
+) {
+
+    if (
+        typeof window.apiUrl ===
+        "function"
+    ) {
+
+        return window.apiUrl(
+            path
+        );
+
+    }
+
+
+    return (
+        "https://skillearnhub-1.onrender.com" +
+        path
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH HEADERS
+|--------------------------------------------------------------------------
+*/
+
+function getAuthHeaders() {
+
+    const headers = {
+
+        "Accept":
+            "application/json",
+
+        "Content-Type":
+            "application/json"
+
+    };
+
+
+    const token =
+        localStorage.getItem(
+            "skillearn_access_token"
+        );
+
+
+    if (token) {
+
+        headers.Authorization =
+            `Bearer ${token}`;
+
+    }
+
+
+    return headers;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | LOAD DASHBOARD
 |--------------------------------------------------------------------------
 */
@@ -71,9 +139,9 @@ async function loadDashboard() {
     try {
 
         const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/me")
-                : "https://skillearnhub-1.onrender.com/api/auth/me";
+            getApiUrl(
+                "/api/auth/me"
+            );
 
 
         const response =
@@ -121,6 +189,7 @@ async function loadDashboard() {
             throw new Error(
                 `Dashboard API failed: ${response.status}`
             );
+
         }
 
 
@@ -140,6 +209,7 @@ async function loadDashboard() {
             throw new Error(
                 "User data not found"
             );
+
         }
 
 
@@ -198,6 +268,7 @@ async function loadDashboard() {
             );
 
             return;
+
         }
 
 
@@ -220,10 +291,14 @@ async function loadDashboard() {
 |--------------------------------------------------------------------------
 */
 
-function renderUser(user) {
+function renderUser(
+    user
+) {
 
     if (!user) {
+
         return;
+
     }
 
 
@@ -261,7 +336,8 @@ function renderUser(user) {
 
 
     if (
-        emailVerified === undefined
+        emailVerified ===
+        undefined
     ) {
 
         emailVerified =
@@ -271,7 +347,8 @@ function renderUser(user) {
 
 
     if (
-        emailVerified === undefined
+        emailVerified ===
+        undefined
     ) {
 
         emailVerified =
@@ -447,7 +524,9 @@ function renderUser(user) {
 |--------------------------------------------------------------------------
 */
 
-function getInitial(name) {
+function getInitial(
+    name
+) {
 
     const value =
         String(
@@ -456,7 +535,9 @@ function getInitial(name) {
 
 
     if (!value) {
+
         return "U";
+
     }
 
 
@@ -485,7 +566,9 @@ function setText(
 
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -514,11 +597,15 @@ function setupNavigation() {
 
 
     navItems.forEach(
-        function (item) {
+        function (
+            item
+        ) {
 
             item.addEventListener(
                 "click",
-                function (event) {
+                function (
+                    event
+                ) {
 
                     event.preventDefault();
 
@@ -541,18 +628,14 @@ function setupNavigation() {
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Quick action buttons
-    |--------------------------------------------------------------------------
-    */
-
     document
         .querySelectorAll(
             "[data-open-section]"
         )
         .forEach(
-            function (button) {
+            function (
+                button
+            ) {
 
                 button.addEventListener(
                     "click",
@@ -582,7 +665,9 @@ function openSection(
 ) {
 
     if (!sectionId) {
+
         return;
+
     }
 
 
@@ -593,7 +678,9 @@ function openSection(
 
 
     sections.forEach(
-        function (section) {
+        function (
+            section
+        ) {
 
             section.classList.remove(
                 "active-section"
@@ -625,7 +712,9 @@ function openSection(
 
 
     navItems.forEach(
-        function (item) {
+        function (
+            item
+        ) {
 
             item.classList.toggle(
                 "active",
@@ -636,12 +725,6 @@ function openSection(
         }
     );
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update URL hash without reload
-    |--------------------------------------------------------------------------
-    */
 
     try {
 
@@ -699,7 +782,9 @@ function setupMobileMenu() {
         !button ||
         !sidebar
     ) {
+
         return;
+
     }
 
 
@@ -714,11 +799,14 @@ function setupMobileMenu() {
 
             if (overlay) {
 
-                overlay.hidden = false;
+                overlay.hidden =
+                    false;
 
                 overlay.classList.toggle(
                     "visible",
-                    sidebar.classList.contains("open")
+                    sidebar.classList.contains(
+                        "open"
+                    )
                 );
 
             }
@@ -774,6 +862,7 @@ function closeMobileMenu() {
             "visible"
         );
 
+
         setTimeout(
             function () {
 
@@ -783,7 +872,8 @@ function closeMobileMenu() {
                     )
                 ) {
 
-                    overlay.hidden = true;
+                    overlay.hidden =
+                        true;
 
                 }
 
@@ -811,7 +901,9 @@ function setupLogout() {
 
 
     if (!button) {
+
         return;
+
     }
 
 
@@ -851,9 +943,9 @@ async function logoutUser() {
 
 
         const url =
-            typeof window.apiUrl === "function"
-                ? window.apiUrl("/api/auth/logout")
-                : "https://skillearnhub-1.onrender.com/api/auth/logout";
+            getApiUrl(
+                "/api/auth/logout"
+            );
 
 
         await fetch(
@@ -970,7 +1062,9 @@ function setupCopyUserId() {
 
 
     if (!button) {
+
         return;
+
     }
 
 
@@ -1000,6 +1094,7 @@ function setupCopyUserId() {
                 );
 
                 return;
+
             }
 
 
@@ -1047,15 +1142,11 @@ function setupCopyUserId() {
 
 /*
 |--------------------------------------------------------------------------
-| DEMO FORM HANDLERS
+| FORM HANDLERS
 |--------------------------------------------------------------------------
-|
-| These handlers intentionally DO NOT modify wallet balances.
-| Real financial operations must be handled by the backend.
-|
 */
 
-function setupDemoForms() {
+function setupDashboardForms() {
 
     const sendForm =
         document.getElementById(
@@ -1075,16 +1166,25 @@ function setupDemoForms() {
         );
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | SEND MONEY
+    |--------------------------------------------------------------------------
+    */
+
     if (sendForm) {
 
         sendForm.addEventListener(
             "submit",
-            function (event) {
+            function (
+                event
+            ) {
 
                 event.preventDefault();
 
+
                 showDashboardMessage(
-                    "Send Money interface is ready. The secure transfer API will be connected in the wallet transaction step."
+                    "Send Money API will be connected in the next transaction step."
                 );
 
             }
@@ -1092,18 +1192,250 @@ function setupDemoForms() {
 
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEPOSIT REQUEST
+    |--------------------------------------------------------------------------
+    */
 
     if (depositForm) {
 
         depositForm.addEventListener(
             "submit",
-            function (event) {
+            async function (
+                event
+            ) {
 
                 event.preventDefault();
 
-                showDashboardMessage(
-                    "Deposit request interface is ready. Backend verification is required before funds are added."
-                );
+
+                const amountInput =
+                    document.getElementById(
+                        "depositAmount"
+                    );
+
+
+                if (!amountInput) {
+
+                    showDashboardMessage(
+                        "Deposit amount input was not found."
+                    );
+
+                    return;
+
+                }
+
+
+                const amount =
+                    Number(
+                        amountInput.value
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        amount
+                    ) ||
+                    amount <= 0
+                ) {
+
+                    showDashboardMessage(
+                        "Please enter a valid deposit amount."
+                    );
+
+                    amountInput.focus();
+
+                    return;
+
+                }
+
+
+                const submitButton =
+                    depositForm.querySelector(
+                        'button[type="submit"]'
+                    );
+
+
+                const originalButtonText =
+                    submitButton
+                        ? submitButton.textContent
+                        : "";
+
+
+                try {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Prevent duplicate requests
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (submitButton) {
+
+                        submitButton.disabled =
+                            true;
+
+                        submitButton.textContent =
+                            "Creating request...";
+
+                    }
+
+
+                    const url =
+                        getApiUrl(
+                            "/api/deposits"
+                        );
+
+
+                    const response =
+                        await fetch(
+                            url,
+                            {
+
+                                method:
+                                    "POST",
+
+                                credentials:
+                                    "include",
+
+                                headers:
+                                    getAuthHeaders(),
+
+                                body:
+                                    JSON.stringify(
+                                        {
+                                            amount:
+                                                amount
+                                        }
+                                    )
+
+                            }
+                        );
+
+
+                    let data =
+                        null;
+
+
+                    try {
+
+                        data =
+                            await response.json();
+
+                    } catch (parseError) {
+
+                        console.warn(
+                            "Deposit response is not JSON:",
+                            parseError
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Authentication error
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        response.status ===
+                        401
+                    ) {
+
+                        showDashboardMessage(
+                            "Your session has expired. Please login again."
+                        );
+
+
+                        setTimeout(
+                            redirectToLogin,
+                            1200
+                        );
+
+                        return;
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Server error
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (!response.ok) {
+
+                        const errorMessage =
+                            data &&
+                            (
+                                data.message ||
+                                data.error
+                            )
+                                ? (
+                                    data.message ||
+                                    data.error
+                                )
+                                : `Deposit request failed (${response.status})`;
+
+
+                        throw new Error(
+                            errorMessage
+                        );
+
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SUCCESS
+                    |--------------------------------------------------------------------------
+                    */
+
+                    amountInput.value =
+                        "";
+
+
+                    showDashboardMessage(
+                        "Deposit request created successfully. It is now pending admin verification."
+                    );
+
+
+                    console.log(
+                        "DEPOSIT REQUEST CREATED:",
+                        data
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "DEPOSIT REQUEST ERROR:",
+                        error
+                    );
+
+
+                    showDashboardMessage(
+                        error.message ||
+                        "Unable to create deposit request."
+                    );
+
+
+                } finally {
+
+                    if (submitButton) {
+
+                        submitButton.disabled =
+                            false;
+
+                        submitButton.textContent =
+                            originalButtonText ||
+                            "Create Deposit Request";
+
+                    }
+
+                }
 
             }
         );
@@ -1111,16 +1443,25 @@ function setupDemoForms() {
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | WITHDRAW
+    |--------------------------------------------------------------------------
+    */
+
     if (withdrawForm) {
 
         withdrawForm.addEventListener(
             "submit",
-            function (event) {
+            function (
+                event
+            ) {
 
                 event.preventDefault();
 
+
                 showDashboardMessage(
-                    "Withdrawal request interface is ready. Server-side balance and approval checks are required."
+                    "Withdrawal request API will be connected after the deposit workflow."
                 );
 
             }
@@ -1148,7 +1489,9 @@ function showDashboardMessage(
 
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -1196,7 +1539,9 @@ function openInitialHash() {
 
 
     if (!hash) {
+
         return;
+
     }
 
 

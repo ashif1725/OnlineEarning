@@ -1,114 +1,150 @@
 "use strict";
 
-const express = require("express");
-const { z } = require("zod");
 
-const {
-    requireAuth
-} = require("../middleware/auth");
-
-const {
-    createWithdrawal
-} = require("../services/withdrawal.service");
+const express =
+    require("express");
 
 
-const router = express.Router();
+const router =
+    express.Router();
 
 
-const withdrawalSchema =
-    z.object({
+const withdrawalController =
+    require(
+        "../controllers/withdrawal.controller"
+    );
 
-        bankAccountId:
-            z.string().uuid(),
 
-        amount:
-            z.number()
-                .positive()
-                .finite(),
+/*
+|--------------------------------------------------------------------------
+| AUTH MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
 
-        userNote:
-            z.string()
-                .trim()
-                .max(500)
-                .optional()
+const requireAuth =
+    require(
+        "../middlewares/auth.middleware"
+    );
 
-    });
 
+/*
+|--------------------------------------------------------------------------
+| ADMIN MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
+
+const requireAdmin =
+    require(
+        "../middlewares/admin.middleware"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| USER: CREATE WITHDRAWAL REQUEST
+|--------------------------------------------------------------------------
+|
+| POST /api/withdrawals
+|
+*/
 
 router.post(
     "/",
+
     requireAuth,
-    async (req, res) => {
 
-        try {
-
-            const parsed =
-                withdrawalSchema.safeParse(
-                    req.body
-                );
-
-
-            if (!parsed.success) {
-
-                return res.status(400).json({
-                    success: false,
-                    error:
-                        "INVALID_WITHDRAWAL_REQUEST"
-                });
-            }
-
-
-            const withdrawal =
-                await createWithdrawal({
-
-                    userId:
-                        req.user.id,
-
-                    ...parsed.data
-                });
-
-
-            res.status(201).json({
-
-                success: true,
-
-                withdrawal
-            });
-
-
-        } catch (error) {
-
-            const statusMap = {
-
-                INVALID_AMOUNT: 400,
-
-                BANK_ACCOUNT_NOT_FOUND: 404,
-
-                BANK_ACCOUNT_NOT_VERIFIED: 409,
-
-                WALLET_NOT_FOUND: 404,
-
-                INSUFFICIENT_BALANCE: 409
-
-            };
-
-
-            const status =
-                statusMap[error.message] || 500;
-
-
-            res.status(status).json({
-
-                success: false,
-
-                error:
-                    status === 500
-                        ? "WITHDRAWAL_CREATION_FAILED"
-                        : error.message
-            });
-        }
-    }
+    withdrawalController
+        .createWithdrawal
 );
 
 
-module.exports = router;
+/*
+|--------------------------------------------------------------------------
+| USER: GET MY WITHDRAWALS
+|--------------------------------------------------------------------------
+|
+| GET /api/withdrawals
+|
+*/
+
+router.get(
+    "/",
+
+    requireAuth,
+
+    withdrawalController
+        .getMyWithdrawals
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN: GET PENDING WITHDRAWALS
+|--------------------------------------------------------------------------
+|
+| GET /api/withdrawals/admin/pending
+|
+*/
+
+router.get(
+    "/admin/pending",
+
+    requireAuth,
+
+    requireAdmin,
+
+    withdrawalController
+        .getPendingWithdrawals
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN: APPROVE WITHDRAWAL
+|--------------------------------------------------------------------------
+|
+| POST /api/withdrawals/admin/:withdrawalId/approve
+|
+*/
+
+router.post(
+    "/admin/:withdrawalId/approve",
+
+    requireAuth,
+
+    requireAdmin,
+
+    withdrawalController
+        .approveWithdrawal
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN: REJECT WITHDRAWAL
+|--------------------------------------------------------------------------
+|
+| POST /api/withdrawals/admin/:withdrawalId/reject
+|
+*/
+
+router.post(
+    "/admin/:withdrawalId/reject",
+
+    requireAuth,
+
+    requireAdmin,
+
+    withdrawalController
+        .rejectWithdrawal
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
+
+module.exports =
+    router;

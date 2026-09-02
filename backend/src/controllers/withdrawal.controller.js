@@ -1,6 +1,10 @@
 "use strict";
 
 
+/* =========================================================
+   SERVICES
+========================================================= */
+
 const withdrawalService =
     require(
         "../services/withdrawal.service"
@@ -40,6 +44,53 @@ function getAuthenticatedAdminId(
     req
 ) {
 
+    /*
+    ---------------------------------------------------------
+    User must exist
+    ---------------------------------------------------------
+    */
+
+    if (!req.user) {
+
+        return null;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Check role
+
+    requireAdmin middleware should normally already protect
+    admin routes. This is an additional safety check.
+    ---------------------------------------------------------
+    */
+
+    const role =
+        String(
+            req.user?.role ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+        role !== "admin" &&
+        role !== "administrator"
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Return authenticated admin ID
+    ---------------------------------------------------------
+    */
+
     return (
 
         req.user?.id ||
@@ -69,6 +120,12 @@ async function createWithdrawal(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Get authenticated user
+        -----------------------------------------------------
+        */
+
         const userId =
             getAuthenticatedUserId(
                 req
@@ -93,6 +150,12 @@ async function createWithdrawal(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Request body
+        -----------------------------------------------------
+        */
+
         const {
 
             amount,
@@ -104,6 +167,12 @@ async function createWithdrawal(
         } =
             req.body || {};
 
+
+        /*
+        -----------------------------------------------------
+        Create withdrawal
+        -----------------------------------------------------
+        */
 
         const withdrawal =
             await withdrawalService
@@ -119,6 +188,12 @@ async function createWithdrawal(
 
                 });
 
+
+        /*
+        -----------------------------------------------------
+        Success response
+        -----------------------------------------------------
+        */
 
         return res.status(201).json({
 
@@ -157,6 +232,12 @@ async function getMyWithdrawals(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Get authenticated user
+        -----------------------------------------------------
+        */
+
         const userId =
             getAuthenticatedUserId(
                 req
@@ -181,6 +262,12 @@ async function getMyWithdrawals(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get withdrawals
+        -----------------------------------------------------
+        */
+
         const withdrawals =
             await withdrawalService
                 .getUserWithdrawals({
@@ -189,6 +276,12 @@ async function getMyWithdrawals(
 
                 });
 
+
+        /*
+        -----------------------------------------------------
+        Success response
+        -----------------------------------------------------
+        */
 
         return res.status(200).json({
 
@@ -224,10 +317,55 @@ async function getPendingWithdrawals(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Admin safety check
+
+        requireAdmin middleware should normally already handle
+        this before the controller is called.
+        -----------------------------------------------------
+        */
+
+        const adminUserId =
+            getAuthenticatedAdminId(
+                req
+            );
+
+
+        if (!adminUserId) {
+
+            return res.status(403).json({
+
+                success:
+                    false,
+
+                error:
+                    "ADMIN_ACCESS_REQUIRED",
+
+                message:
+                    "Administrator access is required."
+
+            });
+
+        }
+
+
+        /*
+        -----------------------------------------------------
+        Get pending withdrawals
+        -----------------------------------------------------
+        */
+
         const withdrawals =
             await withdrawalService
                 .getPendingWithdrawals();
 
+
+        /*
+        -----------------------------------------------------
+        Success response
+        -----------------------------------------------------
+        */
 
         return res.status(200).json({
 
@@ -263,6 +401,12 @@ async function approveWithdrawal(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Get authenticated admin
+        -----------------------------------------------------
+        */
+
         const adminUserId =
             getAuthenticatedAdminId(
                 req
@@ -271,25 +415,34 @@ async function approveWithdrawal(
 
         if (!adminUserId) {
 
-            return res.status(401).json({
+            return res.status(403).json({
 
                 success:
                     false,
 
                 error:
-                    "UNAUTHORIZED",
+                    "ADMIN_ACCESS_REQUIRED",
 
                 message:
-                    "Authentication is required."
+                    "Administrator access is required."
 
             });
 
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get withdrawal ID
+        -----------------------------------------------------
+        */
+
         const withdrawalId =
-            req.params
-                ?.withdrawalId;
+            String(
+                req.params?.withdrawalId ||
+                ""
+            )
+            .trim();
 
 
         if (!withdrawalId) {
@@ -310,6 +463,12 @@ async function approveWithdrawal(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Approve withdrawal
+        -----------------------------------------------------
+        */
+
         const result =
             await withdrawalService
                 .approveWithdrawalRequest({
@@ -320,6 +479,12 @@ async function approveWithdrawal(
 
                 });
 
+
+        /*
+        -----------------------------------------------------
+        Success response
+        -----------------------------------------------------
+        */
 
         return res.status(200).json({
 
@@ -358,6 +523,12 @@ async function rejectWithdrawal(
 
     try {
 
+        /*
+        -----------------------------------------------------
+        Get authenticated admin
+        -----------------------------------------------------
+        */
+
         const adminUserId =
             getAuthenticatedAdminId(
                 req
@@ -366,30 +537,34 @@ async function rejectWithdrawal(
 
         if (!adminUserId) {
 
-            return res.status(401).json({
+            return res.status(403).json({
 
                 success:
                     false,
 
                 error:
-                    "UNAUTHORIZED",
+                    "ADMIN_ACCESS_REQUIRED",
 
                 message:
-                    "Authentication is required."
+                    "Administrator access is required."
 
             });
 
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get withdrawal ID
+        -----------------------------------------------------
+        */
+
         const withdrawalId =
-            req.params
-                ?.withdrawalId;
-
-
-        const reason =
-            req.body
-                ?.reason;
+            String(
+                req.params?.withdrawalId ||
+                ""
+            )
+            .trim();
 
 
         if (!withdrawalId) {
@@ -410,6 +585,29 @@ async function rejectWithdrawal(
         }
 
 
+        /*
+        -----------------------------------------------------
+        Get rejection reason
+
+        Reason is allowed to be optional here because the
+        service may decide whether it is required.
+        -----------------------------------------------------
+        */
+
+        const reason =
+            req.body?.reason
+                ? String(
+                    req.body.reason
+                ).trim()
+                : null;
+
+
+        /*
+        -----------------------------------------------------
+        Reject withdrawal
+        -----------------------------------------------------
+        */
+
         const result =
             await withdrawalService
                 .rejectWithdrawalRequest({
@@ -422,6 +620,12 @@ async function rejectWithdrawal(
 
                 });
 
+
+        /*
+        -----------------------------------------------------
+        Success response
+        -----------------------------------------------------
+        */
 
         return res.status(200).json({
 
@@ -449,7 +653,7 @@ async function rejectWithdrawal(
 
 
 /* =========================================================
-   ERROR HANDLER
+   WITHDRAWAL ERROR HANDLER
 ========================================================= */
 
 function handleWithdrawalError(
@@ -464,18 +668,48 @@ function handleWithdrawalError(
     );
 
 
+    /*
+    ---------------------------------------------------------
+    Get error code
+    ---------------------------------------------------------
+    */
+
     const code =
         error?.code ||
-        error?.message;
+        error?.message ||
+        "INTERNAL_SERVER_ERROR";
 
+
+    /*
+    ---------------------------------------------------------
+    Known errors
+    ---------------------------------------------------------
+    */
 
     const errorMap = {
+
 
         UNAUTHORIZED:
             {
                 status: 401,
                 message:
                     "Authentication is required."
+            },
+
+
+        AUTHENTICATION_REQUIRED:
+            {
+                status: 401,
+                message:
+                    "Authentication is required."
+            },
+
+
+        ADMIN_ACCESS_REQUIRED:
+            {
+                status: 403,
+                message:
+                    "Administrator access is required."
             },
 
 
@@ -511,6 +745,14 @@ function handleWithdrawalError(
             },
 
 
+        INVALID_WITHDRAWAL_ID:
+            {
+                status: 400,
+                message:
+                    "Please provide a valid withdrawal ID."
+            },
+
+
         INVALID_WITHDRAWAL_AMOUNT:
             {
                 status: 400,
@@ -535,6 +777,14 @@ function handleWithdrawalError(
             },
 
 
+        INVALID_REJECTION_REASON:
+            {
+                status: 400,
+                message:
+                    "Please provide a valid rejection reason."
+            },
+
+
         INSUFFICIENT_BALANCE:
             {
                 status: 400,
@@ -548,16 +798,44 @@ function handleWithdrawalError(
                 status: 400,
                 message:
                     "Wallet is not active."
+            },
+
+
+        WALLET_DISABLED:
+            {
+                status: 400,
+                message:
+                    "Wallet is not active."
+            },
+
+
+        ACCOUNT_DISABLED:
+            {
+                status: 403,
+                message:
+                    "This account is currently disabled."
             }
 
     };
 
+
+    /*
+    ---------------------------------------------------------
+    Find mapped error
+    ---------------------------------------------------------
+    */
 
     const mappedError =
         errorMap[
             code
         ];
 
+
+    /*
+    ---------------------------------------------------------
+    Return known error
+    ---------------------------------------------------------
+    */
 
     if (mappedError) {
 
@@ -582,8 +860,9 @@ function handleWithdrawalError(
 
     /*
     ---------------------------------------------------------
-    Unknown error:
-    pass to global Express error handler
+    Unknown error
+
+    Pass to global Express error handler.
     ---------------------------------------------------------
     */
 

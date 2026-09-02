@@ -3,20 +3,12 @@
 
 /* =========================================================
    SkillEarn Hub
-   assets/js/auth.js
-
    Authentication
-   - Login
-   - Registration
-   - Role-based redirect
-   - Logout
-   - Field validation
-   - GitHub Pages compatible redirects
 ========================================================= */
 
 
 /* =========================================================
-   ELEMENT HELPER
+   ELEMENT
 ========================================================= */
 
 function authElement(id) {
@@ -27,17 +19,19 @@ function authElement(id) {
 
 
 /* =========================================================
-   AUTH MESSAGE
+   MESSAGE
 ========================================================= */
 
-function authMessage(
+function showAuthMessage(
     element,
     message,
     type = "error"
 ) {
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -52,7 +46,9 @@ function authMessage(
 
 
     if (!message) {
+
         return;
+
     }
 
 
@@ -88,7 +84,9 @@ function setFieldError(
 
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -99,7 +97,7 @@ function setFieldError(
 
 
 /* =========================================================
-   CLEAR FIELD ERRORS
+   CLEAR ERRORS
 ========================================================= */
 
 function clearFieldErrors() {
@@ -126,17 +124,17 @@ function clearFieldErrors() {
 
 function setButtonLoading(
     button,
-    loadingText
+    text
 ) {
 
     if (!button) {
+
         return;
+
     }
 
 
-    if (
-        !button.dataset.originalText
-    ) {
+    if (!button.dataset.originalText) {
 
         button.dataset.originalText =
             button.textContent;
@@ -149,14 +147,10 @@ function setButtonLoading(
 
 
     button.textContent =
-        loadingText;
+        text;
 
 }
 
-
-/* =========================================================
-   RESTORE BUTTON
-========================================================= */
 
 function restoreButton(
     button,
@@ -164,7 +158,9 @@ function restoreButton(
 ) {
 
     if (!button) {
+
         return;
+
     }
 
 
@@ -180,166 +176,37 @@ function restoreButton(
 
 
 /* =========================================================
-   NORMALIZE USER
-========================================================= */
-
-function normalizeUser(user) {
-
-    if (!user) {
-        return null;
-    }
-
-
-    const role =
-        String(
-            user.role ||
-            user.userRole ||
-            user.user_role ||
-            "user"
-        )
-        .trim()
-        .toLowerCase();
-
-
-    return {
-
-        ...user,
-
-        role
-
-    };
-
-}
-
-
-/* =========================================================
-   EXTRACT USER FROM API RESPONSE
-========================================================= */
-
-function extractUser(result) {
-
-    if (!result) {
-        return null;
-    }
-
-
-    /*
-       Standard response:
-
-       {
-           user: { ... }
-       }
-    */
-
-    if (
-        result.user &&
-        typeof result.user === "object"
-    ) {
-
-        return result.user;
-
-    }
-
-
-    /*
-       Alternative:
-
-       {
-           data: {
-               user: { ... }
-           }
-       }
-    */
-
-    if (
-        result.data?.user &&
-        typeof result.data.user === "object"
-    ) {
-
-        return result.data.user;
-
-    }
-
-
-    /*
-       Alternative:
-
-       {
-           account: { ... }
-       }
-    */
-
-    if (
-        result.account &&
-        typeof result.account === "object"
-    ) {
-
-        return result.account;
-
-    }
-
-
-    return null;
-
-}
-
-
-/* =========================================================
-   GET USER ROLE
+   GET ROLE
 ========================================================= */
 
 function getUserRole(user) {
 
-    if (!user) {
-        return "user";
-    }
-
-
     return String(
 
-        user.role ||
+        user?.role ||
 
-        user.userRole ||
+        user?.userRole ||
 
-        user.user_role ||
+        user?.user_role ||
 
         "user"
 
     )
-    .trim()
-    .toLowerCase();
+        .trim()
+        .toLowerCase();
 
 }
 
 
 /* =========================================================
-   GET LOGIN REDIRECT
-
-   IMPORTANT:
-   No leading slash.
-
-   GitHub Pages project sites may be deployed like:
-
-   username.github.io/repository-name/
-
-   Therefore:
-
-   user/dashboard.html
-
-   is safer than:
-
-   /user/dashboard.html
+   GET REDIRECT
 ========================================================= */
 
-function getRedirect(user) {
+function getRedirectByRole(user) {
 
     const role =
         getUserRole(user);
 
-
-    /*
-       ADMIN
-    */
 
     if (
 
@@ -354,38 +221,13 @@ function getRedirect(user) {
     }
 
 
-    /*
-       NORMAL USER
-    */
-
     return "user/dashboard.html";
 
 }
 
 
 /* =========================================================
-   REDIRECT HELPER
-
-   Uses relative paths so GitHub Pages does not lose
-   the repository base path.
-========================================================= */
-
-function redirectTo(path) {
-
-    if (!path) {
-        return;
-    }
-
-
-    window.location.assign(
-        path
-    );
-
-}
-
-
-/* =========================================================
-   HANDLE LOGIN
+   LOGIN
 ========================================================= */
 
 async function handleLogin(event) {
@@ -394,20 +236,18 @@ async function handleLogin(event) {
 
 
     const form =
-        authElement(
-            "loginForm"
-        );
+        authElement("loginForm");
 
 
     if (!form) {
+
         return;
+
     }
 
 
     const message =
-        authElement(
-            "loginMessage"
-        );
+        authElement("loginMessage");
 
 
     const button =
@@ -416,43 +256,30 @@ async function handleLogin(event) {
         );
 
 
-    /*
-       Clear previous errors
-    */
-
     clearFieldErrors();
 
-    authMessage(
+
+    showAuthMessage(
         message,
         ""
     );
 
 
-    /*
-       Read values
-    */
-
     const email =
         String(
-            authElement(
-                "loginEmail"
-            )?.value || ""
+            authElement("loginEmail")?.value ||
+            ""
         )
-        .trim()
-        .toLowerCase();
+            .trim()
+            .toLowerCase();
 
 
     const password =
         String(
-            authElement(
-                "loginPassword"
-            )?.value || ""
+            authElement("loginPassword")?.value ||
+            ""
         );
 
-
-    /*
-       Validation
-    */
 
     let hasError =
         false;
@@ -465,7 +292,6 @@ async function handleLogin(event) {
             "Please enter your email address."
         );
 
-
         hasError =
             true;
 
@@ -473,9 +299,8 @@ async function handleLogin(event) {
 
     else if (
 
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-            email
-        )
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            .test(email)
 
     ) {
 
@@ -483,7 +308,6 @@ async function handleLogin(event) {
             "loginEmail",
             "Please enter a valid email address."
         );
-
 
         hasError =
             true;
@@ -498,7 +322,6 @@ async function handleLogin(event) {
             "Please enter your password."
         );
 
-
         hasError =
             true;
 
@@ -506,13 +329,11 @@ async function handleLogin(event) {
 
 
     if (hasError) {
+
         return;
+
     }
 
-
-    /*
-       Loading state
-    */
 
     setButtonLoading(
         button,
@@ -521,10 +342,6 @@ async function handleLogin(event) {
 
 
     try {
-
-        /*
-           Login API request
-        */
 
         const result =
             await window.apiRequest(
@@ -537,7 +354,6 @@ async function handleLogin(event) {
                     body: {
 
                         email,
-
                         password
 
                     }
@@ -546,111 +362,52 @@ async function handleLogin(event) {
             );
 
 
-        /*
-           Extract user
-        */
-
-        const rawUser =
-            extractUser(
-                result
-            );
+        const user =
+            window.extractUser
+                ? window.extractUser(result)
+                : result?.user;
 
 
-        /*
-           User data is required for role-based redirect.
-        */
-
-        if (!rawUser) {
+        if (!user) {
 
             throw new Error(
-                "Login was successful, but user account information was not returned by the server."
+                "Login succeeded but user data was not returned."
             );
 
         }
 
 
-        const user =
-            normalizeUser(
-                rawUser
-            );
+        window.setSavedUser(
+            user
+        );
 
 
-        /*
-           Save user
-        */
-
-        if (
-
-            typeof window.setSavedUser ===
-            "function"
-
-        ) {
-
-            window.setSavedUser(
+        const role =
+            getUserRole(
                 user
             );
 
-        }
 
-
-        /*
-           Save token.
-
-           config.js already saves data.token automatically
-           inside apiRequest(), but this keeps login safe
-           if the API helper behavior changes.
-        */
-
-        if (
-
-            result?.token &&
-
-            typeof window.setAuthToken ===
-            "function"
-
-        ) {
-
-            window.setAuthToken(
-                result.token
-            );
-
-        }
-
-
-        /*
-           Success message
-        */
-
-        authMessage(
+        showAuthMessage(
             message,
-
-            result?.message ||
-            "Login successful. Redirecting...",
-
+            role === "admin"
+                ? "Admin login successful. Redirecting..."
+                : "Login successful. Redirecting...",
             "success"
         );
 
 
-        /*
-           Determine dashboard from role
-        */
-
         const redirect =
-            getRedirect(
+            getRedirectByRole(
                 user
             );
 
 
-        /*
-           Redirect after message
-        */
-
-        window.setTimeout(
+        setTimeout(
             function () {
 
-                redirectTo(
-                    redirect
-                );
+                window.location.href =
+                    redirect;
 
             },
             700
@@ -665,13 +422,10 @@ async function handleLogin(event) {
         );
 
 
-        authMessage(
+        showAuthMessage(
             message,
-
-            error?.message ||
-            "Login failed. Please try again.",
-
-            "error"
+            error.message ||
+            "Login failed. Please try again."
         );
 
     } finally {
@@ -687,7 +441,7 @@ async function handleLogin(event) {
 
 
 /* =========================================================
-   HANDLE REGISTER
+   REGISTER
 ========================================================= */
 
 async function handleRegister(event) {
@@ -696,20 +450,18 @@ async function handleRegister(event) {
 
 
     const form =
-        authElement(
-            "registerForm"
-        );
+        authElement("registerForm");
 
 
     if (!form) {
+
         return;
+
     }
 
 
     const message =
-        authElement(
-            "registerMessage"
-        );
+        authElement("registerMessage");
 
 
     const button =
@@ -718,91 +470,68 @@ async function handleRegister(event) {
         );
 
 
-    /*
-       Clear previous errors
-    */
-
     clearFieldErrors();
 
-    authMessage(
+
+    showAuthMessage(
         message,
         ""
     );
 
 
-    /*
-       Read values
-    */
-
     const fullName =
         String(
-            authElement(
-                "fullName"
-            )?.value || ""
-        )
-        .trim();
+            authElement("fullName")?.value ||
+            ""
+        ).trim();
 
 
     const email =
         String(
-            authElement(
-                "email"
-            )?.value || ""
+            authElement("email")?.value ||
+            ""
         )
-        .trim()
-        .toLowerCase();
+            .trim()
+            .toLowerCase();
 
 
     const phone =
         String(
-            authElement(
-                "phone"
-            )?.value || ""
-        )
-        .trim();
+            authElement("phone")?.value ||
+            ""
+        ).trim();
 
 
     const password =
         String(
-            authElement(
-                "password"
-            )?.value || ""
+            authElement("password")?.value ||
+            ""
         );
 
 
     const confirmPassword =
         String(
-            authElement(
-                "confirmPassword"
-            )?.value || ""
+            authElement("confirmPassword")?.value ||
+            ""
         );
 
 
-    const termsAccepted =
+    const terms =
         Boolean(
-            authElement(
-                "terms"
-            )?.checked
+            authElement("terms")?.checked
         );
 
-
-    /*
-       Validation
-    */
 
     let hasError =
         false;
 
 
-    if (
-        fullName.length < 2
-    ) {
+    if (fullName.length < 2) {
 
         setFieldError(
             "fullName",
             "Please enter your full name."
         );
-
 
         hasError =
             true;
@@ -817,7 +546,6 @@ async function handleRegister(event) {
             "Please enter your email address."
         );
 
-
         hasError =
             true;
 
@@ -825,9 +553,8 @@ async function handleRegister(event) {
 
     else if (
 
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-            email
-        )
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            .test(email)
 
     ) {
 
@@ -836,20 +563,18 @@ async function handleRegister(event) {
             "Please enter a valid email address."
         );
 
-
         hasError =
             true;
 
     }
 
 
-    if (!phone) {
+    if (phone.length < 8) {
 
         setFieldError(
             "phone",
-            "Please enter your mobile number."
+            "Please enter a valid mobile number."
         );
-
 
         hasError =
             true;
@@ -857,46 +582,38 @@ async function handleRegister(event) {
     }
 
 
-    if (
-        password.length < 12
-    ) {
+    if (password.length < 12) {
 
         setFieldError(
             "password",
             "Password must contain at least 12 characters."
         );
 
-
         hasError =
             true;
 
     }
 
 
-    if (
-        password !==
-        confirmPassword
-    ) {
+    if (password !== confirmPassword) {
 
         setFieldError(
             "confirmPassword",
             "Passwords do not match."
         );
 
-
         hasError =
             true;
 
     }
 
 
-    if (!termsAccepted) {
+    if (!terms) {
 
-        authMessage(
+        showAuthMessage(
             message,
             "Please accept the Terms and Privacy Policy."
         );
-
 
         hasError =
             true;
@@ -905,13 +622,11 @@ async function handleRegister(event) {
 
 
     if (hasError) {
+
         return;
+
     }
 
-
-    /*
-       Loading state
-    */
 
     setButtonLoading(
         button,
@@ -920,10 +635,6 @@ async function handleRegister(event) {
 
 
     try {
-
-        /*
-           Registration API request
-        */
 
         const result =
             await window.apiRequest(
@@ -936,11 +647,8 @@ async function handleRegister(event) {
                     body: {
 
                         fullName,
-
                         email,
-
                         phone,
-
                         password
 
                     }
@@ -949,45 +657,22 @@ async function handleRegister(event) {
             );
 
 
-        /*
-           Success message
-        */
-
-        authMessage(
+        showAuthMessage(
             message,
-
             result?.message ||
-            "Account created successfully. Redirecting to login...",
-
+            "Account created successfully.",
             "success"
         );
 
 
-        /*
-           Reset form after successful registration
-        */
-
         form.reset();
 
 
-        /*
-           IMPORTANT:
-
-           No leading slash here.
-
-           Correct:
-           login.html
-
-           Wrong for many GitHub Pages project sites:
-           /login.html
-        */
-
-        window.setTimeout(
+        setTimeout(
             function () {
 
-                redirectTo(
-                    "login.html"
-                );
+                window.location.href =
+                    "login.html";
 
             },
             1000
@@ -1002,13 +687,10 @@ async function handleRegister(event) {
         );
 
 
-        authMessage(
+        showAuthMessage(
             message,
-
-            error?.message ||
-            "Unable to create account. Please try again.",
-
-            "error"
+            error.message ||
+            "Unable to create account."
         );
 
     } finally {
@@ -1031,31 +713,17 @@ async function logoutUser() {
 
     try {
 
-        if (
+        await window.apiRequest(
+            "/api/auth/logout",
+            {
 
-            typeof window.apiRequest ===
-            "function"
+                method:
+                    "POST"
 
-        ) {
-
-            await window.apiRequest(
-                "/api/auth/logout",
-                {
-
-                    method:
-                        "POST"
-
-                }
-            );
-
-        }
+            }
+        );
 
     } catch (error) {
-
-        /*
-           Even if API logout fails,
-           local authentication should still be cleared.
-        */
 
         console.warn(
             "LOGOUT ERROR:",
@@ -1064,61 +732,30 @@ async function logoutUser() {
 
     } finally {
 
-        /*
-           Clear local token and user
-        */
-
-        if (
-
-            typeof window.clearAuthData ===
-            "function"
-
-        ) {
-
-            window.clearAuthData();
-
-        }
+        window.clearAuthData();
 
 
-        /*
-           Determine current folder.
-
-           Dashboard pages:
-
-           user/dashboard.html
-           admin/dashboard.html
-
-           Therefore go one level up.
-        */
-
-        const currentPath =
+        const path =
             window.location.pathname;
 
 
-        const insideDashboardFolder =
-
-            currentPath.includes(
-                "/user/"
-            ) ||
-
-            currentPath.includes(
-                "/admin/"
-            );
-
-
         if (
-            insideDashboardFolder
+
+            path.includes("/user/") ||
+
+            path.includes("/admin/")
+
         ) {
 
-            redirectTo(
-                "../login.html"
-            );
+            window.location.href =
+                "../login.html";
 
-        } else {
+        }
 
-            redirectTo(
-                "login.html"
-            );
+        else {
+
+            window.location.href =
+                "login.html";
 
         }
 
@@ -1135,15 +772,8 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-
-        /*
-           LOGIN FORM
-        */
-
         const loginForm =
-            authElement(
-                "loginForm"
-            );
+            authElement("loginForm");
 
 
         if (loginForm) {
@@ -1156,14 +786,8 @@ document.addEventListener(
         }
 
 
-        /*
-           REGISTER FORM
-        */
-
         const registerForm =
-            authElement(
-                "registerForm"
-            );
+            authElement("registerForm");
 
 
         if (registerForm) {
@@ -1175,10 +799,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-           LOGOUT BUTTONS
-        */
 
         document
             .querySelectorAll(
@@ -1218,12 +838,6 @@ window.SkillEarnAuth = {
         handleRegister,
 
     logout:
-        logoutUser,
-
-    getRedirect:
-        getRedirect,
-
-    getUserRole:
-        getUserRole
+        logoutUser
 
 };

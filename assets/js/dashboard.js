@@ -34,6 +34,12 @@ async function initDashboard() {
     setupDemoForms();
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Render saved user immediately
+    |--------------------------------------------------------------------------
+    */
+
     const savedUser =
         typeof window.getSavedUser === "function"
             ? window.getSavedUser()
@@ -57,6 +63,7 @@ async function initDashboard() {
 
     await loadDashboard();
 
+
     /*
     |--------------------------------------------------------------------------
     | Load deposit history
@@ -78,6 +85,18 @@ async function loadDashboard() {
 
     try {
 
+        if (
+            typeof window.apiRequest !==
+            "function"
+        ) {
+
+            throw new Error(
+                "API request helper is not available."
+            );
+
+        }
+
+
         const data =
             await window.apiRequest(
                 "/api/auth/me",
@@ -96,128 +115,7 @@ async function loadDashboard() {
         if (!user) {
 
             throw new Error(
-                "User data not found"
-            );
-
-        }
-
-
-        if (
-
-            typeof window.setSavedUser ===
-            "function"
-
-        ) {
-
-            window.setSavedUser(
-                user
-            );
-
-        }
-
-
-        renderUser(
-            user
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "DASHBOARD LOAD ERROR:",
-            error
-        );
-
-
-        if (
-
-            error?.status === 401
-
-        ) {
-
-            clearLocalAuth();
-
-            redirectToLogin();
-
-            return;
-
-        }
-
-
-        const savedUser =
-            typeof window.getSavedUser ===
-            "function"
-
-                ? window.getSavedUser()
-
-                : null;
-
-
-        if (savedUser) {
-
-            renderUser(
-                savedUser
-            );
-
-            showDashboardMessage(
-                "Live account data could not be refreshed."
-            );
-
-            return;
-
-        }
-
-
-        redirectToLogin();
-
-    }
-
-}
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Session invalid
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            response.status === 401
-        ) {
-
-            clearLocalAuth();
-
-            redirectToLogin();
-
-            return;
-
-        }
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Dashboard API failed: ${response.status}`
-            );
-
-        }
-
-
-        const data =
-            await response.json();
-
-
-        const user =
-            data &&
-            data.user
-                ? data.user
-                : null;
-
-
-        if (!user) {
-
-            throw new Error(
-                "User data not found"
+                "User data not found."
             );
 
         }
@@ -241,9 +139,18 @@ async function loadDashboard() {
         }
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Render user
+        |--------------------------------------------------------------------------
+        */
+
         renderUser(
             user
         );
+
+
+        return user;
 
 
     } catch (error) {
@@ -254,18 +161,38 @@ async function loadDashboard() {
         );
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Authentication failed
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            error?.status === 401 ||
+            error?.response?.status === 401
+        ) {
+
+            clearLocalAuth();
+
+            redirectToLogin();
+
+            return null;
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Try cached user
+        |--------------------------------------------------------------------------
+        */
+
         const savedUser =
             typeof window.getSavedUser ===
             "function"
                 ? window.getSavedUser()
                 : null;
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | If cached user exists
-        |--------------------------------------------------------------------------
-        */
 
         if (savedUser) {
 
@@ -277,18 +204,20 @@ async function loadDashboard() {
                 "Live account data could not be refreshed."
             );
 
-            return;
+            return savedUser;
 
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | No authenticated user
+        | No user available
         |--------------------------------------------------------------------------
         */
 
         redirectToLogin();
+
+        return null;
 
     }
 
@@ -328,6 +257,7 @@ function renderUser(user) {
         user.publicUserId ||
         user.public_user_id ||
         user.userId ||
+        user.user_id ||
         "—";
 
 
@@ -722,7 +652,7 @@ function openSection(
 
     /*
     |--------------------------------------------------------------------------
-    | Update URL hash without reload
+    | Update URL hash
     |--------------------------------------------------------------------------
     */
 
@@ -923,6 +853,12 @@ async function logoutUser() {
         );
 
 
+    const originalButtonText =
+        button
+            ? button.textContent
+            : "Logout";
+
+
     try {
 
         if (button) {
@@ -936,15 +872,20 @@ async function logoutUser() {
         }
 
 
-        await window.apiRequest(
-            "/api/auth/logout",
-            {
+        if (
+            typeof window.apiRequest ===
+            "function"
+        ) {
 
-                method:
-                    "POST"
+            await window.apiRequest(
+                "/api/auth/logout",
+                {
+                    method:
+                        "POST"
+                }
+            );
 
-            }
-        );
+        }
 
 
     } catch (error) {
@@ -955,6 +896,17 @@ async function logoutUser() {
         );
 
     } finally {
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                originalButtonText;
+
+        }
+
 
         clearLocalAuth();
 
@@ -1171,14 +1123,14 @@ function setupDemoForms() {
 
                 const amount =
                     Number(
-                        amountInput.value
+                        amountInput?.value
                     );
 
 
                 /*
-                ----------------------------------------------------------
+                |--------------------------------------------------------------------------
                 | VALIDATE AMOUNT
-                ----------------------------------------------------------
+                |--------------------------------------------------------------------------
                 */
 
                 if (
@@ -1259,9 +1211,9 @@ function setupDemoForms() {
 
 
                     /*
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     | SAFELY PARSE RESPONSE
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     */
 
                     let data =
@@ -1283,40 +1235,54 @@ function setupDemoForms() {
                     }
 
 
+                    if (
+                        response.status ===
+                        401
+                    ) {
+
+                        clearLocalAuth();
+
+                        redirectToLogin();
+
+                        return;
+
+                    }
+
+
                     if (!response.ok) {
 
                         throw new Error(
-                            data &&
-                            data.message
-                                ? data.message
-                                : `Deposit request failed (${response.status})`
+                            data?.message ||
+                            `Deposit request failed (${response.status})`
                         );
 
                     }
 
 
                     /*
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     | SUCCESS
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     */
 
-                    amountInput.value =
-                        "";
+                    if (amountInput) {
+
+                        amountInput.value =
+                            "";
+
+                    }
 
 
                     showDashboardMessage(
-                        data &&
-                        data.message
-                            ? data.message
-                            : "Deposit request created successfully. It is now pending admin verification."
+                        data?.message ||
+                        "Deposit request created successfully. It is now pending admin verification."
                     );
 
 
                     /*
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     | REFRESH DEPOSIT HISTORY
-                    ------------------------------------------------------
+                    |--------------------------------------------------------------------------
                     */
 
                     await loadMyDeposits();
@@ -1469,6 +1435,12 @@ async function loadMyDeposits() {
         }
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | PARSE RESPONSE
+        |--------------------------------------------------------------------------
+        */
+
         let data =
             null;
 
@@ -1493,10 +1465,8 @@ async function loadMyDeposits() {
         if (!response.ok) {
 
             throw new Error(
-                data &&
-                data.message
-                    ? data.message
-                    : "Unable to load deposit requests"
+                data?.message ||
+                "Unable to load deposit requests."
             );
 
         }
@@ -1504,7 +1474,7 @@ async function loadMyDeposits() {
 
         const deposits =
             Array.isArray(
-                data.deposits
+                data?.deposits
             )
                 ? data.deposits
                 : [];
@@ -1639,12 +1609,3 @@ window.addEventListener(
 
     }
 );
-
-
-/*
-|--------------------------------------------------------------------------
-| INITIAL HASH
-|--------------------------------------------------------------------------
-*/
-
-openInitialHash();

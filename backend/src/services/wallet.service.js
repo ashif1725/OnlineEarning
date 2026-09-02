@@ -6,6 +6,12 @@ const pool =
     );
 
 
+/*
+|--------------------------------------------------------------------------
+| GET WALLET SUMMARY
+|--------------------------------------------------------------------------
+*/
+
 async function getWalletSummary({
     userId
 }) {
@@ -14,6 +20,7 @@ async function getWalletSummary({
         await pool.query(
             `
             SELECT
+
                 w.id AS wallet_id,
 
                 w.currency,
@@ -26,7 +33,7 @@ async function getWalletSummary({
 
             FROM wallets w
 
-            JOIN wallet_balances wb
+            INNER JOIN wallet_balances wb
                 ON wb.wallet_id = w.id
 
             WHERE w.user_id = $1
@@ -59,6 +66,60 @@ async function getWalletSummary({
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| GET TRANSACTION HISTORY
+|--------------------------------------------------------------------------
+*/
+
+async function getTransactionHistory({
+    userId
+}) {
+
+    const result =
+        await pool.query(
+            `
+            SELECT
+
+                wt.id,
+
+                wt.transaction_type,
+
+                wt.amount,
+
+                wt.currency,
+
+                wt.balance_before,
+
+                wt.balance_after,
+
+                wt.reference_type,
+
+                wt.description,
+
+                wt.created_at
+
+            FROM wallet_transactions wt
+
+            WHERE wt.user_id = $1
+
+            ORDER BY
+                wt.created_at DESC
+            `,
+            [
+                userId
+            ]
+        );
+
+
+    return result.rows;
+}
+
+
 module.exports = {
-    getWalletSummary
+
+    getWalletSummary,
+
+    getTransactionHistory
+
 };

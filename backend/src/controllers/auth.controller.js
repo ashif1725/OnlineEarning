@@ -1,65 +1,14 @@
 "use strict";
 
-
 const {
     registerUser,
     authenticateUser
-} = require(
-    "../services/auth.service"
-);
-
+} = require("../services/auth.service");
 
 const {
     createSession,
     revokeSession
-} = require(
-    "../services/session.service"
-);
-
-
-/* =========================================================
-   TOKEN FROM REQUEST
-========================================================= */
-
-function getRequestToken(req) {
-
-    const authorization =
-        String(
-            req.get("authorization") ||
-            ""
-        ).trim();
-
-
-    if (
-
-        authorization
-            .toLowerCase()
-            .startsWith("bearer ")
-
-    ) {
-
-        return authorization
-            .slice(7)
-            .trim();
-
-    }
-
-
-    if (
-
-        req.cookies &&
-        req.cookies.skillearn_session
-
-    ) {
-
-        return req.cookies.skillearn_session;
-
-    }
-
-
-    return null;
-
-}
+} = require("../services/session.service");
 
 
 /* =========================================================
@@ -69,9 +18,7 @@ function getRequestToken(req) {
 function getCookieOptions(maxAge) {
 
     const production =
-        process.env.NODE_ENV ===
-        "production";
-
+        process.env.NODE_ENV === "production";
 
     return {
 
@@ -86,8 +33,7 @@ function getCookieOptions(maxAge) {
                 ? "none"
                 : "lax",
 
-        maxAge:
-            maxAge,
+        maxAge,
 
         path:
             "/"
@@ -98,13 +44,52 @@ function getCookieOptions(maxAge) {
 
 
 /* =========================================================
+   EXTRACT SESSION TOKEN
+========================================================= */
+
+function getRequestToken(req) {
+
+    const authorization =
+        String(
+            req.get("authorization") ||
+            ""
+        ).trim();
+
+
+    if (
+        authorization
+            .toLowerCase()
+            .startsWith("bearer ")
+    ) {
+
+        return authorization
+            .slice(7)
+            .trim();
+
+    }
+
+
+    if (
+        req.cookies &&
+        req.cookies.skillearn_session
+    ) {
+
+        return req.cookies
+            .skillearn_session;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
    REGISTER
 ========================================================= */
 
-async function register(
-    req,
-    res
-) {
+async function register(req, res) {
 
     try {
 
@@ -113,8 +98,27 @@ async function register(
             email,
             phone,
             password
-        } =
-            req.body;
+        } = req.body;
+
+
+        if (
+            !fullName ||
+            !email ||
+            !phone ||
+            !password
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "All fields are required"
+
+            });
+
+        }
 
 
         const user =
@@ -136,7 +140,8 @@ async function register(
             message:
                 "Account created successfully",
 
-            user
+            user:
+                user
 
         });
 
@@ -150,10 +155,8 @@ async function register(
 
 
         if (
-
             error.code ===
             "ACCOUNT_ALREADY_EXISTS"
-
         ) {
 
             return res.status(409).json({
@@ -188,18 +191,32 @@ async function register(
    LOGIN
 ========================================================= */
 
-async function login(
-    req,
-    res
-) {
+async function login(req, res) {
 
     try {
 
         const {
             email,
             password
-        } =
-            req.body;
+        } = req.body;
+
+
+        if (
+            !email ||
+            !password
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Email and password are required"
+
+            });
+
+        }
 
 
         const user =
@@ -210,6 +227,25 @@ async function login(
 
             });
 
+
+        if (!user) {
+
+            return res.status(401).json({
+
+                success:
+                    false,
+
+                message:
+                    "Invalid email or password"
+
+            });
+
+        }
+
+
+        /* =====================================================
+           CREATE SESSION
+        ===================================================== */
 
         const session =
             await createSession({
@@ -228,6 +264,18 @@ async function login(
             });
 
 
+        if (
+            !session ||
+            !session.token
+        ) {
+
+            throw new Error(
+                "Unable to create login session"
+            );
+
+        }
+
+
         const expiresAt =
             new Date(
                 session.expiresAt
@@ -236,14 +284,15 @@ async function login(
 
         const maxAge =
             Math.max(
-
                 0,
-
                 expiresAt.getTime() -
                 Date.now()
-
             );
 
+
+        /* =====================================================
+           COOKIE
+        ===================================================== */
 
         res.cookie(
 
@@ -257,6 +306,15 @@ async function login(
 
         );
 
+
+        /* =====================================================
+           IMPORTANT
+
+           Token is also returned to frontend.
+
+           config.js automatically saves this token and then
+           sends Authorization: Bearer TOKEN on dashboard APIs.
+        ===================================================== */
 
         return res.status(200).json({
 
@@ -290,7 +348,12 @@ async function login(
                     user.phone,
 
                 role:
-                    user.role
+                    String(
+                        user.role ||
+                        "user"
+                    )
+                    .trim()
+                    .toLowerCase()
 
             }
 
@@ -306,10 +369,8 @@ async function login(
 
 
         if (
-
             error.code ===
             "INVALID_CREDENTIALS"
-
         ) {
 
             return res.status(401).json({
@@ -326,10 +387,8 @@ async function login(
 
 
         if (
-
             error.code ===
             "ACCOUNT_LOCKED"
-
         ) {
 
             return res.status(423).json({
@@ -346,10 +405,8 @@ async function login(
 
 
         if (
-
             error.code ===
             "ACCOUNT_DISABLED"
-
         ) {
 
             return res.status(403).json({
@@ -384,10 +441,7 @@ async function login(
    CURRENT USER
 ========================================================= */
 
-async function me(
-    req,
-    res
-) {
+async function me(req, res) {
 
     try {
 
@@ -397,6 +451,9 @@ async function me(
 
                 success:
                     false,
+
+                error:
+                    "AUTHENTICATION_REQUIRED",
 
                 message:
                     "Please sign in again."
@@ -481,10 +538,7 @@ async function me(
    LOGOUT
 ========================================================= */
 
-async function logout(
-    req,
-    res
-) {
+async function logout(req, res) {
 
     try {
 
@@ -508,7 +562,7 @@ async function logout(
             "skillearn_session",
 
             getCookieOptions(
-                0
+                undefined
             )
 
         );
@@ -533,13 +587,24 @@ async function logout(
         );
 
 
-        return res.status(500).json({
+        res.clearCookie(
+
+            "skillearn_session",
+
+            getCookieOptions(
+                undefined
+            )
+
+        );
+
+
+        return res.status(200).json({
 
             success:
-                false,
+                true,
 
             message:
-                "Logout failed"
+                "Logged out"
 
         });
 
@@ -547,6 +612,10 @@ async function logout(
 
 }
 
+
+/* =========================================================
+   EXPORTS
+========================================================= */
 
 module.exports = {
 

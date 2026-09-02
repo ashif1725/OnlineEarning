@@ -4,25 +4,36 @@
 /* =========================================================
    SkillEarn Hub
    Authentication
-   Login + Register + Logout
 ========================================================= */
 
 
 /* =========================================================
-   HELPERS
+   ELEMENT HELPER
 ========================================================= */
 
 function authElement(id) {
 
-    return document.getElementById(id);
+    return document.getElementById(
+        id
+    );
 
 }
 
 
-function authError(element, message) {
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function authMessage(
+    element,
+    message,
+    type = "error"
+) {
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -31,36 +42,67 @@ function authError(element, message) {
 
 
     element.classList.remove(
+        "show",
         "success"
     );
 
 
-    element.classList.toggle(
-        "show",
-        Boolean(message)
+    if (!message) {
+
+        return;
+
+    }
+
+
+    element.classList.add(
+        "show"
     );
+
+
+    if (
+        type === "success"
+    ) {
+
+        element.classList.add(
+            "success"
+        );
+
+    }
 
 }
 
 
-function authSuccess(element, message) {
+/* =========================================================
+   FIELD ERROR
+========================================================= */
+
+function setFieldError(
+    fieldName,
+    message
+) {
+
+    const element =
+        document.querySelector(
+            `[data-error-for="${fieldName}"]`
+        );
+
 
     if (!element) {
+
         return;
+
     }
 
 
     element.textContent =
         message || "";
 
-
-    element.classList.add(
-        "show",
-        "success"
-    );
-
 }
 
+
+/* =========================================================
+   CLEAR FIELD ERRORS
+========================================================= */
 
 function clearFieldErrors() {
 
@@ -80,69 +122,150 @@ function clearFieldErrors() {
 }
 
 
-function setFieldError(
-    fieldName,
-    message
+/* =========================================================
+   SET BUTTON LOADING
+========================================================= */
+
+function setButtonLoading(
+    button,
+    loadingText
 ) {
 
-    const element =
-        document.querySelector(
-            `[data-error-for="${fieldName}"]`
-        );
+    if (!button) {
 
-
-    if (!element) {
         return;
+
     }
 
 
-    element.textContent =
-        message || "";
+    if (
+        !button.dataset.originalText
+    ) {
+
+        button.dataset.originalText =
+            button.textContent;
+
+    }
+
+
+    button.disabled =
+        true;
+
+
+    button.textContent =
+        loadingText;
 
 }
 
 
 /* =========================================================
-   GET REDIRECT URL BY USER ROLE
+   RESTORE BUTTON
 ========================================================= */
 
-function getRedirectByRole(user, fallbackRedirect) {
+function restoreButton(
+    button,
+    fallbackText
+) {
 
-    const role =
-        String(
-            user?.role ||
-            user?.userRole ||
-            user?.accountRole ||
-            "user"
-        )
-            .trim()
-            .toLowerCase();
+    if (!button) {
 
+        return;
+
+    }
+
+
+    button.disabled =
+        false;
+
+
+    button.textContent =
+
+        button.dataset.originalText ||
+
+        fallbackText;
+
+}
+
+
+/* =========================================================
+   NORMALIZE USER
+========================================================= */
+
+function normalizeUser(
+    user
+) {
+
+    if (!user) {
+
+        return null;
+
+    }
+
+
+    return user;
+
+}
+
+
+/* =========================================================
+   GET REDIRECT
+========================================================= */
+
+function getRedirect(
+    result,
+    user
+) {
 
     /*
     ---------------------------------------------------------
-    ADMIN
+    Backend explicitly provides redirect
     ---------------------------------------------------------
     */
 
     if (
-        role === "admin" ||
-        role === "administrator"
+        result?.redirect
     ) {
 
-        /*
-         IMPORTANT:
+        return result.redirect;
 
-         अगर आपकी admin dashboard file का path अलग है,
-         तो सिर्फ नीचे वाला path बदलना है।
+    }
 
-         Example:
-         admin/dashboard.html
 
-         या
+    /*
+    ---------------------------------------------------------
+    Check role
+    ---------------------------------------------------------
+    */
 
-         admin/index.html
-        */
+    const role =
+        String(
+
+            user?.role ||
+
+            user?.userRole ||
+
+            user?.user_role ||
+
+            ""
+
+        )
+        .trim()
+        .toLowerCase();
+
+
+    /*
+    ---------------------------------------------------------
+    Admin
+    ---------------------------------------------------------
+    */
+
+    if (
+
+        role === "admin" ||
+
+        role === "administrator"
+
+    ) {
 
         return "admin/dashboard.html";
 
@@ -151,23 +274,22 @@ function getRedirectByRole(user, fallbackRedirect) {
 
     /*
     ---------------------------------------------------------
-    NORMAL USER
+    Normal user
     ---------------------------------------------------------
     */
 
-    return (
-        fallbackRedirect ||
-        "user/dashboard.html"
-    );
+    return "user/dashboard.html";
 
 }
 
 
 /* =========================================================
-   LOGIN
+   HANDLE LOGIN
 ========================================================= */
 
-async function handleLogin(event) {
+async function handleLogin(
+    event
+) {
 
     event.preventDefault();
 
@@ -178,15 +300,17 @@ async function handleLogin(event) {
         );
 
 
+    if (!form) {
+
+        return;
+
+    }
+
+
     const message =
         authElement(
             "loginMessage"
         );
-
-
-    if (!form) {
-        return;
-    }
 
 
     const button =
@@ -195,40 +319,40 @@ async function handleLogin(event) {
         );
 
 
+    clearFieldErrors();
+
+
+    authMessage(
+        message,
+        ""
+    );
+
+
     const email =
         String(
             authElement(
                 "loginEmail"
-            )?.value ||
-            ""
+            )?.value || ""
         )
-            .trim()
-            .toLowerCase();
+        .trim()
+        .toLowerCase();
 
 
     const password =
         String(
             authElement(
                 "loginPassword"
-            )?.value ||
-            ""
+            )?.value || ""
         );
 
 
-    clearFieldErrors();
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
 
+    let hasError =
+        false;
 
-    authError(
-        message,
-        ""
-    );
-
-
-    /*
-    ---------------------------------------------------------
-    EMAIL VALIDATION
-    ---------------------------------------------------------
-    */
 
     if (!email) {
 
@@ -238,20 +362,15 @@ async function handleLogin(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter your email address."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    if (
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email)
+    else if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            email
+        )
     ) {
 
         setFieldError(
@@ -260,22 +379,11 @@ async function handleLogin(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter a valid email address."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    PASSWORD VALIDATION
-    ---------------------------------------------------------
-    */
 
     if (!password) {
 
@@ -285,37 +393,23 @@ async function handleLogin(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter your password."
-        );
+        hasError =
+            true;
 
+    }
+
+
+    if (hasError) {
 
         return;
 
     }
 
 
-    /*
-    ---------------------------------------------------------
-    BUTTON LOADING
-    ---------------------------------------------------------
-    */
-
-    if (button) {
-
-        button.disabled =
-            true;
-
-
-        button.dataset.originalText =
-            button.textContent;
-
-
-        button.textContent =
-            "Signing in...";
-
-    }
+    setButtonLoading(
+        button,
+        "Signing in..."
+    );
 
 
     try {
@@ -330,11 +424,9 @@ async function handleLogin(event) {
 
                     body: {
 
-                        email:
-                            email,
+                        email,
 
-                        password:
-                            password
+                        password
 
                     }
 
@@ -344,16 +436,30 @@ async function handleLogin(event) {
 
         /*
         -----------------------------------------------------
-        SAVE USER
+        Extract user
         -----------------------------------------------------
         */
 
-        if (
-            result?.user
-        ) {
+        const user =
+            typeof window.extractUser ===
+            "function"
+
+                ? window.extractUser(
+                    result
+                )
+
+                : (
+                    result?.user ||
+                    null
+                );
+
+
+        if (user) {
 
             window.setSavedUser(
-                result.user
+                normalizeUser(
+                    user
+                )
             );
 
         }
@@ -361,27 +467,30 @@ async function handleLogin(event) {
 
         /*
         -----------------------------------------------------
-        SUCCESS MESSAGE
+        Login success
         -----------------------------------------------------
         */
 
-        authSuccess(
+        authMessage(
             message,
+
             result?.message ||
-            "Login successful. Redirecting..."
+            "Login successful. Redirecting...",
+
+            "success"
         );
 
 
         /*
         -----------------------------------------------------
-        ROLE BASED REDIRECT
+        Redirect
         -----------------------------------------------------
         */
 
         const redirect =
-            getRedirectByRole(
-                result?.user,
-                result?.redirect
+            getRedirect(
+                result,
+                user
             );
 
 
@@ -404,25 +513,21 @@ async function handleLogin(event) {
         );
 
 
-        authError(
+        authMessage(
             message,
+
             error.message ||
-            "Login failed. Please try again."
+            "Login failed. Please try again.",
+
+            "error"
         );
 
     } finally {
 
-        if (button) {
-
-            button.disabled =
-                false;
-
-
-            button.textContent =
-                button.dataset.originalText ||
-                "Sign In";
-
-        }
+        restoreButton(
+            button,
+            "Sign In"
+        );
 
     }
 
@@ -430,10 +535,12 @@ async function handleLogin(event) {
 
 
 /* =========================================================
-   REGISTER
+   HANDLE REGISTER
 ========================================================= */
 
-async function handleRegister(event) {
+async function handleRegister(
+    event
+) {
 
     event.preventDefault();
 
@@ -444,15 +551,17 @@ async function handleRegister(event) {
         );
 
 
+    if (!form) {
+
+        return;
+
+    }
+
+
     const message =
         authElement(
             "registerMessage"
         );
-
-
-    if (!form) {
-        return;
-    }
 
 
     const button =
@@ -461,49 +570,48 @@ async function handleRegister(event) {
         );
 
 
-    /*
-    ---------------------------------------------------------
-    GET VALUES
-    ---------------------------------------------------------
-    */
+    clearFieldErrors();
+
+
+    authMessage(
+        message,
+        ""
+    );
+
 
     const fullName =
         String(
             authElement(
                 "fullName"
-            )?.value ||
-            ""
+            )?.value || ""
         )
-            .trim();
+        .trim();
 
 
     const email =
         String(
             authElement(
                 "email"
-            )?.value ||
-            ""
+            )?.value || ""
         )
-            .trim()
-            .toLowerCase();
+        .trim()
+        .toLowerCase();
 
 
     const phone =
         String(
             authElement(
                 "phone"
-            )?.value ||
-            ""
+            )?.value || ""
         )
-            .trim();
+        .trim();
 
 
     const password =
         String(
             authElement(
                 "password"
-            )?.value ||
-            ""
+            )?.value || ""
         );
 
 
@@ -511,12 +619,11 @@ async function handleRegister(event) {
         String(
             authElement(
                 "confirmPassword"
-            )?.value ||
-            ""
+            )?.value || ""
         );
 
 
-    const terms =
+    const termsAccepted =
         Boolean(
             authElement(
                 "terms"
@@ -524,20 +631,13 @@ async function handleRegister(event) {
         );
 
 
-    clearFieldErrors();
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
 
+    let hasError =
+        false;
 
-    authError(
-        message,
-        ""
-    );
-
-
-    /*
-    ---------------------------------------------------------
-    FULL NAME VALIDATION
-    ---------------------------------------------------------
-    */
 
     if (
         fullName.length < 2
@@ -549,22 +649,11 @@ async function handleRegister(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter a valid full name."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    EMAIL VALIDATION
-    ---------------------------------------------------------
-    */
 
     if (!email) {
 
@@ -574,20 +663,15 @@ async function handleRegister(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter your email address."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    if (
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email)
+    else if (
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            email
+        )
     ) {
 
         setFieldError(
@@ -596,49 +680,25 @@ async function handleRegister(event) {
         );
 
 
-        authError(
-            message,
-            "Please enter a valid email address."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
 
-    /*
-    ---------------------------------------------------------
-    PHONE VALIDATION
-    ---------------------------------------------------------
-    */
-
-    if (
-        phone.length < 8
-    ) {
+    if (!phone) {
 
         setFieldError(
             "phone",
-            "Please enter a valid mobile number."
+            "Please enter your mobile number."
         );
 
 
-        authError(
-            message,
-            "Please enter a valid mobile number."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    PASSWORD VALIDATION
-    ---------------------------------------------------------
-    */
 
     if (
         password.length < 12
@@ -650,22 +710,11 @@ async function handleRegister(event) {
         );
 
 
-        authError(
-            message,
-            "Password must contain at least 12 characters."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    CONFIRM PASSWORD
-    ---------------------------------------------------------
-    */
 
     if (
         password !==
@@ -678,65 +727,42 @@ async function handleRegister(event) {
         );
 
 
-        authError(
-            message,
-            "Passwords do not match."
-        );
-
-
-        return;
+        hasError =
+            true;
 
     }
 
 
-    /*
-    ---------------------------------------------------------
-    TERMS
-    ---------------------------------------------------------
-    */
+    if (
+        !termsAccepted
+    ) {
 
-    if (!terms) {
-
-        authError(
+        authMessage(
             message,
             "Please accept the Terms and Privacy Policy."
         );
 
 
+        hasError =
+            true;
+
+    }
+
+
+    if (hasError) {
+
         return;
 
     }
 
 
-    /*
-    ---------------------------------------------------------
-    BUTTON LOADING
-    ---------------------------------------------------------
-    */
-
-    if (button) {
-
-        button.disabled =
-            true;
-
-
-        button.dataset.originalText =
-            button.textContent;
-
-
-        button.textContent =
-            "Creating account...";
-
-    }
+    setButtonLoading(
+        button,
+        "Creating account..."
+    );
 
 
     try {
-
-        /*
-        -----------------------------------------------------
-        REGISTER API
-        -----------------------------------------------------
-        */
 
         const result =
             await window.apiRequest(
@@ -748,17 +774,13 @@ async function handleRegister(event) {
 
                     body: {
 
-                        fullName:
-                            fullName,
+                        fullName,
 
-                        email:
-                            email,
+                        email,
 
-                        phone:
-                            phone,
+                        phone,
 
-                        password:
-                            password
+                        password
 
                     }
 
@@ -768,16 +790,30 @@ async function handleRegister(event) {
 
         /*
         -----------------------------------------------------
-        SAVE USER IF API RETURNS USER
+        Save user if backend returns it
         -----------------------------------------------------
         */
 
-        if (
-            result?.user
-        ) {
+        const user =
+            typeof window.extractUser ===
+            "function"
+
+                ? window.extractUser(
+                    result
+                )
+
+                : (
+                    result?.user ||
+                    null
+                );
+
+
+        if (user) {
 
             window.setSavedUser(
-                result.user
+                normalizeUser(
+                    user
+                )
             );
 
         }
@@ -785,14 +821,17 @@ async function handleRegister(event) {
 
         /*
         -----------------------------------------------------
-        SUCCESS MESSAGE
+        Registration success
         -----------------------------------------------------
         */
 
-        authSuccess(
+        authMessage(
             message,
+
             result?.message ||
-            "Account created successfully. Redirecting..."
+            "Account created successfully. Redirecting to login...",
+
+            "success"
         );
 
 
@@ -800,33 +839,13 @@ async function handleRegister(event) {
         -----------------------------------------------------
         IMPORTANT
         -----------------------------------------------------
-
-        Registration के बाद सीधे dashboard पर भेजने
-        के बजाय login page पर भेजना safer है।
-
-        अगर backend automatically login करता है,
-        तब result.redirect को use कर सकते हैं।
+        Registration ke baad login page par bhejna
+        taaki authentication state clear aur predictable rahe.
+        -----------------------------------------------------
         */
-
 
         setTimeout(
             function () {
-
-                if (
-                    result?.redirect &&
-                    result?.user
-                ) {
-
-                    window.location.href =
-                        getRedirectByRole(
-                            result.user,
-                            result.redirect
-                        );
-
-                    return;
-
-                }
-
 
                 window.location.href =
                     "login.html";
@@ -844,25 +863,21 @@ async function handleRegister(event) {
         );
 
 
-        authError(
+        authMessage(
             message,
+
             error.message ||
-            "Unable to create account. Please try again."
+            "Unable to create account. Please try again.",
+
+            "error"
         );
 
     } finally {
 
-        if (button) {
-
-            button.disabled =
-                false;
-
-
-            button.textContent =
-                button.dataset.originalText ||
-                "Create Account";
-
-        }
+        restoreButton(
+            button,
+            "Create Account"
+        );
 
     }
 
@@ -887,7 +902,6 @@ async function logoutUser() {
             }
         );
 
-
     } catch (error) {
 
         console.warn(
@@ -895,47 +909,12 @@ async function logoutUser() {
             error
         );
 
-
     } finally {
 
-        if (
-            typeof window.clearAuthData ===
-            "function"
-        ) {
+        window.clearAuthData();
 
-            window.clearAuthData();
-
-        }
-
-
-        /*
-        -----------------------------------------------------
-        Determine correct relative login path
-        -----------------------------------------------------
-        */
-
-        const path =
-            window.location.pathname;
-
-
-        if (
-            path.includes(
-                "/user/"
-            ) ||
-            path.includes(
-                "/admin/"
-            )
-        ) {
-
-            window.location.href =
-                "../login.html";
-
-        } else {
-
-            window.location.href =
-                "login.html";
-
-        }
+        window.location.href =
+            "../login.html";
 
     }
 
@@ -950,17 +929,23 @@ document.addEventListener(
     "DOMContentLoaded",
     function () {
 
-        /*
-        -----------------------------------------------------
-        LOGIN FORM
-        -----------------------------------------------------
-        */
-
         const loginForm =
             authElement(
                 "loginForm"
             );
 
+
+        const registerForm =
+            authElement(
+                "registerForm"
+            );
+
+
+        /*
+        -----------------------------------------------------
+        Login
+        -----------------------------------------------------
+        */
 
         if (loginForm) {
 
@@ -974,15 +959,9 @@ document.addEventListener(
 
         /*
         -----------------------------------------------------
-        REGISTER FORM
+        Register
         -----------------------------------------------------
         */
-
-        const registerForm =
-            authElement(
-                "registerForm"
-            );
-
 
         if (registerForm) {
 
@@ -996,7 +975,7 @@ document.addEventListener(
 
         /*
         -----------------------------------------------------
-        LOGOUT BUTTONS
+        Logout buttons
         -----------------------------------------------------
         */
 
@@ -1026,7 +1005,7 @@ document.addEventListener(
 
 
 /* =========================================================
-   PUBLIC FUNCTIONS
+   PUBLIC API
 ========================================================= */
 
 window.SkillEarnAuth = {
@@ -1034,10 +1013,8 @@ window.SkillEarnAuth = {
     login:
         handleLogin,
 
-
     register:
         handleRegister,
-
 
     logout:
         logoutUser

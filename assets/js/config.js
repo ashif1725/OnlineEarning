@@ -450,6 +450,122 @@ async function apiRequest(
     return data;
 }
 
+/* =========================================================
+   API REQUEST
+========================================================= */
+
+async function apiRequest(
+    endpoint,
+    options = {}
+) {
+    const controller =
+        new AbortController();
+
+    const timeout =
+        setTimeout(
+            () => controller.abort(),
+            SKILLEARN_CONFIG.REQUEST.TIMEOUT
+        );
+
+    try {
+        const requestOptions = {
+            method:
+                options.method ||
+                "GET",
+
+            headers: {
+                ...getApiHeaders(),
+                ...(options.headers || {})
+            },
+
+            credentials:
+                SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
+
+            signal:
+                controller.signal
+        };
+
+        if (
+            options.body !== undefined &&
+            options.body !== null
+        ) {
+            requestOptions.body =
+                typeof options.body === "string"
+                    ? options.body
+                    : JSON.stringify(
+                        options.body
+                    );
+        }
+
+        const response =
+            await fetch(
+                apiUrl(endpoint),
+                requestOptions
+            );
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+        let data = null;
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+            data =
+                await response.json();
+        } else {
+            const text =
+                await response.text();
+
+            data = {
+                message: text
+            };
+        }
+
+        if (!response.ok) {
+            const error =
+                new Error(
+                    data?.message ||
+                    data?.error ||
+                    "Request failed"
+                );
+
+            error.status =
+                response.status;
+
+            error.data =
+                data;
+
+            throw error;
+        }
+
+        return data;
+
+    } catch (error) {
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+            throw new Error(
+                "Request timed out. Please try again."
+            );
+        }
+
+        throw error;
+
+    } finally {
+
+        clearTimeout(
+            timeout
+        );
+    }
+}
+
 
 /* =========================================================
    GLOBAL EXPORTS

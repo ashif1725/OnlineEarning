@@ -1,42 +1,22 @@
 "use strict";
 
-const crypto = require("crypto");
-const pool = require("../config/db");
+const pool =
+    require("../config/db");
 
 
-function generateDepositId() {
+/*
+|--------------------------------------------------------------------------
+| CREATE DEPOSIT REQUEST
+|--------------------------------------------------------------------------
+*/
 
-    const random =
-        crypto
-            .randomBytes(6)
-            .toString("hex")
-            .toUpperCase();
-
-    return `DEP-${Date.now()}-${random}`;
-}
-
-
-async function createDeposit({
+async function createDepositRequest({
     userId,
-    paymentMethodId,
-    amount,
-    utrNumber,
-    userNote
+    amount
 }) {
-
-    if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-    ) {
-        throw new Error(
-            "INVALID_AMOUNT"
-        );
-    }
-
 
     const client =
         await pool.connect();
-
 
     try {
 
@@ -45,97 +25,134 @@ async function createDeposit({
         );
 
 
-        const method =
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATE AMOUNT
+        |--------------------------------------------------------------------------
+        */
+
+        const numericAmount =
+            Number(amount);
+
+
+        if (
+            !Number.isFinite(
+                numericAmount
+            ) ||
+            numericAmount <= 0
+        ) {
+
+            const error =
+                new Error(
+                    "INVALID_DEPOSIT_AMOUNT"
+                );
+
+            error.code =
+                "INVALID_DEPOSIT_AMOUNT";
+
+            throw error;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | FIND USER WALLET
+        |--------------------------------------------------------------------------
+        */
+
+        const walletResult =
             await client.query(
                 `
                 SELECT
                     id,
-                    method_type,
-                    is_active
-                FROM payment_methods
-                WHERE id = $1
-                FOR SHARE
+                    currency,
+                    status
+                FROM wallets
+                WHERE user_id = $1
+                LIMIT 1
                 `,
-                [paymentMethodId]
+                [
+                    userId
+                ]
             );
 
 
         if (
-            method.rowCount === 0 ||
-            !method.rows[0].is_active
+            walletResult.rowCount === 0
         ) {
 
-            throw new Error(
-                "PAYMENT_METHOD_UNAVAILABLE"
-            );
+            const error =
+                new Error(
+                    "WALLET_NOT_FOUND"
+                );
+
+            error.code =
+                "WALLET_NOT_FOUND";
+
+            throw error;
         }
 
 
-        if (utrNumber) {
+        const wallet =
+            walletResult.rows[0];
 
-            const existing =
-                await client.query(
-                    `
-                    SELECT id
-                    FROM deposits
-                    WHERE utr_number = $1
-                    LIMIT 1
-                    `,
-                    [utrNumber]
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK WALLET STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            wallet.status !==
+            "active"
+        ) {
+
+            const error =
+                new Error(
+                    "WALLET_NOT_ACTIVE"
                 );
 
+            error.code =
+                "WALLET_NOT_ACTIVE";
 
-            if (existing.rowCount > 0) {
-
-                throw new Error(
-                    "UTR_ALREADY_USED"
-                );
-            }
+            throw error;
         }
 
 
-        const depositId =
-            generateDepositId();
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE DEPOSIT REQUEST
+        |--------------------------------------------------------------------------
+        */
 
-
-        const result =
+        const depositResult =
             await client.query(
                 `
-                INSERT INTO deposits (
-                    deposit_id,
+                INSERT INTO deposit_requests (
                     user_id,
-                    payment_method_id,
+                    wallet_id,
                     amount,
-                    currency,
-                    utr_number,
-                    status,
-                    user_note
+                    status
                 )
                 VALUES (
                     $1,
                     $2,
                     $3,
-                    $4,
-                    'INR',
-                    $5,
-                    'PENDING',
-                    $6
+                    'pending'
                 )
                 RETURNING
-                    deposit_id,
+                    id,
+                    user_id,
+                    wallet_id,
                     amount,
-                    currency,
-                    utr_number,
                     status,
-                    submitted_at
+                    created_at
                 `,
                 [
-                    depositId,
                     userId,
-                    paymentMethodId,
-                    amount,
-                    utrNumber || null,
-                    userNote || null
+                    wallet.id,
+                    numericAmount
                 ]
             );
 
@@ -145,7 +162,8 @@ async function createDeposit({
         );
 
 
-        return result.rows[0];
+        return
+            depositResult.rows[0];
 
 
     } catch (error) {
@@ -156,6 +174,7 @@ async function createDeposit({
 
         throw error;
 
+
     } finally {
 
         client.release();
@@ -163,6 +182,289 @@ async function createDeposit({
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| APPROVE DEPOSIT
+|--------------------------------------------------------------------------
+*/
+
+async function approveDepositRequest({
+    depositId,
+    adminUserId
+}) {
+
+    const client =
+        await pool.connect();
+
+    try {
+
+        await client.query(
+            "BEGIN"
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOCK DEPOSIT ROW
+        |--------------------------------------------------------------------------
+        */
+
+        const depositResult =
+            await client.query(
+                `
+                SELECT
+                    id,
+                    user_id,
+                    wallet_id,
+                    amount,
+                    status
+                FROM deposit_requests
+                WHERE id = $1
+                FOR UPDATE
+                `,
+                [
+                    depositId
+                ]
+            );
+
+
+        if (
+            depositResult.rowCount === 0
+        ) {
+
+            const error =
+                new Error(
+                    "DEPOSIT_NOT_FOUND"
+                );
+
+            error.code =
+                "DEPOSIT_NOT_FOUND";
+
+            throw error;
+        }
+
+
+        const deposit =
+            depositResult.rows[0];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK STATUS
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            deposit.status !==
+            "pending"
+        ) {
+
+            const error =
+                new Error(
+                    "DEPOSIT_ALREADY_PROCESSED"
+                );
+
+            error.code =
+                "DEPOSIT_ALREADY_PROCESSED";
+
+            throw error;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE TRANSACTION
+        |--------------------------------------------------------------------------
+        */
+
+        const transactionResult =
+            await client.query(
+                `
+                INSERT INTO wallet_transactions (
+                    wallet_id,
+                    transaction_type,
+                    amount,
+                    currency,
+                    status,
+                    reference_type,
+                    reference_id,
+                    description
+                )
+                VALUES (
+                    $1,
+                    'deposit',
+                    $2,
+                    'INR',
+                    'completed',
+                    'deposit_request',
+                    $3,
+                    'Deposit approved'
+                )
+                RETURNING
+                    id,
+                    wallet_id,
+                    amount,
+                    transaction_type,
+                    status,
+                    created_at
+                `,
+                [
+                    deposit.wallet_id,
+                    deposit.amount,
+                    deposit.id
+                ]
+            );
+
+
+        const transaction =
+            transactionResult.rows[0];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE WALLET BALANCE
+        |--------------------------------------------------------------------------
+        */
+
+        const balanceResult =
+            await client.query(
+                `
+                UPDATE wallet_balances
+                SET
+                    available_balance =
+                        available_balance + $1
+                WHERE wallet_id = $2
+                RETURNING
+                    wallet_id,
+                    available_balance,
+                    pending_balance,
+                    currency
+                `,
+                [
+                    deposit.amount,
+                    deposit.wallet_id
+                ]
+            );
+
+
+        if (
+            balanceResult.rowCount === 0
+        ) {
+
+            const error =
+                new Error(
+                    "WALLET_BALANCE_NOT_FOUND"
+                );
+
+            error.code =
+                "WALLET_BALANCE_NOT_FOUND";
+
+            throw error;
+        }
+
+
+        const balance =
+            balanceResult.rows[0];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MARK DEPOSIT APPROVED
+        |--------------------------------------------------------------------------
+        */
+
+        await client.query(
+            `
+            UPDATE deposit_requests
+            SET
+                status = 'approved',
+                approved_by = $1,
+                approved_at = NOW(),
+                updated_at = NOW()
+            WHERE id = $2
+            `,
+            [
+                adminUserId,
+                deposit.id
+            ]
+        );
+
+
+        await client.query(
+            "COMMIT"
+        );
+
+
+        return {
+            depositId:
+                deposit.id,
+
+            transaction,
+
+            balance
+        };
+
+
+    } catch (error) {
+
+        await client.query(
+            "ROLLBACK"
+        );
+
+        throw error;
+
+
+    } finally {
+
+        client.release();
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GET USER DEPOSITS
+|--------------------------------------------------------------------------
+*/
+
+async function getUserDeposits({
+    userId
+}) {
+
+    const result =
+        await pool.query(
+            `
+            SELECT
+                id,
+                amount,
+                status,
+                payment_reference,
+                admin_note,
+                approved_at,
+                rejected_at,
+                created_at
+            FROM deposit_requests
+            WHERE user_id = $1
+            ORDER BY created_at DESC
+            `,
+            [
+                userId
+            ]
+        );
+
+
+    return result.rows;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
+|--------------------------------------------------------------------------
+*/
+
 module.exports = {
-    createDeposit
+    createDepositRequest,
+    approveDepositRequest,
+    getUserDeposits
 };

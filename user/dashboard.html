@@ -10,7 +10,15 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>SkillEarn Hub — Dashboard</title>
+    <meta
+        name="description"
+        content="SkillEarn Hub secure user dashboard"
+    >
+
+    <title>
+        SkillEarn Hub — Dashboard
+    </title>
+
 
     <link
         rel="stylesheet"
@@ -22,56 +30,140 @@
 
 <body>
 
-<header class="topbar">
 
-    <div class="brand">
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
-        <div class="brand-logo">
-            S
-        </div>
+<header class="dashboard-header">
 
-        <div class="brand-name">
-            SkillEarn
-        </div>
+    <div class="header-inner">
+
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <span class="brand-icon">
+                S
+            </span>
+
+            <span class="brand-name">
+                SkillEarn
+            </span>
+
+        </a>
+
+
+        <button
+            id="mobileMenuButton"
+            class="mobile-menu-button"
+            type="button"
+            aria-label="Open menu"
+            aria-expanded="false"
+        >
+            ☰
+        </button>
+
+
+        <nav
+            id="dashboardNav"
+            class="dashboard-nav"
+        >
+
+            <a
+                href="dashboard.html"
+                class="nav-link active"
+            >
+                Dashboard
+            </a>
+
+            <a
+                href="wallet.html"
+                class="nav-link"
+            >
+                Wallet
+            </a>
+
+            <a
+                href="transactions.html"
+                class="nav-link"
+            >
+                Transactions
+            </a>
+
+            <a
+                href="profile.html"
+                class="nav-link"
+            >
+                Profile
+            </a>
+
+        </nav>
+
+
+        <button
+            class="logout-button"
+            type="button"
+            data-action="logout"
+        >
+            Logout
+        </button>
 
     </div>
-
-
-    <button
-        id="logoutButton"
-        class="logout-btn"
-        type="button"
-    >
-        Logout
-    </button>
 
 </header>
 
 
-<main class="dashboard-container">
+<!-- =====================================================
+     MAIN
+===================================================== -->
+
+<main class="dashboard-main">
 
 
-    <!-- =====================================================
-         WELCOME
-    ====================================================== -->
+    <div
+        id="dashboardLoading"
+        class="loading-box"
+    >
+        Loading your account...
+    </div>
 
-    <section class="welcome-card">
+
+    <div
+        id="dashboardMessage"
+        class="dashboard-message"
+    ></div>
+
+
+    <!-- =================================================
+         HERO
+    ================================================= -->
+
+    <section class="hero-card">
 
         <div>
 
-            <span class="eyebrow">
+            <p class="eyebrow">
                 USER DASHBOARD
-            </span>
+            </p>
+
 
             <h1>
                 Welcome,
-                <span id="userName">User</span>
+                <span id="welcomeName">
+                    —
+                </span>
             </h1>
 
-            <p>
+
+            <p class="hero-description">
+
                 Manage your SkillEarn Hub account,
-                wallet and account activity from one
-                secure dashboard.
+                wallet, transactions and security
+                from one secure dashboard.
+
             </p>
 
         </div>
@@ -79,311 +171,21 @@
     </section>
 
 
-    <!-- =====================================================
-         WALLET
-    ====================================================== -->
+    <!-- =================================================
+         ACCOUNT OVERVIEW
+    ================================================= -->
 
     <section>
 
         <div class="section-heading">
 
-            <div>
-
-                <span class="section-label">
-                    FINANCIAL OVERVIEW
-                </span>
-
-                <h2>
-                    Wallet
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <div class="wallet-grid">
-
-
-            <article class="balance-card primary">
-
-                <span>
-                    Available Balance
-                </span>
-
-                <strong id="walletBalance">
-                    ₹0.00
-                </strong>
-
-                <small>
-                    Server-side wallet balance
-                </small>
-
-            </article>
-
-
-            <article class="balance-card">
-
-                <span>
-                    Pending
-                </span>
-
-                <strong id="pendingBalance">
-                    ₹0.00
-                </strong>
-
-                <small>
-                    Pending transactions
-                </small>
-
-            </article>
-
-
-            <article class="balance-card">
-
-                <span>
-                    Total Received
-                </span>
-
-                <strong id="totalReceived">
-                    ₹0.00
-                </strong>
-
-                <small>
-                    Lifetime received
-                </small>
-
-            </article>
-
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         QUICK ACTIONS
-    ====================================================== -->
-
-    <section>
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    QUICK ACTIONS
-                </span>
-
-                <h2>
-                    Money & Wallet
-                </h2>
-
-            </div>
-
-        </div>
-
-
-        <div class="action-grid">
-
-
-            <a
-                class="action-card send"
-                href="send-money.html"
-            >
-
-                <div class="action-icon">
-                    ↑
-                </div>
-
-                <div>
-
-                    <h3>
-                        Send Money
-                    </h3>
-
-                    <p>
-                        Send funds to another
-                        SkillEarn user.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-
-            <a
-                class="action-card receive"
-                href="receive-money.html"
-            >
-
-                <div class="action-icon">
-                    ↓
-                </div>
-
-                <div>
-
-                    <h3>
-                        Receive Money
-                    </h3>
-
-                    <p>
-                        Receive funds using
-                        your account details.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-
-            <a
-                class="action-card"
-                href="deposit.html"
-            >
-
-                <div class="action-icon">
-                    +
-                </div>
-
-                <div>
-
-                    <h3>
-                        Deposit
-                    </h3>
-
-                    <p>
-                        Add funds to your
-                        SkillEarn wallet.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-
-            <a
-                class="action-card"
-                href="withdraw.html"
-            >
-
-                <div class="action-icon">
-                    −
-                </div>
-
-                <div>
-
-                    <h3>
-                        Withdraw
-                    </h3>
-
-                    <p>
-                        Request a withdrawal
-                        from your wallet.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-
-            <a
-                class="action-card"
-                href="transactions.html"
-            >
-
-                <div class="action-icon">
-                    ≋
-                </div>
-
-                <div>
-
-                    <h3>
-                        Transactions
-                    </h3>
-
-                    <p>
-                        View your wallet
-                        transaction history.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-
-            <a
-                class="action-card"
-                href="wallet.html"
-            >
-
-                <div class="action-icon">
-                    ◈
-                </div>
-
-                <div>
-
-                    <h3>
-                        Wallet
-                    </h3>
-
-                    <p>
-                        View complete wallet
-                        information.
-                    </p>
-
-                </div>
-
-                <span class="arrow">
-                    →
-                </span>
-
-            </a>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         ACCOUNT
-    ====================================================== -->
-
-    <section>
-
-        <div class="section-heading">
-
-            <div>
-
-                <span class="section-label">
-                    ACCOUNT
-                </span>
-
-                <h2>
-                    Account Overview
-                </h2>
-
-            </div>
+            <p>
+                ACCOUNT
+            </p>
+
+            <h2>
+                Account Overview
+            </h2>
 
         </div>
 
@@ -393,7 +195,7 @@
 
             <div class="info-card">
 
-                <span>
+                <span class="card-label">
                     USER ID
                 </span>
 
@@ -406,7 +208,7 @@
 
             <div class="info-card">
 
-                <span>
+                <span class="card-label">
                     ACCOUNT STATUS
                 </span>
 
@@ -419,7 +221,7 @@
 
             <div class="info-card">
 
-                <span>
+                <span class="card-label">
                     EMAIL
                 </span>
 
@@ -432,68 +234,265 @@
 
             <div class="info-card">
 
-                <span>
+                <span class="card-label">
                     EMAIL VERIFICATION
                 </span>
 
-                <strong id="emailStatus">
+                <strong
+                    id="emailStatus"
+                    class="status-badge"
+                >
                     —
                 </strong>
 
             </div>
+
 
         </div>
 
     </section>
 
 
-    <!-- =====================================================
-         PROFILE / SECURITY
-    ====================================================== -->
+    <!-- =================================================
+         WALLET ACTIONS
+    ================================================= -->
 
     <section>
 
         <div class="section-heading">
 
-            <div>
+            <p>
+                MONEY
+            </p>
 
-                <span class="section-label">
-                    ACCOUNT MANAGEMENT
-                </span>
-
-                <h2>
-                    Quick Access
-                </h2>
-
-            </div>
+            <h2>
+                Wallet & Payments
+            </h2>
 
         </div>
 
 
-        <div class="management-grid">
+        <div class="action-grid">
+
+
+            <a
+                href="wallet.html"
+                class="action-card wallet-card"
+            >
+
+                <span class="action-icon">
+                    💰
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Wallet
+                    </strong>
+
+                    <small>
+                        View your wallet and balance
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a
+                href="send-money.html"
+                class="action-card"
+            >
+
+                <span class="action-icon">
+                    💸
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Send Money
+                    </strong>
+
+                    <small>
+                        Send funds to another user
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a
+                href="receive-money.html"
+                class="action-card"
+            >
+
+                <span class="action-icon">
+                    📥
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Receive Money
+                    </strong>
+
+                    <small>
+                        Receive funds securely
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a
+                href="deposit.html"
+                class="action-card"
+            >
+
+                <span class="action-icon">
+                    ➕
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Add Money
+                    </strong>
+
+                    <small>
+                        Create a deposit request
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a
+                href="withdraw.html"
+                class="action-card"
+            >
+
+                <span class="action-icon">
+                    📤
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Withdraw
+                    </strong>
+
+                    <small>
+                        Request a wallet withdrawal
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+            <a
+                href="transactions.html"
+                class="action-card"
+            >
+
+                <span class="action-icon">
+                    🔄
+                </span>
+
+                <span class="action-content">
+
+                    <strong>
+                        Transactions
+                    </strong>
+
+                    <small>
+                        View your transaction history
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </a>
+
+
+        </div>
+
+    </section>
+
+
+    <!-- =================================================
+         QUICK ACCESS
+    ================================================= -->
+
+    <section>
+
+        <div class="section-heading">
+
+            <p>
+                ACCOUNT
+            </p>
+
+            <h2>
+                Quick Access
+            </h2>
+
+        </div>
+
+
+        <div class="action-grid">
 
 
             <a
                 href="profile.html"
-                class="management-card"
+                class="action-card"
             >
 
-                <div class="management-icon">
+                <span class="action-icon">
                     👤
-                </div>
+                </span>
 
-                <h3>
-                    Profile
-                </h3>
+                <span class="action-content">
 
-                <p>
-                    Manage your account
-                    information and personal
-                    details.
-                </p>
+                    <strong>
+                        Profile
+                    </strong>
 
-                <span>
-                    Open →
+                    <small>
+                        Manage account information
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
                 </span>
 
             </a>
@@ -501,24 +500,27 @@
 
             <a
                 href="security.html"
-                class="management-card"
+                class="action-card"
             >
 
-                <div class="management-icon">
+                <span class="action-icon">
                     🔐
-                </div>
+                </span>
 
-                <h3>
-                    Security
-                </h3>
+                <span class="action-content">
 
-                <p>
-                    Manage secure authentication
-                    and account protection.
-                </p>
+                    <strong>
+                        Security
+                    </strong>
 
-                <span>
-                    Open →
+                    <small>
+                        Manage account security
+                    </small>
+
+                </span>
+
+                <span class="arrow">
+                    →
                 </span>
 
             </a>
@@ -526,49 +528,27 @@
 
             <a
                 href="notifications.html"
-                class="management-card"
+                class="action-card"
             >
 
-                <div class="management-icon">
+                <span class="action-icon">
                     🔔
-                </div>
-
-                <h3>
-                    Notifications
-                </h3>
-
-                <p>
-                    View important account
-                    notifications and updates.
-                </p>
-
-                <span>
-                    Open →
                 </span>
 
-            </a>
+                <span class="action-content">
 
+                    <strong>
+                        Notifications
+                    </strong>
 
-            <a
-                href="help.html"
-                class="management-card"
-            >
+                    <small>
+                        View account notifications
+                    </small>
 
-                <div class="management-icon">
-                    ?
-                </div>
+                </span>
 
-                <h3>
-                    Help Center
-                </h3>
-
-                <p>
-                    Get help with your
-                    SkillEarn account.
-                </p>
-
-                <span>
-                    Open →
+                <span class="arrow">
+                    →
                 </span>
 
             </a>
@@ -579,29 +559,66 @@
     </section>
 
 
-    <div
-        id="dashboardMessage"
-        class="dashboard-message"
-    ></div>
+    <!-- =================================================
+         SECURITY NOTICE
+    ================================================= -->
+
+    <section class="security-notice">
+
+        <div class="notice-icon">
+            🛡️
+        </div>
+
+        <div>
+
+            <h3>
+                Secure account architecture
+            </h3>
+
+            <p>
+
+                Authentication is handled by the
+                server-side session system.
+                Sensitive authentication credentials
+                are not stored in the dashboard UI.
+
+            </p>
+
+        </div>
+
+    </section>
 
 
 </main>
 
 
-<footer class="footer">
+<!-- =====================================================
+     FOOTER
+===================================================== -->
+
+<footer class="dashboard-footer">
 
     <p>
         © 2026 SkillEarn Hub
     </p>
 
-    <span>
-        Secure User Dashboard
-    </span>
+    <div>
+
+        <a href="security.html">
+            Security
+        </a>
+
+        <a href="../index.html">
+            Home
+        </a>
+
+    </div>
 
 </footer>
 
 
 <script src="../assets/js/config.js"></script>
+
 <script src="../assets/js/dashboard.js"></script>
 
 </body>

@@ -11,20 +11,79 @@ const {
 } = require("../middleware/admin");
 
 const {
-    approveDeposit,
-    rejectDeposit
-} = require("../services/admin-deposit.service");
+    getPendingDeposits,
+    approveDepositRequest,
+    rejectDepositRequest
+} = require("../services/deposit.service");
 
 
 const router = express.Router();
 
 
 /*
- * APPROVE
- */
+|--------------------------------------------------------------------------
+| GET PENDING DEPOSIT REQUESTS
+|--------------------------------------------------------------------------
+|
+| GET /api/admin/deposits/pending
+|
+*/
+
+router.get(
+    "/pending",
+
+    requireAuth,
+    requireAdmin,
+
+    async (req, res) => {
+
+        try {
+
+            const deposits =
+                await getPendingDeposits();
+
+            return res.status(200).json({
+
+                success: true,
+
+                deposits
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET PENDING DEPOSITS ERROR:",
+                error
+            );
+
+            return res.status(500).json({
+
+                success: false,
+
+                error:
+                    "ADMIN_DEPOSITS_FETCH_FAILED"
+
+            });
+
+        }
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| APPROVE DEPOSIT REQUEST
+|--------------------------------------------------------------------------
+|
+| POST /api/admin/deposits/:depositId/approve
+|
+*/
 
 router.post(
     "/:depositId/approve",
+
     requireAuth,
     requireAdmin,
 
@@ -33,26 +92,18 @@ router.post(
         try {
 
             const result =
-                await approveDeposit({
+                await approveDepositRequest({
 
                     depositId:
                         req.params.depositId,
 
                     adminUserId:
-                        req.user.id,
+                        req.user.id
 
-                    ipAddress:
-                        req.ip,
-
-                    userAgent:
-                        req.get("user-agent"),
-
-                    adminNote:
-                        req.body?.adminNote
                 });
 
 
-            res.json({
+            return res.status(200).json({
 
                 success: true,
 
@@ -60,49 +111,70 @@ router.post(
                     "Deposit approved successfully.",
 
                 result
-            });
 
+            });
 
         } catch (error) {
 
+            console.error(
+                "APPROVE DEPOSIT ERROR:",
+                error
+            );
+
+
             const statusMap = {
 
-                DEPOSIT_NOT_FOUND: 404,
+                DEPOSIT_NOT_FOUND:
+                    404,
 
-                DEPOSIT_ALREADY_PROCESSED: 409,
+                DEPOSIT_ALREADY_PROCESSED:
+                    409,
 
-                WALLET_BALANCE_NOT_FOUND: 500,
+                WALLET_NOT_FOUND:
+                    500,
 
-                LEDGER_ACCOUNT_ERROR: 500
+                WALLET_BALANCE_NOT_FOUND:
+                    500
 
             };
 
 
             const status =
-                statusMap[error.message] || 500;
+                statusMap[
+                    error.code ||
+                    error.message
+                ] || 500;
 
 
-            res.status(status).json({
+            return res.status(status).json({
 
                 success: false,
 
                 error:
-                    status === 500
-                        ? "DEPOSIT_APPROVAL_FAILED"
-                        : error.message
+                    error.code ||
+                    error.message ||
+                    "DEPOSIT_APPROVAL_FAILED"
 
             });
+
         }
+
     }
 );
 
 
 /*
- * REJECT
- */
+|--------------------------------------------------------------------------
+| REJECT DEPOSIT REQUEST
+|--------------------------------------------------------------------------
+|
+| POST /api/admin/deposits/:depositId/reject
+|
+*/
 
 router.post(
     "/:depositId/reject",
+
     requireAuth,
     requireAdmin,
 
@@ -111,7 +183,7 @@ router.post(
         try {
 
             const result =
-                await rejectDeposit({
+                await rejectDepositRequest({
 
                     depositId:
                         req.params.depositId,
@@ -119,54 +191,62 @@ router.post(
                     adminUserId:
                         req.user.id,
 
-                    ipAddress:
-                        req.ip,
+                    reason:
+                        req.body?.reason
 
-                    userAgent:
-                        req.get("user-agent"),
-
-                    adminNote:
-                        req.body?.adminNote
                 });
 
 
-            res.json({
+            return res.status(200).json({
 
                 success: true,
 
                 message:
                     "Deposit rejected successfully.",
 
-                deposit: result
-            });
+                result
 
+            });
 
         } catch (error) {
 
+            console.error(
+                "REJECT DEPOSIT ERROR:",
+                error
+            );
+
+
             const statusMap = {
 
-                DEPOSIT_NOT_FOUND: 404,
+                DEPOSIT_NOT_FOUND:
+                    404,
 
-                DEPOSIT_ALREADY_PROCESSED: 409
+                DEPOSIT_ALREADY_PROCESSED:
+                    409
 
             };
 
 
             const status =
-                statusMap[error.message] || 500;
+                statusMap[
+                    error.code ||
+                    error.message
+                ] || 500;
 
 
-            res.status(status).json({
+            return res.status(status).json({
 
                 success: false,
 
                 error:
-                    status === 500
-                        ? "DEPOSIT_REJECTION_FAILED"
-                        : error.message
+                    error.code ||
+                    error.message ||
+                    "DEPOSIT_REJECTION_FAILED"
 
             });
+
         }
+
     }
 );
 

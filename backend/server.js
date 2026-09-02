@@ -1,14 +1,35 @@
 "use strict";
 
+
 require("dotenv").config();
 
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
+
+const express =
+    require("express");
+
+
+const helmet =
+    require("helmet");
+
+
+const cors =
+    require("cors");
+
+
+const cookieParser =
+    require("cookie-parser");
+
 
 const authRoutes =
-    require("./src/routes/auth.routes");
+    require(
+        "./src/routes/auth.routes"
+    );
+
+
+const depositRoutes =
+    require(
+        "./src/routes/deposit.routes"
+    );
 
 
 const app =
@@ -21,6 +42,12 @@ const PORT =
     );
 
 
+/*
+|--------------------------------------------------------------------------
+| SECURITY
+|--------------------------------------------------------------------------
+*/
+
 app.disable(
     "x-powered-by"
 );
@@ -30,9 +57,6 @@ app.disable(
 |--------------------------------------------------------------------------
 | TRUST PROXY
 |--------------------------------------------------------------------------
-|
-| Render runs the application behind a proxy.
-|
 */
 
 app.set(
@@ -62,14 +86,6 @@ const allowedOrigin =
     process.env.FRONTEND_ORIGIN;
 
 
-if (!allowedOrigin) {
-
-    console.warn(
-        "WARNING: FRONTEND_ORIGIN is not configured."
-    );
-}
-
-
 app.use(
     cors({
 
@@ -86,7 +102,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| BODY PARSER
+| JSON BODY PARSER
 |--------------------------------------------------------------------------
 */
 
@@ -119,6 +135,7 @@ app.use(
 
 app.get(
     "/api/health",
+
     (req, res) => {
 
         res.status(200).json({
@@ -152,7 +169,23 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| 404
+| DEPOSIT ROUTES
+|--------------------------------------------------------------------------
+|
+| POST /api/deposits
+| GET  /api/deposits
+|
+*/
+
+app.use(
+    "/api/deposits",
+    depositRoutes
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -165,7 +198,10 @@ app.use(
                 false,
 
             error:
-                "NOT_FOUND"
+                "NOT_FOUND",
+
+            message:
+                "API endpoint not found"
 
         });
 
@@ -209,13 +245,14 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| START
+| START SERVER
 |--------------------------------------------------------------------------
 */
 
 app.listen(
     PORT,
     "0.0.0.0",
+
     () => {
 
         console.log(

@@ -2,7 +2,7 @@
 
 /* =========================================================
    SkillEarn Hub
-   Global Configuration + API Request Helper
+   Global Configuration
 ========================================================= */
 
 const SKILLEARN_CONFIG = {
@@ -56,8 +56,7 @@ const SKILLEARN_CONFIG = {
 function apiUrl(endpoint) {
 
     const base =
-        SKILLEARN_CONFIG
-            .API_BASE_URL
+        SKILLEARN_CONFIG.API_BASE_URL
             .replace(/\/+$/, "");
 
     const path =
@@ -74,35 +73,66 @@ function apiUrl(endpoint) {
 
 function getAuthToken() {
 
-    return localStorage.getItem(
-        SKILLEARN_CONFIG.STORAGE.TOKEN
-    );
+    try {
+
+        return localStorage.getItem(
+            SKILLEARN_CONFIG.STORAGE.TOKEN
+        );
+
+    } catch (error) {
+
+        return null;
+
+    }
 
 }
 
 
 function setAuthToken(token) {
 
-    if (!token) {
+    try {
 
-        removeAuthToken();
+        if (!token) {
 
-        return;
+            removeAuthToken();
+
+            return;
+
+        }
+
+        localStorage.setItem(
+            SKILLEARN_CONFIG.STORAGE.TOKEN,
+            String(token)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "TOKEN SAVE ERROR:",
+            error
+        );
+
     }
-
-    localStorage.setItem(
-        SKILLEARN_CONFIG.STORAGE.TOKEN,
-        String(token)
-    );
 
 }
 
 
 function removeAuthToken() {
 
-    localStorage.removeItem(
-        SKILLEARN_CONFIG.STORAGE.TOKEN
-    );
+    try {
+
+        localStorage.removeItem(
+            SKILLEARN_CONFIG.STORAGE.TOKEN
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "TOKEN REMOVE ERROR:",
+            error
+        );
+
+    }
 
 }
 
@@ -113,23 +143,20 @@ function removeAuthToken() {
 
 function getSavedUser() {
 
-    const value =
-        localStorage.getItem(
-            SKILLEARN_CONFIG.STORAGE.USER
-        );
-
-    if (!value) {
-
-        return null;
-
-    }
-
-
     try {
 
-        return JSON.parse(
-            value
-        );
+        const value =
+            localStorage.getItem(
+                SKILLEARN_CONFIG.STORAGE.USER
+            );
+
+        if (!value) {
+
+            return null;
+
+        }
+
+        return JSON.parse(value);
 
     } catch (error) {
 
@@ -144,28 +171,49 @@ function getSavedUser() {
 
 function setSavedUser(user) {
 
-    if (!user) {
+    try {
 
-        removeSavedUser();
+        if (!user) {
 
-        return;
+            removeSavedUser();
+
+            return;
+
+        }
+
+        localStorage.setItem(
+            SKILLEARN_CONFIG.STORAGE.USER,
+            JSON.stringify(user)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "USER SAVE ERROR:",
+            error
+        );
 
     }
-
-
-    localStorage.setItem(
-        SKILLEARN_CONFIG.STORAGE.USER,
-        JSON.stringify(user)
-    );
 
 }
 
 
 function removeSavedUser() {
 
-    localStorage.removeItem(
-        SKILLEARN_CONFIG.STORAGE.USER
-    );
+    try {
+
+        localStorage.removeItem(
+            SKILLEARN_CONFIG.STORAGE.USER
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "USER REMOVE ERROR:",
+            error
+        );
+
+    }
 
 }
 
@@ -189,7 +237,7 @@ function clearAuthData() {
     } catch (error) {
 
         console.warn(
-            "Unable to clear session storage:",
+            "SESSION STORAGE CLEAR ERROR:",
             error
         );
 
@@ -199,7 +247,7 @@ function clearAuthData() {
 
 
 /* =========================================================
-   GET API HEADERS
+   API HEADERS
 ========================================================= */
 
 function getApiHeaders() {
@@ -252,7 +300,9 @@ function extractToken(data) {
 
         data.jwt ||
 
-        data.access?.token ||
+        data.data?.token ||
+
+        data.data?.accessToken ||
 
         null
 
@@ -274,17 +324,21 @@ function extractUser(data) {
     }
 
 
-    return (
+    if (data.user) {
 
-        data.user ||
+        return data.user;
 
-        data.data?.user ||
+    }
 
-        data.data ||
 
-        null
+    if (data.data?.user) {
 
-    );
+        return data.data.user;
+
+    }
+
+
+    return null;
 
 }
 
@@ -313,9 +367,7 @@ async function apiRequest(
                 controller.abort();
 
             },
-            SKILLEARN_CONFIG
-                .REQUEST
-                .TIMEOUT
+            SKILLEARN_CONFIG.REQUEST.TIMEOUT
         );
 
 
@@ -326,9 +378,7 @@ async function apiRequest(
 
         credentials:
             options.credentials ||
-            SKILLEARN_CONFIG
-                .REQUEST
-                .CREDENTIALS,
+            SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
 
         headers: {
 
@@ -344,10 +394,6 @@ async function apiRequest(
     };
 
 
-    /* =====================================================
-       REQUEST BODY
-    ===================================================== */
-
     if (
 
         options.body !== undefined &&
@@ -357,23 +403,19 @@ async function apiRequest(
     ) {
 
         if (
+
             options.body instanceof FormData
+
         ) {
 
             requestOptions.body =
                 options.body;
 
-
-            delete requestOptions.headers[
-                "Content-Type"
-            ];
-
         }
 
         else if (
 
-            typeof options.body ===
-            "string"
+            typeof options.body === "string"
 
         ) {
 
@@ -414,8 +456,10 @@ async function apiRequest(
     } catch (error) {
 
         if (
+
             error.name ===
             "AbortError"
+
         ) {
 
             throw new Error(
@@ -426,7 +470,7 @@ async function apiRequest(
 
 
         throw new Error(
-            "Unable to connect to the server. Please check your internet connection and try again."
+            "Unable to connect to the server."
         );
 
     } finally {
@@ -437,10 +481,6 @@ async function apiRequest(
 
     }
 
-
-    /* =====================================================
-       RESPONSE
-    ===================================================== */
 
     let data =
         null;
@@ -475,12 +515,10 @@ async function apiRequest(
 
             data =
                 text
-
                     ? {
                         message:
                             text
                     }
-
                     : null;
 
         }
@@ -493,13 +531,7 @@ async function apiRequest(
     }
 
 
-    /* =====================================================
-       ERROR RESPONSE
-    ===================================================== */
-
-    if (
-        !response.ok
-    ) {
+    if (!response.ok) {
 
         const message =
 
@@ -507,9 +539,7 @@ async function apiRequest(
 
             data?.error ||
 
-            data?.detail ||
-
-            "The server returned an error. Please try again.";
+            "The server returned an error.";
 
 
         const apiError =
@@ -530,10 +560,6 @@ async function apiRequest(
 
     }
 
-
-    /* =====================================================
-       SAVE TOKEN AUTOMATICALLY
-    ===================================================== */
 
     const token =
         extractToken(
@@ -566,8 +592,7 @@ window.SKILLEARN_CONFIG =
 window.APP_CONFIG = {
 
     API_BASE_URL:
-        SKILLEARN_CONFIG
-            .API_BASE_URL
+        SKILLEARN_CONFIG.API_BASE_URL
 
 };
 

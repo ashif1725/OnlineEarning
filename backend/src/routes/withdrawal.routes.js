@@ -46,8 +46,9 @@ const {
 const {
     createWithdrawal,
     getMyWithdrawals,
-    getAllWithdrawals,
-    updateWithdrawalStatus
+    getPendingWithdrawals,
+    approveWithdrawal,
+    rejectWithdrawal
 } =
     withdrawalController;
 
@@ -67,7 +68,7 @@ router.post(
 
 /*
 |--------------------------------------------------------------------------
-| GET MY WITHDRAWALS
+| GET CURRENT USER WITHDRAWALS
 |--------------------------------------------------------------------------
 */
 
@@ -80,29 +81,43 @@ router.get(
 
 /*
 |--------------------------------------------------------------------------
-| GET ALL WITHDRAWALS
+| ADMIN GET PENDING WITHDRAWALS
 |--------------------------------------------------------------------------
 */
 
 router.get(
-    "/admin/all",
+    "/admin/pending",
     requireAuth,
     requireAdmin,
-    getAllWithdrawals
+    getPendingWithdrawals
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| UPDATE WITHDRAWAL STATUS
+| ADMIN APPROVE WITHDRAWAL
 |--------------------------------------------------------------------------
 */
 
 router.post(
-    "/admin/:id/status",
+    "/admin/:withdrawalId/approve",
     requireAuth,
     requireAdmin,
-    updateWithdrawalStatus
+    approveWithdrawal
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN REJECT WITHDRAWAL
+|--------------------------------------------------------------------------
+*/
+
+router.post(
+    "/admin/:withdrawalId/reject",
+    requireAuth,
+    requireAdmin,
+    rejectWithdrawal
 );
 
 

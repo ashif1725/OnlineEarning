@@ -8,17 +8,12 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./src/routes/auth.routes");
-const walletRoutes =
-    require("./src/routes/wallet.routes");
 
 const app = express();
 
 const PORT = Number(process.env.PORT || 8080);
 
-app.use(
-    "/api/wallet",
-    walletRoutes
-);
+
 
 app.disable("x-powered-by");
 
@@ -48,9 +43,14 @@ app.use(
     cors({
         origin: allowedOrigin,
         credentials: true
-    })
-);
+/* =========================================
+   WALLET ROUTES
+========================================= */
 
+app.use(
+    "/api/wallet",
+    walletRoutes
+);
 
 /* =========================================================
    BODY PARSER

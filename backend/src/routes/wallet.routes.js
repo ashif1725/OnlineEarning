@@ -3,59 +3,34 @@
 const express =
     require("express");
 
-const {
-    wallet,
-    send,
-    transactions
-} =
-    require("../controllers/wallet.controller");
-
-const {
-    requireAuth
-} =
-    require("../middleware/auth");
-
 
 const router =
     express.Router();
 
 
-/*
-|--------------------------------------------------------------------------
-| GET WALLET
-|--------------------------------------------------------------------------
-*/
+const controller =
+    require(
+        "../controllers/wallet.controller"
+    );
+
+
+const requireAuth =
+    require(
+        "../middleware/auth.middleware"
+    );
+
 
 router.get(
     "/",
     requireAuth,
-    wallet
+    controller.getWallet
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| SEND
-|--------------------------------------------------------------------------
-*/
-
-router.post(
-    "/send",
-    requireAuth,
-    send
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| TRANSACTIONS
-|--------------------------------------------------------------------------
-*/
 
 router.get(
     "/transactions",
     requireAuth,
-    transactions
+    controller.getTransactions
 );
 
 

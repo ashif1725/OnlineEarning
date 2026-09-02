@@ -1,6 +1,12 @@
 "use strict";
 
 
+/* =========================================================
+   SkillEarn Hub
+   Global Configuration + API Request Helper
+========================================================= */
+
+
 const SKILLEARN_CONFIG = {
 
     API_BASE_URL:
@@ -187,9 +193,6 @@ function getApiHeaders() {
     const headers = {
 
         "Accept":
-            "application/json",
-
-        "Content-Type":
             "application/json"
 
     };
@@ -200,9 +203,11 @@ function getApiHeaders() {
 
 
     /*
-     * Keep this for future token-based APIs.
+     * Current authentication uses
+     * HTTP-only cookies.
      *
-     * Current authentication uses HTTP-only cookie.
+     * Authorization header remains
+     * available for future token APIs.
      */
 
     if (token) {
@@ -217,6 +222,236 @@ function getApiHeaders() {
 
 
 /* =========================================================
+   GLOBAL API REQUEST HELPER
+========================================================= */
+
+async function apiRequest(
+    endpoint,
+    options = {}
+) {
+
+    const url =
+        apiUrl(endpoint);
+
+
+    const requestOptions = {
+
+        method:
+            options.method || "GET",
+
+        credentials:
+            SKILLEARN_CONFIG
+                .REQUEST
+                .CREDENTIALS,
+
+        headers: {
+
+            ...getApiHeaders(),
+
+            ...(options.headers || {})
+
+        }
+
+    };
+
+
+    /*
+     * Add request body
+     */
+
+    if (
+        options.body !== undefined &&
+        options.body !== null
+    ) {
+
+        if (
+            typeof options.body === "string"
+        ) {
+
+            requestOptions.body =
+                options.body;
+
+        } else {
+
+            requestOptions.headers[
+                "Content-Type"
+            ] =
+                "application/json";
+
+
+            requestOptions.body =
+                JSON.stringify(
+                    options.body
+                );
+        }
+    }
+
+
+    /*
+     * Request timeout
+     */
+
+    const controller =
+        new AbortController();
+
+
+    requestOptions.signal =
+        controller.signal;
+
+
+    const timeout =
+        setTimeout(
+            function () {
+
+                controller.abort();
+
+            },
+            SKILLEARN_CONFIG
+                .REQUEST
+                .TIMEOUT
+        );
+
+
+    let response;
+
+
+    try {
+
+        response =
+            await fetch(
+                url,
+                requestOptions
+            );
+
+    } catch (error) {
+
+        if (
+            error.name ===
+            "AbortError"
+        ) {
+
+            throw new Error(
+                "Request timed out. Please try again."
+            );
+        }
+
+
+        throw new Error(
+            "Unable to connect to the server. Please check your internet connection and try again."
+        );
+
+    } finally {
+
+        clearTimeout(
+            timeout
+        );
+    }
+
+
+    let data =
+        null;
+
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+
+    try {
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            data =
+                await response.json();
+
+        } else {
+
+            const text =
+                await response.text();
+
+
+            data =
+                text
+                    ? {
+                        message:
+                            text
+                    }
+                    : null;
+        }
+
+    } catch (error) {
+
+        data =
+            null;
+    }
+
+
+    /*
+     * API Error
+     */
+
+    if (
+        !response.ok
+    ) {
+
+        const message =
+
+            data?.message ||
+
+            data?.error ||
+
+            data?.detail ||
+
+            "The server returned an error. Please try again.";
+
+
+        const apiError =
+            new Error(
+                message
+            );
+
+
+        apiError.status =
+            response.status;
+
+
+        apiError.data =
+            data;
+
+
+        throw apiError;
+    }
+
+
+    /*
+     * Save token if backend returns one.
+     *
+     * Cookie authentication continues
+     * to work normally even if no token
+     * is returned.
+     */
+
+    if (
+        data &&
+        data.token
+    ) {
+
+        setAuthToken(
+            data.token
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
    GLOBAL EXPORTS
 ========================================================= */
 
@@ -227,13 +462,18 @@ window.SKILLEARN_CONFIG =
 window.APP_CONFIG = {
 
     API_BASE_URL:
-        SKILLEARN_CONFIG.API_BASE_URL
+        SKILLEARN_CONFIG
+            .API_BASE_URL
 
 };
 
 
 window.apiUrl =
     apiUrl;
+
+
+window.apiRequest =
+    apiRequest;
 
 
 window.getAuthToken =

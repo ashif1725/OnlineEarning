@@ -3,15 +3,12 @@
 const {
     registerUser,
     authenticateUser
-} =
-    require("../services/auth.service");
-
+} = require("../services/auth.service");
 
 const {
     createSession,
     revokeSession
-} =
-    require("../services/session.service");
+} = require("../services/session.service");
 
 
 /*
@@ -20,10 +17,7 @@ const {
 |--------------------------------------------------------------------------
 */
 
-async function register(
-    req,
-    res
-) {
+async function register(req, res) {
 
     try {
 
@@ -35,19 +29,38 @@ async function register(
         } = req.body;
 
 
+        if (
+            !fullName ||
+            !email ||
+            !phone ||
+            !password
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "All fields are required"
+
+            });
+        }
+
+
         const user =
             await registerUser({
+
                 fullName,
                 email,
                 phone,
                 password
+
             });
 
 
         return res.status(201).json({
 
-            success:
-                true,
+            success: true,
 
             message:
                 "Account created successfully",
@@ -71,8 +84,7 @@ async function register(
 
             return res.status(409).json({
 
-                success:
-                    false,
+                success: false,
 
                 message:
                     "Email or phone already registered"
@@ -83,8 +95,7 @@ async function register(
 
         return res.status(500).json({
 
-            success:
-                false,
+            success: false,
 
             message:
                 "Registration failed"
@@ -100,10 +111,7 @@ async function register(
 |--------------------------------------------------------------------------
 */
 
-async function login(
-    req,
-    res
-) {
+async function login(req, res) {
 
     try {
 
@@ -113,10 +121,28 @@ async function login(
         } = req.body;
 
 
+        if (
+            !email ||
+            !password
+        ) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Email and password are required"
+
+            });
+        }
+
+
         const user =
             await authenticateUser({
+
                 email,
                 password
+
             });
 
 
@@ -124,8 +150,7 @@ async function login(
 
             return res.status(401).json({
 
-                success:
-                    false,
+                success: false,
 
                 message:
                     "Invalid email or password"
@@ -133,6 +158,12 @@ async function login(
             });
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE SESSION
+        |--------------------------------------------------------------------------
+        */
 
         const session =
             await createSession({
@@ -144,9 +175,7 @@ async function login(
                     req.ip,
 
                 userAgent:
-                    req.get(
-                        "user-agent"
-                    )
+                    req.get("user-agent")
 
             });
 
@@ -164,6 +193,12 @@ async function login(
                 Date.now()
             );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | HTTP-ONLY COOKIE
+        |--------------------------------------------------------------------------
+        */
 
         res.cookie(
             "skillearn_session",
@@ -188,6 +223,12 @@ async function login(
             }
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | RESPONSE
+        |--------------------------------------------------------------------------
+        */
 
         return res.status(200).json({
 
@@ -298,46 +339,101 @@ async function login(
 
 /*
 |--------------------------------------------------------------------------
-| CURRENT USER
+| CURRENT USER / ME
 |--------------------------------------------------------------------------
 */
 
-async function me(
-    req,
-    res
-) {
+async function me(req, res) {
 
-    return res.status(200).json({
+    try {
 
-        success:
-            true,
+        /*
+         * requireAuth middleware has already
+         * verified the session and populated req.user.
+         */
 
-        user: {
+        if (!req.user) {
 
-            publicUserId:
-                req.auth.publicUserId,
+            return res.status(401).json({
 
-            fullName:
-                req.auth.fullName,
+                success:
+                    false,
 
-            email:
-                req.auth.email,
+                error:
+                    "AUTHENTICATION_REQUIRED",
 
-            phone:
-                req.auth.phone,
+                message:
+                    "Please sign in again."
 
-            role:
-                req.auth.role,
-
-            accountStatus:
-                req.auth.accountStatus,
-
-            emailVerified:
-                req.auth.emailVerified
-
+            });
         }
 
-    });
+
+        return res.status(200).json({
+
+            success:
+                true,
+
+            user: {
+
+                id:
+                    req.user.id,
+
+                publicUserId:
+                    req.user.publicUserId,
+
+                fullName:
+                    req.user.fullName,
+
+                email:
+                    req.user.email,
+
+                phone:
+                    req.user.phone,
+
+                role:
+                    req.user.role,
+
+                accountStatus:
+                    req.user.accountStatus,
+
+                emailVerified:
+                    Boolean(
+                        req.user.emailVerifiedAt
+                    )
+
+            },
+
+            session: {
+
+                id:
+                    req.auth.sessionId,
+
+                expiresAt:
+                    req.auth.expiresAt
+
+            }
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "ME ERROR:",
+            error
+        );
+
+
+        return res.status(500).json({
+
+            success:
+                false,
+
+            message:
+                "Unable to load account information"
+
+        });
+    }
 }
 
 
@@ -347,10 +443,7 @@ async function me(
 |--------------------------------------------------------------------------
 */
 
-async function logout(
-    req,
-    res
-) {
+async function logout(req, res) {
 
     try {
 
@@ -406,6 +499,32 @@ async function logout(
         );
 
 
+        /*
+         * Even if session revocation encounters
+         * an error, clear the browser cookie.
+         */
+
+        res.clearCookie(
+            "skillearn_session",
+            {
+
+                httpOnly:
+                    true,
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                sameSite:
+                    "lax",
+
+                path:
+                    "/"
+
+            }
+        );
+
+
         return res.status(500).json({
 
             success:
@@ -419,11 +538,20 @@ async function logout(
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
+|--------------------------------------------------------------------------
+*/
+
 module.exports = {
 
     register,
+
     login,
-    logout,
-    me
+
+    me,
+
+    logout
 
 };

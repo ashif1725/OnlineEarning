@@ -1,100 +1,211 @@
 "use strict";
 
-const express = require("express");
-const { z } = require("zod");
+/* =========================================================
+   SkillEarn Hub
+   Authentication Routes
+========================================================= */
+
+const express =
+    require("express");
+
+const { z } =
+    require("zod");
+
 
 const {
+
     register,
+
     login,
+
     logout,
+
     me
-} = require("../controllers/auth.controller");
+
+} = require(
+    "../controllers/auth.controller"
+);
+
 
 const {
+
     requireAuth
-} = require("../middleware/auth.middleware");
+
+} = require(
+    "../middleware/auth.middleware"
+);
 
 
-const router = express.Router();
+/* =========================================================
+   ROUTER
+========================================================= */
+
+const router =
+    express.Router();
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER VALIDATION
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   REGISTER VALIDATION
+========================================================= */
 
 const registerSchema =
     z.object({
 
         fullName:
+
             z.string()
                 .trim()
-                .min(2)
-                .max(80),
+                .min(
+                    2,
+                    "Full name must contain at least 2 characters."
+                )
+                .max(
+                    80,
+                    "Full name is too long."
+                ),
+
 
         email:
+
             z.string()
                 .trim()
-                .email()
-                .max(160),
+                .email(
+                    "Please enter a valid email address."
+                )
+                .max(
+                    160,
+                    "Email address is too long."
+                ),
+
 
         phone:
+
             z.string()
                 .trim()
-                .min(8)
-                .max(20),
+                .min(
+                    8,
+                    "Please enter a valid mobile number."
+                )
+                .max(
+                    20,
+                    "Mobile number is too long."
+                ),
+
 
         password:
+
             z.string()
-                .min(12)
-                .max(128)
+                .min(
+                    12,
+                    "Password must contain at least 12 characters."
+                )
+                .max(
+                    128,
+                    "Password is too long."
+                )
 
     });
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN VALIDATION
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOGIN VALIDATION
+========================================================= */
 
 const loginSchema =
     z.object({
 
         email:
+
             z.string()
                 .trim()
-                .email()
-                .max(160),
+                .email(
+                    "Please enter a valid email address."
+                )
+                .max(
+                    160,
+                    "Email address is too long."
+                ),
+
 
         password:
+
             z.string()
-                .min(1)
-                .max(128)
+                .min(
+                    1,
+                    "Please enter your password."
+                )
+                .max(
+                    128,
+                    "Password is too long."
+                )
 
     });
 
 
-/*
-|--------------------------------------------------------------------------
-| VALIDATION MIDDLEWARE
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   VALIDATION MIDDLEWARE
+========================================================= */
 
 function validate(schema) {
 
-    return (req, res, next) => {
+    return function (
+        req,
+        res,
+        next
+    ) {
 
-        const result =
-            schema.safeParse(req.body);
+        try {
+
+            const result =
+                schema.safeParse(
+                    req.body
+                );
 
 
-        if (!result.success) {
+            if (
+                !result.success
+            ) {
+
+                const firstIssue =
+                    result.error?.issues?.[0];
+
+
+                return res.status(400).json({
+
+                    success:
+                        false,
+
+                    error:
+                        "INVALID_REQUEST",
+
+                    message:
+                        firstIssue?.message ||
+                        "Please check the submitted information."
+
+                });
+
+            }
+
+
+            req.body =
+                result.data;
+
+
+            return next();
+
+
+        } catch (error) {
+
+            console.error(
+                "VALIDATION ERROR:",
+                error
+            );
+
 
             return res.status(400).json({
 
-                success: false,
+                success:
+                    false,
 
                 error:
                     "INVALID_REQUEST",
@@ -103,80 +214,87 @@ function validate(schema) {
                     "Please check the submitted information."
 
             });
+
         }
 
-
-        req.body =
-            result.data;
-
-
-        next();
     };
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| REGISTER
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   REGISTER
+
+   POST /api/auth/register
+========================================================= */
 
 router.post(
+
     "/register",
-    validate(registerSchema),
+
+    validate(
+        registerSchema
+    ),
+
     register
+
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGIN
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOGIN
+
+   POST /api/auth/login
+========================================================= */
 
 router.post(
+
     "/login",
-    validate(loginSchema),
+
+    validate(
+        loginSchema
+    ),
+
     login
+
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| CURRENT USER
-|--------------------------------------------------------------------------
-|
-| GET /api/auth/me
-|
-*/
+/* =========================================================
+   CURRENT USER
+
+   GET /api/auth/me
+========================================================= */
 
 router.get(
+
     "/me",
+
     requireAuth,
+
     me
+
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-|
-| POST /api/auth/logout
-|
-*/
+/* =========================================================
+   LOGOUT
+
+   POST /api/auth/logout
+========================================================= */
 
 router.post(
+
     "/logout",
+
     logout
+
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| EXPORT
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   EXPORT
+========================================================= */
 
 module.exports =
     router;

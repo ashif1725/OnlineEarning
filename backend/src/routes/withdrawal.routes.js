@@ -1,124 +1,108 @@
 "use strict";
 
+
 const express =
-    require("express");
+    require(
+        "express"
+    );
+
 
 const router =
     express.Router();
+
+
+/*
+|--------------------------------------------------------------------------
+| CONTROLLER
+|--------------------------------------------------------------------------
+*/
 
 const withdrawalController =
     require(
         "../controllers/withdrawal.controller"
     );
 
-const requireAuth =
-    require(
-        "../middleware/auth.middleware"
-    );
-
-const requireAdmin =
-    require(
-        "../middleware/admin"
-    );
 
 /*
 |--------------------------------------------------------------------------
-| USER: CREATE WITHDRAWAL REQUEST
+| AUTH MIDDLEWARE
 |--------------------------------------------------------------------------
-|
-| POST /api/withdrawals
-|
+*/
+
+const {
+    requireAuth,
+    requireAdmin
+} = require(
+    "../middleware/auth.middleware"
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| CONTROLLER FUNCTIONS
+|--------------------------------------------------------------------------
+*/
+
+const {
+    createWithdrawal,
+    getMyWithdrawals,
+    getAllWithdrawals,
+    updateWithdrawalStatus
+} =
+    withdrawalController;
+
+
+/*
+|--------------------------------------------------------------------------
+| CREATE WITHDRAWAL
+|--------------------------------------------------------------------------
 */
 
 router.post(
     "/",
-
     requireAuth,
-
-    withdrawalController
-        .createWithdrawal
+    createWithdrawal
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| USER: GET MY WITHDRAWALS
+| GET MY WITHDRAWALS
 |--------------------------------------------------------------------------
-|
-| GET /api/withdrawals
-|
 */
 
 router.get(
-    "/",
-
+    "/my",
     requireAuth,
-
-    withdrawalController
-        .getMyWithdrawals
+    getMyWithdrawals
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN: GET PENDING WITHDRAWALS
+| GET ALL WITHDRAWALS
 |--------------------------------------------------------------------------
-|
-| GET /api/withdrawals/admin/pending
-|
 */
 
 router.get(
-    "/admin/pending",
-
+    "/admin/all",
     requireAuth,
-
     requireAdmin,
-
-    withdrawalController
-        .getPendingWithdrawals
+    getAllWithdrawals
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN: APPROVE WITHDRAWAL
+| UPDATE WITHDRAWAL STATUS
 |--------------------------------------------------------------------------
-|
-| POST /api/withdrawals/admin/:withdrawalId/approve
-|
 */
 
 router.post(
-    "/admin/:withdrawalId/approve",
-
+    "/admin/:id/status",
     requireAuth,
-
     requireAdmin,
-
-    withdrawalController
-        .approveWithdrawal
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN: REJECT WITHDRAWAL
-|--------------------------------------------------------------------------
-|
-| POST /api/withdrawals/admin/:withdrawalId/reject
-|
-*/
-
-router.post(
-    "/admin/:withdrawalId/reject",
-
-    requireAuth,
-
-    requireAdmin,
-
-    withdrawalController
-        .rejectWithdrawal
+    updateWithdrawalStatus
 );
 
 

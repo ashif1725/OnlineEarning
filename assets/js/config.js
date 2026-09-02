@@ -1,11 +1,9 @@
 "use strict";
 
-
 /* =========================================================
    SkillEarn Hub
    Global Configuration + API Request Helper
 ========================================================= */
-
 
 const SKILLEARN_CONFIG = {
 
@@ -62,11 +60,9 @@ function apiUrl(endpoint) {
             .API_BASE_URL
             .replace(/\/+$/, "");
 
-
     const path =
         String(endpoint || "")
             .replace(/^\/+/, "");
-
 
     return `${base}/${path}`;
 }
@@ -81,6 +77,7 @@ function getAuthToken() {
     return localStorage.getItem(
         SKILLEARN_CONFIG.STORAGE.TOKEN
     );
+
 }
 
 
@@ -95,11 +92,11 @@ function setAuthToken(token) {
         return;
     }
 
-
     localStorage.setItem(
         SKILLEARN_CONFIG.STORAGE.TOKEN,
         token
     );
+
 }
 
 
@@ -108,6 +105,7 @@ function removeAuthToken() {
     localStorage.removeItem(
         SKILLEARN_CONFIG.STORAGE.TOKEN
     );
+
 }
 
 
@@ -122,11 +120,9 @@ function getSavedUser() {
             SKILLEARN_CONFIG.STORAGE.USER
         );
 
-
     if (!value) {
         return null;
     }
-
 
     try {
 
@@ -140,6 +136,7 @@ function getSavedUser() {
 
         return null;
     }
+
 }
 
 
@@ -152,11 +149,11 @@ function setSavedUser(user) {
         return;
     }
 
-
     localStorage.setItem(
         SKILLEARN_CONFIG.STORAGE.USER,
         JSON.stringify(user)
     );
+
 }
 
 
@@ -165,6 +162,7 @@ function removeSavedUser() {
     localStorage.removeItem(
         SKILLEARN_CONFIG.STORAGE.USER
     );
+
 }
 
 
@@ -181,6 +179,7 @@ function clearAuthData() {
     sessionStorage.removeItem(
         "skillEarnUser"
     );
+
 }
 
 
@@ -197,25 +196,15 @@ function getApiHeaders() {
 
     };
 
-
     const token =
         getAuthToken();
-
-
-    /*
-     * Current authentication uses
-     * HTTP-only cookies.
-     *
-     * Authorization header remains
-     * available for future token APIs.
-     */
 
     if (token) {
 
         headers.Authorization =
             `Bearer ${token}`;
-    }
 
+    }
 
     return headers;
 }
@@ -234,6 +223,21 @@ async function apiRequest(
         apiUrl(endpoint);
 
 
+    const controller =
+        new AbortController();
+
+
+    const timeout =
+        setTimeout(
+            () => {
+                controller.abort();
+            },
+            SKILLEARN_CONFIG
+                .REQUEST
+                .TIMEOUT
+        );
+
+
     const requestOptions = {
 
         method:
@@ -250,14 +254,17 @@ async function apiRequest(
 
             ...(options.headers || {})
 
-        }
+        },
+
+        signal:
+            controller.signal
 
     };
 
 
     /*
-     * Add request body
-     */
+       Add request body
+    */
 
     if (
         options.body !== undefined &&
@@ -273,6 +280,12 @@ async function apiRequest(
 
         } else {
 
+            /*
+               IMPORTANT:
+               Backend Express JSON parser needs
+               Content-Type: application/json
+            */
+
             requestOptions.headers[
                 "Content-Type"
             ] =
@@ -283,33 +296,10 @@ async function apiRequest(
                 JSON.stringify(
                     options.body
                 );
+
         }
+
     }
-
-
-    /*
-     * Request timeout
-     */
-
-    const controller =
-        new AbortController();
-
-
-    requestOptions.signal =
-        controller.signal;
-
-
-    const timeout =
-        setTimeout(
-            function () {
-
-                controller.abort();
-
-            },
-            SKILLEARN_CONFIG
-                .REQUEST
-                .TIMEOUT
-        );
 
 
     let response;
@@ -333,6 +323,7 @@ async function apiRequest(
             throw new Error(
                 "Request timed out. Please try again."
             );
+
         }
 
 
@@ -345,11 +336,11 @@ async function apiRequest(
         clearTimeout(
             timeout
         );
+
     }
 
 
-    let data =
-        null;
+    let data = null;
 
 
     const contentType =
@@ -374,30 +365,27 @@ async function apiRequest(
             const text =
                 await response.text();
 
-
             data =
                 text
                     ? {
-                        message:
-                            text
+                        message: text
                     }
                     : null;
+
         }
 
     } catch (error) {
 
-        data =
-            null;
+        data = null;
+
     }
 
 
     /*
-     * API Error
-     */
+       Handle API errors
+    */
 
-    if (
-        !response.ok
-    ) {
+    if (!response.ok) {
 
         const message =
 
@@ -425,16 +413,13 @@ async function apiRequest(
 
 
         throw apiError;
+
     }
 
 
     /*
-     * Save token if backend returns one.
-     *
-     * Cookie authentication continues
-     * to work normally even if no token
-     * is returned.
-     */
+       Save token if backend returns one
+    */
 
     if (
         data &&
@@ -444,106 +429,12 @@ async function apiRequest(
         setAuthToken(
             data.token
         );
+
     }
 
 
     return data;
-}
 
-/* =========================================================
-   API REQUEST
-========================================================= */
-
-async function apiRequest(endpoint, options = {}) {
-
-    const controller = new AbortController();
-
-    const timeout = setTimeout(
-        () => controller.abort(),
-        SKILLEARN_CONFIG.REQUEST.TIMEOUT
-    );
-
-    try {
-
-        const headers = {
-            ...getApiHeaders(),
-            ...(options.headers || {})
-        };
-
-        const requestOptions = {
-            method: options.method || "GET",
-            headers: headers,
-            credentials:
-                SKILLEARN_CONFIG.REQUEST.CREDENTIALS,
-            signal:
-                controller.signal
-        };
-
-
-        if (
-            options.body !== undefined &&
-            options.body !== null
-        ) {
-
-            requestOptions.body =
-                typeof options.body === "string"
-                    ? options.body
-                    : JSON.stringify(options.body);
-        }
-
-
-        const response = await fetch(
-            apiUrl(endpoint),
-            requestOptions
-        );
-
-
-        const contentType =
-            response.headers.get("content-type") || "";
-
-
-        let data;
-
-
-        if (
-            contentType.includes("application/json")
-        ) {
-
-            data = await response.json();
-
-        } else {
-
-            data = {
-                message:
-                    await response.text()
-            };
-        }
-
-
-        if (!response.ok) {
-
-            const error =
-                new Error(
-                    data?.message ||
-                    "Request failed"
-                );
-
-            error.status =
-                response.status;
-
-            error.data =
-                data;
-
-            throw error;
-        }
-
-
-        return data;
-
-    } finally {
-
-        clearTimeout(timeout);
-    }
 }
 
 

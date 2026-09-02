@@ -1,19 +1,24 @@
 "use strict";
 
-
 const express =
-    require(
-        "express"
-    );
-
+    require("express");
 
 const router =
     express.Router();
 
-
 const withdrawalController =
     require(
         "../controllers/withdrawal.controller"
+    );
+
+const requireAuth =
+    require(
+        "../middleware/auth.middleware"
+    );
+
+const requireAdmin =
+    require(
+        "../middleware/admin"
     );
 
 

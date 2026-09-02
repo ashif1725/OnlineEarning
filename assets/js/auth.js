@@ -4,6 +4,7 @@
 /* =========================================================
    SkillEarn Hub
    Authentication
+   Final Login + Register + Role Redirect
 ========================================================= */
 
 
@@ -13,9 +14,7 @@
 
 function authElement(id) {
 
-    return document.getElementById(
-        id
-    );
+    return document.getElementById(id);
 
 }
 
@@ -31,9 +30,7 @@ function authMessage(
 ) {
 
     if (!element) {
-
         return;
-
     }
 
 
@@ -48,9 +45,7 @@ function authMessage(
 
 
     if (!message) {
-
         return;
-
     }
 
 
@@ -88,9 +83,7 @@ function setFieldError(
 
 
     if (!element) {
-
         return;
-
     }
 
 
@@ -123,7 +116,7 @@ function clearFieldErrors() {
 
 
 /* =========================================================
-   SET BUTTON LOADING
+   BUTTON LOADING
 ========================================================= */
 
 function setButtonLoading(
@@ -132,9 +125,7 @@ function setButtonLoading(
 ) {
 
     if (!button) {
-
         return;
-
     }
 
 
@@ -168,9 +159,7 @@ function restoreButton(
 ) {
 
     if (!button) {
-
         return;
-
     }
 
 
@@ -179,9 +168,7 @@ function restoreButton(
 
 
     button.textContent =
-
         button.dataset.originalText ||
-
         fallbackText;
 
 }
@@ -191,18 +178,87 @@ function restoreButton(
    NORMALIZE USER
 ========================================================= */
 
-function normalizeUser(
-    user
-) {
+function normalizeUser(user) {
 
     if (!user) {
-
         return null;
-
     }
 
 
-    return user;
+    return {
+        ...user,
+
+        role:
+            String(
+                user.role ||
+                user.userRole ||
+                user.user_role ||
+                "user"
+            )
+            .trim()
+            .toLowerCase()
+    };
+
+}
+
+
+/* =========================================================
+   EXTRACT USER
+========================================================= */
+
+function extractLoginUser(result) {
+
+    if (!result) {
+        return null;
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Standard API response
+    ---------------------------------------------------------
+    */
+
+    if (result.user) {
+        return result.user;
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Alternative API response structures
+    ---------------------------------------------------------
+    */
+
+    if (result.data?.user) {
+        return result.data.user;
+    }
+
+
+    if (result.account) {
+        return result.account;
+    }
+
+
+    return null;
+
+}
+
+
+/* =========================================================
+   GET USER ROLE
+========================================================= */
+
+function getUserRole(user) {
+
+    return String(
+        user?.role ||
+        user?.userRole ||
+        user?.user_role ||
+        "user"
+    )
+        .trim()
+        .toLowerCase();
 
 }
 
@@ -211,74 +267,35 @@ function normalizeUser(
    GET REDIRECT
 ========================================================= */
 
-function getRedirect(
-    result,
-    user
-) {
-
-    /*
-    ---------------------------------------------------------
-    Backend explicitly provides redirect
-    ---------------------------------------------------------
-    */
-
-    if (
-        result?.redirect
-    ) {
-
-        return result.redirect;
-
-    }
-
-
-    /*
-    ---------------------------------------------------------
-    Check role
-    ---------------------------------------------------------
-    */
+function getRedirect(user) {
 
     const role =
-        String(
-
-            user?.role ||
-
-            user?.userRole ||
-
-            user?.user_role ||
-
-            ""
-
-        )
-        .trim()
-        .toLowerCase();
+        getUserRole(user);
 
 
     /*
-    ---------------------------------------------------------
-    Admin
-    ---------------------------------------------------------
+    =========================================================
+    ADMIN
+    =========================================================
     */
 
     if (
-
         role === "admin" ||
-
         role === "administrator"
-
     ) {
 
-        return "admin/dashboard.html";
+        return "/admin/dashboard.html";
 
     }
 
 
     /*
-    ---------------------------------------------------------
-    Normal user
-    ---------------------------------------------------------
+    =========================================================
+    NORMAL USER
+    =========================================================
     */
 
-    return "user/dashboard.html";
+    return "/user/dashboard.html";
 
 }
 
@@ -287,9 +304,7 @@ function getRedirect(
    HANDLE LOGIN
 ========================================================= */
 
-async function handleLogin(
-    event
-) {
+async function handleLogin(event) {
 
     event.preventDefault();
 
@@ -301,9 +316,7 @@ async function handleLogin(
 
 
     if (!form) {
-
         return;
-
     }
 
 
@@ -345,10 +358,6 @@ async function handleLogin(
             )?.value || ""
         );
 
-
-    /* =====================================================
-       VALIDATION
-    ===================================================== */
 
     let hasError =
         false;
@@ -400,9 +409,7 @@ async function handleLogin(
 
 
     if (hasError) {
-
         return;
-
     }
 
 
@@ -435,40 +442,73 @@ async function handleLogin(
 
 
         /*
-        -----------------------------------------------------
-        Extract user
-        -----------------------------------------------------
+        =====================================================
+        EXTRACT USER
+        =====================================================
         */
 
+        const rawUser =
+            extractLoginUser(
+                result
+            );
+
+
+        if (!rawUser) {
+
+            throw new Error(
+                "Login succeeded but user account data was not returned."
+            );
+
+        }
+
+
         const user =
-            typeof window.extractUser ===
+            normalizeUser(
+                rawUser
+            );
+
+
+        /*
+        =====================================================
+        SAVE USER
+        =====================================================
+        */
+
+        if (
+            typeof window.setSavedUser ===
             "function"
-
-                ? window.extractUser(
-                    result
-                )
-
-                : (
-                    result?.user ||
-                    null
-                );
-
-
-        if (user) {
+        ) {
 
             window.setSavedUser(
-                normalizeUser(
-                    user
-                )
+                user
             );
 
         }
 
 
         /*
-        -----------------------------------------------------
-        Login success
-        -----------------------------------------------------
+        =====================================================
+        SAVE TOKEN
+        =====================================================
+        */
+
+        if (
+            result?.token &&
+            typeof window.setAuthToken ===
+            "function"
+        ) {
+
+            window.setAuthToken(
+                result.token
+            );
+
+        }
+
+
+        /*
+        =====================================================
+        SUCCESS MESSAGE
+        =====================================================
         */
 
         authMessage(
@@ -482,23 +522,23 @@ async function handleLogin(
 
 
         /*
-        -----------------------------------------------------
-        Redirect
-        -----------------------------------------------------
+        =====================================================
+        FRONTEND CONTROLLED REDIRECT
+        =====================================================
         */
 
         const redirect =
             getRedirect(
-                result,
                 user
             );
 
 
-        setTimeout(
+        window.setTimeout(
             function () {
 
-                window.location.href =
-                    redirect;
+                window.location.assign(
+                    redirect
+                );
 
             },
             700
@@ -516,7 +556,7 @@ async function handleLogin(
         authMessage(
             message,
 
-            error.message ||
+            error?.message ||
             "Login failed. Please try again.",
 
             "error"
@@ -538,9 +578,7 @@ async function handleLogin(
    HANDLE REGISTER
 ========================================================= */
 
-async function handleRegister(
-    event
-) {
+async function handleRegister(event) {
 
     event.preventDefault();
 
@@ -552,9 +590,7 @@ async function handleRegister(
 
 
     if (!form) {
-
         return;
-
     }
 
 
@@ -630,10 +666,6 @@ async function handleRegister(
             )?.checked
         );
 
-
-    /* =====================================================
-       VALIDATION
-    ===================================================== */
 
     let hasError =
         false;
@@ -733,9 +765,7 @@ async function handleRegister(
     }
 
 
-    if (
-        !termsAccepted
-    ) {
+    if (!termsAccepted) {
 
         authMessage(
             message,
@@ -750,9 +780,7 @@ async function handleRegister(
 
 
     if (hasError) {
-
         return;
-
     }
 
 
@@ -788,43 +816,6 @@ async function handleRegister(
             );
 
 
-        /*
-        -----------------------------------------------------
-        Save user if backend returns it
-        -----------------------------------------------------
-        */
-
-        const user =
-            typeof window.extractUser ===
-            "function"
-
-                ? window.extractUser(
-                    result
-                )
-
-                : (
-                    result?.user ||
-                    null
-                );
-
-
-        if (user) {
-
-            window.setSavedUser(
-                normalizeUser(
-                    user
-                )
-            );
-
-        }
-
-
-        /*
-        -----------------------------------------------------
-        Registration success
-        -----------------------------------------------------
-        */
-
         authMessage(
             message,
 
@@ -835,20 +826,15 @@ async function handleRegister(
         );
 
 
-        /*
-        -----------------------------------------------------
-        IMPORTANT
-        -----------------------------------------------------
-        Registration ke baad login page par bhejna
-        taaki authentication state clear aur predictable rahe.
-        -----------------------------------------------------
-        */
+        form.reset();
 
-        setTimeout(
+
+        window.setTimeout(
             function () {
 
-                window.location.href =
-                    "login.html";
+                window.location.assign(
+                    "/login.html"
+                );
 
             },
             1000
@@ -866,7 +852,7 @@ async function handleRegister(
         authMessage(
             message,
 
-            error.message ||
+            error?.message ||
             "Unable to create account. Please try again.",
 
             "error"
@@ -892,15 +878,22 @@ async function logoutUser() {
 
     try {
 
-        await window.apiRequest(
-            "/api/auth/logout",
-            {
+        if (
+            typeof window.apiRequest ===
+            "function"
+        ) {
 
-                method:
-                    "POST"
+            await window.apiRequest(
+                "/api/auth/logout",
+                {
 
-            }
-        );
+                    method:
+                        "POST"
+
+                }
+            );
+
+        }
 
     } catch (error) {
 
@@ -911,10 +904,40 @@ async function logoutUser() {
 
     } finally {
 
-        window.clearAuthData();
+        if (
+            typeof window.clearAuthData ===
+            "function"
+        ) {
 
-        window.location.href =
-            "../login.html";
+            window.clearAuthData();
+
+        }
+
+
+        /*
+        -----------------------------------------------------
+        Determine correct login path
+        -----------------------------------------------------
+        */
+
+        const currentPath =
+            window.location.pathname;
+
+
+        const isInsideFolder =
+            currentPath.includes(
+                "/user/"
+            ) ||
+            currentPath.includes(
+                "/admin/"
+            );
+
+
+        window.location.assign(
+            isInsideFolder
+                ? "../login.html"
+                : "/login.html"
+        );
 
     }
 
@@ -941,12 +964,6 @@ document.addEventListener(
             );
 
 
-        /*
-        -----------------------------------------------------
-        Login
-        -----------------------------------------------------
-        */
-
         if (loginForm) {
 
             loginForm.addEventListener(
@@ -957,12 +974,6 @@ document.addEventListener(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Register
-        -----------------------------------------------------
-        */
-
         if (registerForm) {
 
             registerForm.addEventListener(
@@ -972,12 +983,6 @@ document.addEventListener(
 
         }
 
-
-        /*
-        -----------------------------------------------------
-        Logout buttons
-        -----------------------------------------------------
-        */
 
         document
             .querySelectorAll(
@@ -1017,6 +1022,9 @@ window.SkillEarnAuth = {
         handleRegister,
 
     logout:
-        logoutUser
+        logoutUser,
+
+    getRedirect:
+        getRedirect
 
 };

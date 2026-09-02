@@ -1,10 +1,16 @@
 "use strict";
 
-
 /*
 |--------------------------------------------------------------------------
 | SkillEarn Hub
 | User Dashboard
+|--------------------------------------------------------------------------
+|
+| Authentication:
+| HTTP-only skillearn_session cookie
+|
+| IMPORTANT:
+| No password/token is stored in localStorage.
 |--------------------------------------------------------------------------
 */
 
@@ -15,94 +21,70 @@ document.addEventListener(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| API
-|--------------------------------------------------------------------------
-*/
 
-const DASHBOARD_API =
-    (
-        typeof window.apiUrl ===
-        "function"
-    )
-        ? window.apiUrl
-        : endpoint =>
-            "https://skillearnhub-1.onrender.com" +
-            endpoint;
-
-
-/*
-|--------------------------------------------------------------------------
-| INITIALIZE
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   INITIALIZE
+========================================================= */
 
 async function initDashboard() {
 
+    setCurrentYear();
+
     setupLogout();
 
-    setupQuickAccess();
-
-    showLoadingState();
-
     await loadDashboard();
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| LOAD DASHBOARD
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   LOAD DASHBOARD
+========================================================= */
 
 async function loadDashboard() {
 
     try {
 
+        showDashboardMessage(
+            "Loading your account...",
+            false
+        );
+
+
+        const url =
+            typeof window.apiUrl === "function"
+                ? window.apiUrl("/api/auth/me")
+                : "https://skillearnhub-1.onrender.com/api/auth/me";
+
+
         const response =
             await fetch(
-
-                DASHBOARD_API(
-                    "/api/auth/me"
-                ),
-
+                url,
                 {
+                    method: "GET",
 
-                    method:
-                        "GET",
+                    credentials: "include",
 
-                    credentials:
-                        "include",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    },
 
-                    headers:
-                        typeof window.getApiHeaders ===
-                        "function"
-
-                            ? window.getApiHeaders()
-
-                            : {
-                                "Accept":
-                                    "application/json"
-                            }
-
+                    cache: "no-store"
                 }
-
             );
 
 
         /*
         |--------------------------------------------------------------------------
-        | NOT AUTHENTICATED
+        | Session expired / missing
         |--------------------------------------------------------------------------
         */
 
         if (
-            response.status ===
-            401
+            response.status === 401
         ) {
-
-            clearLocalSession();
 
             redirectToLogin();
 
@@ -112,14 +94,15 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | OTHER SERVER ERROR
+        | Other server errors
         |--------------------------------------------------------------------------
         */
 
         if (!response.ok) {
 
             throw new Error(
-                `Dashboard request failed: ${response.status}`
+                "Dashboard request failed: " +
+                response.status
             );
         }
 
@@ -130,7 +113,8 @@ async function loadDashboard() {
 
         const user =
             data?.user ||
-            data?.data?.user;
+            data?.data?.user ||
+            null;
 
 
         if (!user) {
@@ -143,29 +127,46 @@ async function loadDashboard() {
 
         /*
         |--------------------------------------------------------------------------
-        | SAVE SAFE USER DATA
-        |--------------------------------------------------------------------------
-        */
-
-        try {
-
-            sessionStorage.setItem(
-                "skillEarnUser",
-                JSON.stringify(user)
-            );
-
-        } catch {}
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RENDER
+        | Render
         |--------------------------------------------------------------------------
         */
 
         renderUser(user);
 
-        hideLoadingState();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Optional wallet data
+        |--------------------------------------------------------------------------
+        */
+
+        if (data.wallet) {
+
+            renderWallet(
+                data.wallet
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Optional transactions
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            Array.isArray(
+                data.transactions
+            )
+        ) {
+
+            renderTransactions(
+                data.transactions
+            );
+        }
+
+
+        hideDashboardMessage();
 
 
     } catch (error) {
@@ -176,147 +177,75 @@ async function loadDashboard() {
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Try cached user
-        |--------------------------------------------------------------------------
-        */
-
-        let cachedUser = null;
-
-
-        try {
-
-            const saved =
-                sessionStorage.getItem(
-                    "skillEarnUser"
-                );
-
-
-            if (saved) {
-
-                cachedUser =
-                    JSON.parse(saved);
-            }
-
-        } catch {}
-
-
-        if (cachedUser) {
-
-            renderUser(
-                cachedUser
-            );
-
-            hideLoadingState();
-
-            showDashboardMessage(
-                "Live account data is temporarily unavailable. Showing saved information."
-            );
-
-            return;
-        }
-
-
-        hideLoadingState();
-
-
         showDashboardMessage(
-            "Unable to load your account. Please refresh the page and try again."
+            "Unable to refresh your account right now. Please try again.",
+            true
         );
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| RENDER USER
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   RENDER USER
+========================================================= */
 
 function renderUser(user) {
 
     const fullName =
-        user?.fullName ||
-        user?.full_name ||
-        user?.name ||
+        user.fullName ||
+        user.full_name ||
+        user.name ||
         "User";
 
 
     const publicUserId =
-        user?.publicUserId ||
-        user?.public_user_id ||
-        user?.userId ||
-        user?.id ||
+        user.publicUserId ||
+        user.public_user_id ||
+        user.userId ||
         "—";
 
 
     const email =
-        user?.email ||
+        user.email ||
         "—";
-
-
-    const phone =
-        user?.phone ||
-        "—";
-
-
-    const role =
-        user?.role ||
-        "User";
 
 
     const accountStatus =
-        user?.accountStatus ||
-        user?.account_status ||
-        "Active";
-
-
-    let emailVerified =
-        user?.emailVerified;
-
-
-    if (
-        emailVerified ===
-        undefined
-    ) {
-
-        emailVerified =
-            user?.email_verified;
-    }
-
-
-    let emailStatus;
-
-
-    if (
-        emailVerified ===
-        true
-    ) {
-
-        emailStatus =
-            "Verified";
-
-    } else if (
-        emailVerified ===
-        false
-    ) {
-
-        emailStatus =
-            "Not Verified";
-
-    } else {
-
-        emailStatus =
-            "—";
-    }
+        user.accountStatus ||
+        user.account_status ||
+        "—";
 
 
     /*
     |--------------------------------------------------------------------------
-    | USER NAME
+    | Email verification
     |--------------------------------------------------------------------------
     */
+
+    let verified =
+        user.emailVerified;
+
+
+    if (
+        verified === undefined
+    ) {
+        verified =
+            user.email_verified;
+    }
+
+
+    if (
+        verified === undefined
+    ) {
+        verified =
+            Boolean(
+                user.emailVerifiedAt ||
+                user.email_verified_at
+            );
+    }
+
 
     setText(
         "userName",
@@ -324,23 +253,11 @@ function renderUser(user) {
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | USER ID
-    |--------------------------------------------------------------------------
-    */
-
     setText(
         "userId",
         publicUserId
     );
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL
-    |--------------------------------------------------------------------------
-    */
 
     setText(
         "userEmail",
@@ -348,78 +265,233 @@ function renderUser(user) {
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | PHONE
-    |--------------------------------------------------------------------------
-    */
-
-    setText(
-        "userPhone",
-        phone
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ROLE
-    |--------------------------------------------------------------------------
-    */
-
-    setText(
-        "userRole",
-        role
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | ACCOUNT STATUS
-    |--------------------------------------------------------------------------
-    */
-
     setText(
         "accountStatus",
         accountStatus
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | EMAIL VERIFICATION
-    |--------------------------------------------------------------------------
-    */
+    renderVerificationStatus(
+        verified
+    );
 
-    setText(
-        "emailStatus",
-        emailStatus
+}
+
+
+
+/* =========================================================
+   EMAIL VERIFICATION
+========================================================= */
+
+function renderVerificationStatus(
+    verified
+) {
+
+    const element =
+        document.getElementById(
+            "emailStatus"
+        );
+
+
+    if (!element) {
+        return;
+    }
+
+
+    element.classList.remove(
+        "verified",
+        "not-verified"
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Avatar initial
-    |--------------------------------------------------------------------------
-    */
+    if (verified === true) {
 
-    const initial =
-        fullName
-            .charAt(0)
-            .toUpperCase();
+        element.textContent =
+            "Verified";
+
+        element.classList.add(
+            "verified"
+        );
+
+        return;
+    }
 
 
-    setText(
-        "userInitial",
-        initial
+    element.textContent =
+        "Not Verified";
+
+    element.classList.add(
+        "not-verified"
     );
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| SAFE TEXT
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   WALLET
+========================================================= */
+
+function renderWallet(wallet) {
+
+    const balance =
+        wallet.balance ??
+        wallet.availableBalance ??
+        wallet.available_balance ??
+        0;
+
+
+    const numericBalance =
+        Number(balance);
+
+
+    const formatted =
+        Number.isFinite(
+            numericBalance
+        )
+            ? numericBalance.toLocaleString(
+                "en-IN",
+                {
+                    style: "currency",
+                    currency: "INR"
+                }
+            )
+            : "₹0.00";
+
+
+    setText(
+        "walletBalance",
+        formatted
+    );
+
+}
+
+
+
+/* =========================================================
+   TRANSACTIONS
+========================================================= */
+
+function renderTransactions(
+    transactions
+) {
+
+    const container =
+        document.getElementById(
+            "transactionsList"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (
+        !transactions ||
+        transactions.length === 0
+    ) {
+
+        return;
+    }
+
+
+    container.innerHTML = "";
+
+
+    transactions
+        .slice(0, 5)
+        .forEach(
+            function (transaction) {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                item.className =
+                    "transaction-item";
+
+
+                const title =
+                    document.createElement(
+                        "strong"
+                    );
+
+
+                title.textContent =
+                    transaction.title ||
+                    transaction.type ||
+                    "Transaction";
+
+
+                const amount =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                amount.textContent =
+                    transaction.amount !== undefined
+                        ? formatCurrency(
+                            transaction.amount
+                        )
+                        : "—";
+
+
+                item.appendChild(
+                    title
+                );
+
+
+                item.appendChild(
+                    amount
+                );
+
+
+                container.appendChild(
+                    item
+                );
+
+            }
+        );
+}
+
+
+
+/* =========================================================
+   CURRENCY
+========================================================= */
+
+function formatCurrency(
+    value
+) {
+
+    const number =
+        Number(value);
+
+
+    if (
+        !Number.isFinite(number)
+    ) {
+        return "₹0.00";
+    }
+
+
+    return number.toLocaleString(
+        "en-IN",
+        {
+            style: "currency",
+            currency: "INR"
+        }
+    );
+}
+
+
+
+/* =========================================================
+   SAFE TEXT
+========================================================= */
 
 function setText(
     id,
@@ -431,72 +503,27 @@ function setText(
 
 
     if (!element) {
-
         return;
     }
 
 
-    element.textContent =
-        value !== null &&
+    const text =
         value !== undefined &&
+        value !== null &&
         String(value).trim() !== ""
-
             ? String(value)
-
             : "—";
+
+
+    element.textContent =
+        text;
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| LOADING STATE
-|--------------------------------------------------------------------------
-*/
 
-function showLoadingState() {
-
-    [
-        "userName",
-        "userId",
-        "userEmail",
-        "userPhone",
-        "userRole",
-        "accountStatus",
-        "emailStatus"
-    ]
-        .forEach(
-            id => {
-
-                const element =
-                    document.getElementById(
-                        id
-                    );
-
-
-                if (element) {
-
-                    element.textContent =
-                        "Loading...";
-                }
-            }
-        );
-}
-
-
-function hideLoadingState() {
-
-    /*
-     * Data is replaced by renderUser().
-     * Nothing else required.
-     */
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOGOUT
+========================================================= */
 
 function setupLogout() {
 
@@ -507,7 +534,6 @@ function setupLogout() {
 
 
     if (!button) {
-
         return;
     }
 
@@ -519,6 +545,7 @@ function setupLogout() {
 }
 
 
+
 async function logoutUser() {
 
     const button =
@@ -527,41 +554,36 @@ async function logoutUser() {
         );
 
 
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "Logging out...";
+    }
+
+
     try {
 
-        if (button) {
-
-            button.disabled =
-                true;
-
-            button.textContent =
-                "Logging out...";
-        }
+        const url =
+            typeof window.apiUrl === "function"
+                ? window.apiUrl("/api/auth/logout")
+                : "https://skillearnhub-1.onrender.com/api/auth/logout";
 
 
         await fetch(
-
-            DASHBOARD_API(
-                "/api/auth/logout"
-            ),
-
+            url,
             {
+                method: "POST",
 
-                method:
-                    "POST",
-
-                credentials:
-                    "include",
+                credentials: "include",
 
                 headers: {
-
                     "Accept":
                         "application/json"
-
                 }
-
             }
-
         );
 
 
@@ -572,157 +594,114 @@ async function logoutUser() {
             error
         );
 
-    } finally {
 
-        clearLocalSession();
+    } finally {
 
         redirectToLogin();
     }
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| QUICK ACCESS
-|--------------------------------------------------------------------------
-*/
 
-function setupQuickAccess() {
-
-    document
-        .querySelectorAll(
-            "[data-dashboard-link]"
-        )
-        .forEach(
-            card => {
-
-                card.addEventListener(
-                    "click",
-                    event => {
-
-                        const url =
-                            card.getAttribute(
-                                "data-dashboard-link"
-                            );
-
-
-                        if (!url) {
-
-                            return;
-                        }
-
-
-                        event.preventDefault();
-
-                        window.location.href =
-                            url;
-                    }
-                );
-            }
-        );
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| CLEAR LOCAL CACHE
-|--------------------------------------------------------------------------
-*/
-
-function clearLocalSession() {
-
-    try {
-
-        sessionStorage.removeItem(
-            "skillEarnUser"
-        );
-
-        localStorage.removeItem(
-            "skillearn_access_token"
-        );
-
-        localStorage.removeItem(
-            "skillearn_user"
-        );
-
-    } catch {}
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| LOGIN REDIRECT
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   REDIRECT
+========================================================= */
 
 function redirectToLogin() {
 
-    window.location.href =
-        "../login.html";
+    window.location.replace(
+        "../login.html"
+    );
+
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| DASHBOARD MESSAGE
-|--------------------------------------------------------------------------
-*/
+
+/* =========================================================
+   MESSAGE
+========================================================= */
 
 function showDashboardMessage(
-    message
+    message,
+    isError
 ) {
 
-    let element =
+    const element =
         document.getElementById(
             "dashboardMessage"
         );
 
 
     if (!element) {
-
-        element =
-            document.createElement(
-                "div"
-            );
-
-
-        element.id =
-            "dashboardMessage";
-
-
-        element.style.margin =
-            "20px 0";
-
-
-        element.style.padding =
-            "14px 16px";
-
-
-        element.style.borderRadius =
-            "12px";
-
-
-        element.style.background =
-            "rgba(255,255,255,0.06)";
-
-
-        element.style.color =
-            "#ffffff";
-
-
-        const main =
-            document.querySelector(
-                "main"
-            ) ||
-            document.body;
-
-
-        main.prepend(
-            element
-        );
+        return;
     }
 
 
     element.textContent =
-        message;
+        message || "";
+
+
+    element.classList.toggle(
+        "show",
+        Boolean(message)
+    );
+
+
+    if (isError) {
+
+        element.style.border =
+            "1px solid rgba(255,80,100,.3)";
+
+    } else {
+
+        element.style.border =
+            "1px solid rgba(130,110,255,.2)";
+    }
+
+}
+
+
+
+function hideDashboardMessage() {
+
+    const element =
+        document.getElementById(
+            "dashboardMessage"
+        );
+
+
+    if (!element) {
+        return;
+    }
+
+
+    element.textContent =
+        "";
+
+    element.classList.remove(
+        "show"
+    );
+}
+
+
+
+/* =========================================================
+   YEAR
+========================================================= */
+
+function setCurrentYear() {
+
+    const element =
+        document.getElementById(
+            "currentYear"
+        );
+
+
+    if (element) {
+
+        element.textContent =
+            new Date().getFullYear();
+    }
+
 }

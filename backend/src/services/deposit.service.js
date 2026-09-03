@@ -1,6 +1,10 @@
 "use strict";
 
-const pool = require("../config/db");
+
+const pool =
+    require(
+        "../config/db"
+    );
 
 
 /*
@@ -25,14 +29,10 @@ async function createDepositRequest({
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATE AMOUNT
-        |--------------------------------------------------------------------------
-        */
-
         const numericAmount =
-            Number(amount);
+            Number(
+                amount
+            );
 
 
         if (
@@ -49,7 +49,7 @@ async function createDepositRequest({
 
             const error =
                 new Error(
-                    "INVALID_DEPOSIT_AMOUNT"
+                    "Invalid deposit amount."
                 );
 
 
@@ -63,13 +63,14 @@ async function createDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | FIND USER WALLET
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        FIND USER WALLET
+        --------------------------------------------------------------
         */
 
         const walletResult =
             await client.query(
+
                 `
                 SELECT
                     id,
@@ -81,9 +82,11 @@ async function createDepositRequest({
                 LIMIT 1
                 FOR UPDATE
                 `,
+
                 [
                     userId
                 ]
+
             );
 
 
@@ -93,7 +96,7 @@ async function createDepositRequest({
 
             const error =
                 new Error(
-                    "WALLET_NOT_FOUND"
+                    "Wallet not found."
                 );
 
 
@@ -110,23 +113,22 @@ async function createDepositRequest({
             walletResult.rows[0];
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK WALLET STATUS
-        |--------------------------------------------------------------------------
-        */
-
         if (
+
             String(
                 wallet.status
             )
-            .toLowerCase() !==
+            .toLowerCase()
+
+            !==
+
             "active"
+
         ) {
 
             const error =
                 new Error(
-                    "WALLET_INACTIVE"
+                    "Wallet is not active."
                 );
 
 
@@ -140,13 +142,14 @@ async function createDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | CREATE DEPOSIT REQUEST
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        CREATE DEPOSIT
+        --------------------------------------------------------------
         */
 
         const depositResult =
             await client.query(
+
                 `
                 INSERT INTO deposit_requests (
                     user_id,
@@ -171,12 +174,19 @@ async function createDepositRequest({
                     status,
                     requested_at
                 `,
+
                 [
+
                     userId,
+
                     wallet.id,
+
                     numericAmount,
+
                     wallet.currency
+
                 ]
+
             );
 
 
@@ -185,12 +195,13 @@ async function createDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | AUDIT LOG
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        AUDIT LOG
+        --------------------------------------------------------------
         */
 
         await client.query(
+
             `
             INSERT INTO audit_logs (
                 actor_user_id,
@@ -205,12 +216,17 @@ async function createDepositRequest({
                 $2
             )
             `,
+
             [
+
                 userId,
+
                 String(
                     deposit.id
                 )
+
             ]
+
         );
 
 
@@ -261,6 +277,7 @@ async function getUserDepositRequests({
 
     const result =
         await pool.query(
+
             `
             SELECT
                 id,
@@ -274,9 +291,11 @@ async function getUserDepositRequests({
             WHERE user_id = $1
             ORDER BY requested_at DESC
             `,
+
             [
                 userId
             ]
+
         );
 
 
@@ -308,13 +327,14 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | LOCK DEPOSIT REQUEST
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        LOCK DEPOSIT
+        --------------------------------------------------------------
         */
 
         const depositResult =
             await client.query(
+
                 `
                 SELECT
                     id,
@@ -327,9 +347,11 @@ async function approveDepositRequest({
                 WHERE id = $1
                 FOR UPDATE
                 `,
+
                 [
                     depositId
                 ]
+
             );
 
 
@@ -339,7 +361,7 @@ async function approveDepositRequest({
 
             const error =
                 new Error(
-                    "DEPOSIT_NOT_FOUND"
+                    "Deposit request not found."
                 );
 
 
@@ -357,22 +379,27 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | ONLY PENDING DEPOSIT CAN BE APPROVED
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        ONLY PENDING DEPOSITS
+        --------------------------------------------------------------
         */
 
         if (
+
             String(
                 deposit.status
             )
-            .toLowerCase() !==
+            .toLowerCase()
+
+            !==
+
             "pending"
+
         ) {
 
             const error =
                 new Error(
-                    "DEPOSIT_ALREADY_PROCESSED"
+                    "This deposit has already been processed."
                 );
 
 
@@ -386,9 +413,9 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | VALIDATE DEPOSIT AMOUNT
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        VALIDATE DEPOSIT AMOUNT
+        --------------------------------------------------------------
         */
 
         const depositAmount =
@@ -411,7 +438,7 @@ async function approveDepositRequest({
 
             const error =
                 new Error(
-                    "INVALID_DEPOSIT_AMOUNT"
+                    "Invalid deposit amount."
                 );
 
 
@@ -425,13 +452,14 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | LOCK WALLET
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        LOCK WALLET
+        --------------------------------------------------------------
         */
 
         const walletResult =
             await client.query(
+
                 `
                 SELECT
                     id,
@@ -442,9 +470,11 @@ async function approveDepositRequest({
                 WHERE id = $1
                 FOR UPDATE
                 `,
+
                 [
                     deposit.wallet_id
                 ]
+
             );
 
 
@@ -454,7 +484,7 @@ async function approveDepositRequest({
 
             const error =
                 new Error(
-                    "WALLET_NOT_FOUND"
+                    "Wallet not found for this deposit."
                 );
 
 
@@ -472,23 +502,28 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | VALIDATE WALLET OWNER
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        SECURITY CHECK
+        --------------------------------------------------------------
         */
 
         if (
+
             String(
                 wallet.user_id
-            ) !==
+            )
+
+            !==
+
             String(
                 deposit.user_id
             )
+
         ) {
 
             const error =
                 new Error(
-                    "WALLET_USER_MISMATCH"
+                    "Deposit wallet does not belong to the deposit user."
                 );
 
 
@@ -502,22 +537,27 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | CHECK WALLET STATUS
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        CHECK WALLET STATUS
+        --------------------------------------------------------------
         */
 
         if (
+
             String(
                 wallet.status
             )
-            .toLowerCase() !==
+            .toLowerCase()
+
+            !==
+
             "active"
+
         ) {
 
             const error =
                 new Error(
-                    "WALLET_INACTIVE"
+                    "Wallet is not active."
                 );
 
 
@@ -531,13 +571,14 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | LOCK WALLET BALANCE
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        LOCK WALLET BALANCE
+        --------------------------------------------------------------
         */
 
         const balanceResult =
             await client.query(
+
                 `
                 SELECT
                     wallet_id,
@@ -548,9 +589,11 @@ async function approveDepositRequest({
                 WHERE wallet_id = $1
                 FOR UPDATE
                 `,
+
                 [
                     wallet.id
                 ]
+
             );
 
 
@@ -560,7 +603,7 @@ async function approveDepositRequest({
 
             const error =
                 new Error(
-                    "WALLET_BALANCE_NOT_FOUND"
+                    "Wallet balance record not found."
                 );
 
 
@@ -584,14 +627,16 @@ async function approveDepositRequest({
 
 
         if (
+
             !Number.isFinite(
                 balanceBefore
             )
+
         ) {
 
             const error =
                 new Error(
-                    "INVALID_WALLET_BALANCE"
+                    "Wallet balance is invalid."
                 );
 
 
@@ -604,69 +649,46 @@ async function approveDepositRequest({
         }
 
 
+        const balanceAfter =
+            balanceBefore +
+            depositAmount;
+
+
         /*
-        |--------------------------------------------------------------------------
-        | UPDATE WALLET BALANCE
-        |--------------------------------------------------------------------------
-        |
-        | Direct SQL increment prevents numeric/string
-        | conversion problems.
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        UPDATE WALLET BALANCE
+        --------------------------------------------------------------
         */
 
-        const updatedBalanceResult =
-            await client.query(
-                `
-                UPDATE wallet_balances
-                SET
-                    available_balance =
-                        available_balance + $1
-                WHERE wallet_id = $2
-                RETURNING
-                    available_balance
-                `,
-                [
-                    depositAmount,
-                    wallet.id
-                ]
-            );
+        await client.query(
 
+            `
+            UPDATE wallet_balances
+            SET
+                available_balance = $1
+            WHERE wallet_id = $2
+            `,
 
-        if (
-            updatedBalanceResult.rowCount === 0
-        ) {
+            [
 
-            const error =
-                new Error(
-                    "WALLET_BALANCE_UPDATE_FAILED"
-                );
+                balanceAfter,
 
+                wallet.id
 
-            error.code =
-                "WALLET_BALANCE_UPDATE_FAILED";
+            ]
 
-
-            throw error;
-
-        }
-
-
-        const balanceAfter =
-            Number(
-                updatedBalanceResult
-                    .rows[0]
-                    .available_balance
-            );
+        );
 
 
         /*
-        |--------------------------------------------------------------------------
-        | CREATE WALLET TRANSACTION
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        CREATE WALLET TRANSACTION
+        --------------------------------------------------------------
         */
 
         const transactionResult =
             await client.query(
+
                 `
                 INSERT INTO wallet_transactions (
                     wallet_id,
@@ -690,7 +712,7 @@ async function approveDepositRequest({
                     $6,
                     'deposit',
                     $7,
-                    'Deposit approved by administrator'
+                    $8
                 )
                 RETURNING
                     id,
@@ -706,18 +728,30 @@ async function approveDepositRequest({
                     description,
                     created_at
                 `,
+
                 [
+
                     wallet.id,
+
                     deposit.user_id,
+
                     depositAmount,
+
                     deposit.currency ||
-                        wallet.currency,
+                    wallet.currency,
+
                     balanceBefore,
+
                     balanceAfter,
+
                     String(
                         deposit.id
-                    )
+                    ),
+
+                    "Deposit approved by administrator"
+
                 ]
+
             );
 
 
@@ -726,13 +760,14 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | UPDATE DEPOSIT STATUS
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        MARK DEPOSIT AS APPROVED
+        --------------------------------------------------------------
         */
 
-        const approvedDepositResult =
+        const updateDepositResult =
             await client.query(
+
                 `
                 UPDATE deposit_requests
                 SET
@@ -748,25 +783,30 @@ async function approveDepositRequest({
                     verified_at,
                     verified_by
                 `,
+
                 [
+
                     adminUserId,
+
                     deposit.id
+
                 ]
+
             );
 
 
         if (
-            approvedDepositResult.rowCount === 0
+            updateDepositResult.rowCount === 0
         ) {
 
             const error =
                 new Error(
-                    "DEPOSIT_STATUS_UPDATE_FAILED"
+                    "Deposit status could not be updated."
                 );
 
 
             error.code =
-                "DEPOSIT_STATUS_UPDATE_FAILED";
+                "DEPOSIT_UPDATE_FAILED";
 
 
             throw error;
@@ -775,12 +815,13 @@ async function approveDepositRequest({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | AUDIT LOG
-        |--------------------------------------------------------------------------
+        --------------------------------------------------------------
+        AUDIT LOG
+        --------------------------------------------------------------
         */
 
         await client.query(
+
             `
             INSERT INTO audit_logs (
                 actor_user_id,
@@ -795,20 +836,19 @@ async function approveDepositRequest({
                 $2
             )
             `,
+
             [
+
                 adminUserId,
+
                 String(
                     deposit.id
                 )
+
             ]
+
         );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | COMMIT
-        |--------------------------------------------------------------------------
-        */
 
         await client.query(
             "COMMIT"
@@ -820,25 +860,8 @@ async function approveDepositRequest({
             success:
                 true,
 
-            deposit: {
-
-                id:
-                    approvedDepositResult
-                        .rows[0]
-                        .id,
-
-                status:
-                    approvedDepositResult
-                        .rows[0]
-                        .status,
-
-                amount:
-                    depositAmount,
-
-                currency:
-                    deposit.currency
-
-            },
+            depositId:
+                deposit.id,
 
             transaction,
 
@@ -859,14 +882,28 @@ async function approveDepositRequest({
         error
     ) {
 
-        await client.query(
-            "ROLLBACK"
-        );
+        try {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+        } catch (
+            rollbackError
+        ) {
+
+            console.error(
+                "APPROVE DEPOSIT ROLLBACK ERROR:",
+                rollbackError
+            );
+
+        }
 
 
         console.error(
             "APPROVE DEPOSIT ERROR:",
             {
+
                 message:
                     error.message,
 
@@ -884,6 +921,7 @@ async function approveDepositRequest({
 
                 constraint:
                     error.constraint
+
             }
         );
 
@@ -923,14 +961,9 @@ async function rejectDepositRequest({
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOCK DEPOSIT
-        |--------------------------------------------------------------------------
-        */
-
         const result =
             await client.query(
+
                 `
                 SELECT
                     id,
@@ -939,9 +972,11 @@ async function rejectDepositRequest({
                 WHERE id = $1
                 FOR UPDATE
                 `,
+
                 [
                     depositId
                 ]
+
             );
 
 
@@ -951,7 +986,7 @@ async function rejectDepositRequest({
 
             const error =
                 new Error(
-                    "DEPOSIT_NOT_FOUND"
+                    "Deposit request not found."
                 );
 
 
@@ -968,23 +1003,22 @@ async function rejectDepositRequest({
             result.rows[0];
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ONLY PENDING DEPOSIT CAN BE REJECTED
-        |--------------------------------------------------------------------------
-        */
-
         if (
+
             String(
                 deposit.status
             )
-            .toLowerCase() !==
+            .toLowerCase()
+
+            !==
+
             "pending"
+
         ) {
 
             const error =
                 new Error(
-                    "DEPOSIT_ALREADY_PROCESSED"
+                    "This deposit has already been processed."
                 );
 
 
@@ -997,13 +1031,8 @@ async function rejectDepositRequest({
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | UPDATE DEPOSIT
-        |--------------------------------------------------------------------------
-        */
-
         await client.query(
+
             `
             UPDATE deposit_requests
             SET
@@ -1013,22 +1042,23 @@ async function rejectDepositRequest({
                 rejection_reason = $2
             WHERE id = $3
             `,
+
             [
+
                 adminUserId,
+
                 reason ||
-                    null,
+                null,
+
                 depositId
+
             ]
+
         );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | AUDIT LOG
-        |--------------------------------------------------------------------------
-        */
-
         await client.query(
+
             `
             INSERT INTO audit_logs (
                 actor_user_id,
@@ -1043,12 +1073,17 @@ async function rejectDepositRequest({
                 $2
             )
             `,
+
             [
+
                 adminUserId,
+
                 String(
                     depositId
                 )
+
             ]
+
         );
 
 
@@ -1069,9 +1104,22 @@ async function rejectDepositRequest({
         error
     ) {
 
-        await client.query(
-            "ROLLBACK"
-        );
+        try {
+
+            await client.query(
+                "ROLLBACK"
+            );
+
+        } catch (
+            rollbackError
+        ) {
+
+            console.error(
+                "REJECT DEPOSIT ROLLBACK ERROR:",
+                rollbackError
+            );
+
+        }
 
 
         console.error(
@@ -1102,6 +1150,7 @@ async function getPendingDeposits() {
 
     const result =
         await pool.query(
+
             `
             SELECT
                 d.id,
@@ -1126,12 +1175,12 @@ async function getPendingDeposits() {
             INNER JOIN wallets w
                 ON w.id = d.wallet_id
 
-            WHERE
-                d.status = 'pending'
+            WHERE d.status = 'pending'
 
             ORDER BY
                 d.requested_at ASC
             `
+
         );
 
 

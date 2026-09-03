@@ -3,13 +3,11 @@
 
 /*
 |--------------------------------------------------------------------------
-| ENVIRONMENT
+| LOAD ENVIRONMENT VARIABLES
 |--------------------------------------------------------------------------
 */
 
-require(
-    "dotenv"
-).config();
+require("dotenv").config();
 
 
 /*
@@ -19,32 +17,24 @@ require(
 */
 
 const express =
-    require(
-        "express"
-    );
+    require("express");
 
 
 const helmet =
-    require(
-        "helmet"
-    );
+    require("helmet");
 
 
 const cors =
-    require(
-        "cors"
-    );
+    require("cors");
 
 
 const cookieParser =
-    require(
-        "cookie-parser"
-    );
+    require("cookie-parser");
 
 
 /*
 |--------------------------------------------------------------------------
-| APP
+| CREATE APP
 |--------------------------------------------------------------------------
 */
 
@@ -61,7 +51,7 @@ const PORT =
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES
+| LOAD ROUTES
 |--------------------------------------------------------------------------
 */
 
@@ -89,7 +79,7 @@ const adminUsersRoutes =
     );
 
 
-const adminDepositRequestsRoutes =
+const adminDepositRoutes =
     require(
         "./src/routes/admin-deposit.routes"
     );
@@ -106,12 +96,6 @@ app.disable(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| TRUST PROXY
-|--------------------------------------------------------------------------
-*/
-
 app.set(
     "trust proxy",
     1
@@ -120,7 +104,7 @@ app.set(
 
 /*
 |--------------------------------------------------------------------------
-| SECURITY HEADERS
+| HELMET
 |--------------------------------------------------------------------------
 */
 
@@ -138,7 +122,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ALLOWED FRONTEND ORIGINS
+| CONFIGURED FRONTEND ORIGINS
 |--------------------------------------------------------------------------
 */
 
@@ -180,7 +164,7 @@ const configuredOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| LOCAL DEVELOPMENT ORIGINS
+| DEVELOPMENT ORIGINS
 |--------------------------------------------------------------------------
 */
 
@@ -204,7 +188,7 @@ const developmentOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| FINAL ALLOWED ORIGINS
+| ALLOWED ORIGINS
 |--------------------------------------------------------------------------
 */
 
@@ -218,7 +202,6 @@ const allowedOrigins =
                 ...configuredOrigins,
 
                 ...(
-
 
                     process.env.NODE_ENV !==
                     "production"
@@ -251,10 +234,15 @@ function validateCorsOrigin(
     callback
 ) {
 
+
     /*
     ---------------------------------------------------------
-    Allow requests without Origin.
-    Render health checks, curl, Postman, server requests.
+    Requests without Origin.
+    Examples:
+    Render health checks
+    curl
+    Postman
+    Server-to-server requests
     ---------------------------------------------------------
     */
 
@@ -283,7 +271,7 @@ function validateCorsOrigin(
 
     /*
     ---------------------------------------------------------
-    Allow configured frontend origins.
+    Allow configured origins.
     ---------------------------------------------------------
     */
 
@@ -305,7 +293,7 @@ function validateCorsOrigin(
 
     /*
     ---------------------------------------------------------
-    Development fallback.
+    Allow all origins during development.
     ---------------------------------------------------------
     */
 
@@ -346,92 +334,81 @@ function validateCorsOrigin(
 
 /*
 |--------------------------------------------------------------------------
-| CORS OPTIONS
+| CORS CONFIGURATION
 |--------------------------------------------------------------------------
 */
 
-const corsOptions = {
+const corsOptions =
+    {
+
+        origin:
+            validateCorsOrigin,
 
 
-    origin:
-        validateCorsOrigin,
+        credentials:
+            true,
 
 
-    credentials:
-        true,
+        methods:
+
+            [
+
+                "GET",
+
+                "POST",
+
+                "PUT",
+
+                "PATCH",
+
+                "DELETE",
+
+                "OPTIONS"
+
+            ],
 
 
-    methods:
+        allowedHeaders:
 
-        [
+            [
 
-            "GET",
+                "Content-Type",
 
-            "POST",
+                "Authorization",
 
-            "PUT",
+                "Accept"
 
-            "PATCH",
-
-            "DELETE",
-
-            "OPTIONS"
-
-        ],
+            ],
 
 
-    allowedHeaders:
+        exposedHeaders:
 
-        [
+            [
 
-            "Content-Type",
+                "Content-Type"
 
-            "Authorization",
-
-            "Accept"
-
-        ],
+            ],
 
 
-    exposedHeaders:
+        optionsSuccessStatus:
+            204
 
-        [
-
-            "Content-Type"
-
-        ],
-
-
-    optionsSuccessStatus:
-        204
-
-};
+    };
 
 
 /*
 |--------------------------------------------------------------------------
 | ENABLE CORS
 |--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| app.use(cors()) automatically handles preflight OPTIONS requests.
+| Do NOT add app.options("*", ...) because Express 5 can fail
+| with wildcard route syntax.
+|
 */
 
 app.use(
-
-    cors(
-        corsOptions
-    )
-
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| HANDLE PREFLIGHT
-|--------------------------------------------------------------------------
-*/
-
-app.options(
-
-    "*",
 
     cors(
         corsOptions
@@ -498,9 +475,20 @@ app.use(
         next
     ) {
 
-        console.log(
-            `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`
-        );
+        if (
+
+            process.env.NODE_ENV !==
+            "production"
+
+        ) {
+
+            console.log(
+
+                `${req.method} ${req.originalUrl}`
+
+            );
+
+        }
 
 
         return next();
@@ -512,7 +500,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ROOT
+| ROOT ENDPOINT
 |--------------------------------------------------------------------------
 */
 
@@ -585,9 +573,6 @@ app.get(
 |--------------------------------------------------------------------------
 | AUTH ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/auth/*
-|
 */
 
 app.use(
@@ -603,9 +588,6 @@ app.use(
 |--------------------------------------------------------------------------
 | USER DEPOSIT ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/deposits/*
-|
 */
 
 app.use(
@@ -621,9 +603,6 @@ app.use(
 |--------------------------------------------------------------------------
 | USER WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/withdrawals/*
-|
 */
 
 app.use(
@@ -639,11 +618,6 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN USER ROUTES
 |--------------------------------------------------------------------------
-|
-| GET   /api/admin/users
-| GET   /api/admin/users/:userId
-| PATCH /api/admin/users/:userId/status
-|
 */
 
 app.use(
@@ -659,25 +633,20 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN DEPOSIT ROUTES
 |--------------------------------------------------------------------------
-|
-| GET  /api/admin/deposits/pending
-| POST /api/admin/deposits/:depositId/approve
-| POST /api/admin/deposits/:depositId/reject
-|
 */
 
 app.use(
 
     "/api/admin/deposits",
 
-    adminDepositRequestsRoutes
+    adminDepositRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| API 404 HANDLER
+| 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -768,11 +737,6 @@ app.use(
 
 
         console.error(
-            err
-        );
-
-
-        console.error(
             "========================================"
         );
 
@@ -789,9 +753,9 @@ app.use(
 
 
         /*
-        -----------------------------------------------------
+        ---------------------------------------------------------
         CORS ERROR
-        -----------------------------------------------------
+        ---------------------------------------------------------
         */
 
         if (
@@ -816,6 +780,12 @@ app.use(
 
         }
 
+
+        /*
+        ---------------------------------------------------------
+        STATUS CODE
+        ---------------------------------------------------------
+        */
 
         const rawStatus =
             Number(
@@ -844,6 +814,12 @@ app.use(
                 500;
 
 
+        /*
+        ---------------------------------------------------------
+        RESPONSE
+        ---------------------------------------------------------
+        */
+
         return res
             .status(
                 statusCode
@@ -861,13 +837,17 @@ app.use(
 
                 message:
 
-                    err?.message &&
-
                     statusCode < 500
 
                         ?
 
-                        err.message
+                        (
+
+                            err?.message ||
+
+                            "Request failed."
+
+                        )
 
                         :
 
@@ -926,21 +906,23 @@ const server =
 
 
             console.log(
-                "Allowed frontend origins:"
+                "Configured frontend origins:"
             );
 
 
             console.log(
 
-                allowedOrigins.length
+                allowedOrigins.length > 0
 
                     ?
 
-                    allowedOrigins
+                    allowedOrigins.join(
+                        ", "
+                    )
 
                     :
 
-                    "No production frontend origin configured"
+                    "No frontend origin configured"
 
             );
 
@@ -951,72 +933,7 @@ const server =
 
 
             console.log(
-                "Health endpoint:"
-            );
-
-
-            console.log(
-                `/api/health`
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Admin users endpoint:"
-            );
-
-
-            console.log(
-                `/api/admin/users`
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Admin pending deposits endpoint:"
-            );
-
-
-            console.log(
-                `/api/admin/deposits/pending`
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Admin approve deposit endpoint:"
-            );
-
-
-            console.log(
-                `/api/admin/deposits/:depositId/approve`
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Admin reject deposit endpoint:"
-            );
-
-
-            console.log(
-                `/api/admin/deposits/:depositId/reject`
+                "Server is ready."
             );
 
 
@@ -1040,7 +957,7 @@ function shutdown(
 ) {
 
     console.log(
-        `${signal} received. Shutting down server...`
+        `${signal} received. Shutting down...`
     );
 
 

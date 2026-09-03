@@ -66,10 +66,19 @@ const withdrawalRoutes =
     );
 
 
-const adminUsersRoutes =
+const adminUsersRoutesModule =
     require(
         "./src/routes/admin-users.routes"
     );
+
+
+const adminUsersRoutes =
+
+    adminUsersRoutesModule.router ||
+
+    adminUsersRoutesModule.default ||
+
+    adminUsersRoutesModule;
 
 
 /*

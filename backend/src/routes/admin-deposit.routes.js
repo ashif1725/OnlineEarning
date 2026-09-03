@@ -1,6 +1,12 @@
 "use strict";
 
 
+/*
+|--------------------------------------------------------------------------
+| EXPRESS
+|--------------------------------------------------------------------------
+*/
+
 const express =
     require(
         "express"
@@ -10,6 +16,16 @@ const express =
 const router =
     express.Router();
 
+
+/*
+|--------------------------------------------------------------------------
+| AUTH MIDDLEWARE
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| Same middleware file use करो जो admin-users.routes.js में use हो रही है.
+|
+*/
 
 const {
 
@@ -22,6 +38,12 @@ const {
         "../middleware/auth.middleware"
     );
 
+
+/*
+|--------------------------------------------------------------------------
+| DEPOSIT SERVICE
+|--------------------------------------------------------------------------
+*/
 
 const {
 
@@ -39,7 +61,7 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| GET PENDING DEPOSITS
+| GET PENDING DEPOSIT REQUESTS
 |--------------------------------------------------------------------------
 |
 | GET /api/admin/deposits/pending
@@ -70,16 +92,21 @@ router.get(
                 success:
                     true,
 
-                deposits
+                deposits:
+                    deposits || []
 
             });
 
-
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             console.error(
+
                 "GET PENDING DEPOSITS ERROR:",
+
                 error
+
             );
 
 
@@ -92,7 +119,7 @@ router.get(
                     "ADMIN_DEPOSITS_FETCH_FAILED",
 
                 message:
-                    "Unable to load pending deposits."
+                    "Unable to load pending deposit requests."
 
             });
 
@@ -105,8 +132,11 @@ router.get(
 
 /*
 |--------------------------------------------------------------------------
-| APPROVE DEPOSIT
+| APPROVE DEPOSIT REQUEST
 |--------------------------------------------------------------------------
+|
+| POST /api/admin/deposits/:depositId/approve
+|
 */
 
 router.post(
@@ -124,11 +154,39 @@ router.post(
 
         try {
 
+            const depositId =
+                String(
+                    req.params.depositId ||
+                    ""
+                )
+                .trim();
+
+
+            if (
+                !depositId
+            ) {
+
+                return res.status(400).json({
+
+                    success:
+                        false,
+
+                    error:
+                        "DEPOSIT_ID_REQUIRED",
+
+                    message:
+                        "Deposit ID is required."
+
+                });
+
+            }
+
+
             const result =
                 await approveDepositRequest({
 
                     depositId:
-                        req.params.depositId,
+                        depositId,
 
                     adminUserId:
                         req.user.id
@@ -144,22 +202,28 @@ router.post(
                 message:
                     "Deposit approved successfully.",
 
-                result
+                result:
+                    result || null
 
             });
 
-
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             console.error(
+
                 "APPROVE DEPOSIT ERROR:",
+
                 error
+
             );
 
 
             const errorCode =
-                error.code ||
-                error.message;
+                error?.code ||
+                error?.message ||
+                "DEPOSIT_APPROVAL_FAILED";
 
 
             const statusMap = {
@@ -168,6 +232,9 @@ router.post(
                     404,
 
                 DEPOSIT_ALREADY_PROCESSED:
+                    409,
+
+                INVALID_DEPOSIT_STATUS:
                     409,
 
                 WALLET_NOT_FOUND:
@@ -182,7 +249,9 @@ router.post(
             const statusCode =
                 statusMap[
                     errorCode
-                ] || 500;
+                ]
+                ||
+                500;
 
 
             return res
@@ -195,16 +264,19 @@ router.post(
                         false,
 
                     error:
-                        errorCode ||
-                        "DEPOSIT_APPROVAL_FAILED",
+                        errorCode,
 
                     message:
 
-                        statusCode === 500
+                        statusCode === 404
 
-                            ? "Deposit approval failed."
+                            ? "Deposit request not found."
 
-                            : errorCode
+                            : statusCode === 409
+
+                                ? "This deposit request has already been processed."
+
+                                : "Unable to approve deposit."
 
                 });
 
@@ -217,8 +289,11 @@ router.post(
 
 /*
 |--------------------------------------------------------------------------
-| REJECT DEPOSIT
+| REJECT DEPOSIT REQUEST
 |--------------------------------------------------------------------------
+|
+| POST /api/admin/deposits/:depositId/reject
+|
 */
 
 router.post(
@@ -236,17 +311,61 @@ router.post(
 
         try {
 
+            const depositId =
+                String(
+                    req.params.depositId ||
+                    ""
+                )
+                .trim();
+
+
+            if (
+                !depositId
+            ) {
+
+                return res.status(400).json({
+
+                    success:
+                        false,
+
+                    error:
+                        "DEPOSIT_ID_REQUIRED",
+
+                    message:
+                        "Deposit ID is required."
+
+                });
+
+            }
+
+
+            const reason =
+
+                req.body &&
+                typeof req.body.reason ===
+                "string"
+
+                    ?
+
+                    req.body.reason
+                        .trim()
+
+                    :
+
+                    null;
+
+
             const result =
                 await rejectDepositRequest({
 
                     depositId:
-                        req.params.depositId,
+                        depositId,
 
                     adminUserId:
                         req.user.id,
 
                     reason:
-                        req.body?.reason ||
+                        reason ||
                         null
 
                 });
@@ -260,22 +379,28 @@ router.post(
                 message:
                     "Deposit rejected successfully.",
 
-                result
+                result:
+                    result || null
 
             });
 
-
-        } catch (error) {
+        } catch (
+            error
+        ) {
 
             console.error(
+
                 "REJECT DEPOSIT ERROR:",
+
                 error
+
             );
 
 
             const errorCode =
-                error.code ||
-                error.message;
+                error?.code ||
+                error?.message ||
+                "DEPOSIT_REJECTION_FAILED";
 
 
             const statusMap = {
@@ -284,6 +409,9 @@ router.post(
                     404,
 
                 DEPOSIT_ALREADY_PROCESSED:
+                    409,
+
+                INVALID_DEPOSIT_STATUS:
                     409
 
             };
@@ -292,7 +420,9 @@ router.post(
             const statusCode =
                 statusMap[
                     errorCode
-                ] || 500;
+                ]
+                ||
+                500;
 
 
             return res
@@ -305,8 +435,19 @@ router.post(
                         false,
 
                     error:
-                        errorCode ||
-                        "DEPOSIT_REJECTION_FAILED"
+                        errorCode,
+
+                    message:
+
+                        statusCode === 404
+
+                            ? "Deposit request not found."
+
+                            : statusCode === 409
+
+                                ? "This deposit request has already been processed."
+
+                                : "Unable to reject deposit."
 
                 });
 
@@ -316,6 +457,12 @@ router.post(
 
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
 
 module.exports =
     router;

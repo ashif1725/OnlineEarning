@@ -3,7 +3,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| LOAD ENVIRONMENT VARIABLES
+| ENVIRONMENT
 |--------------------------------------------------------------------------
 */
 
@@ -34,7 +34,7 @@ const cookieParser =
 
 /*
 |--------------------------------------------------------------------------
-| CREATE APP
+| APP
 |--------------------------------------------------------------------------
 */
 
@@ -51,7 +51,7 @@ const PORT =
 
 /*
 |--------------------------------------------------------------------------
-| LOAD ROUTES
+| ROUTES
 |--------------------------------------------------------------------------
 */
 
@@ -79,7 +79,7 @@ const adminUsersRoutes =
     );
 
 
-const adminDepositRoutes =
+const adminDepositRequestsRoutes =
     require(
         "./src/routes/admin-deposit.routes"
     );
@@ -104,7 +104,7 @@ app.set(
 
 /*
 |--------------------------------------------------------------------------
-| HELMET
+| SECURITY HEADERS
 |--------------------------------------------------------------------------
 */
 
@@ -122,22 +122,25 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| CONFIGURED FRONTEND ORIGINS
+| ALLOWED FRONTEND ORIGINS
 |--------------------------------------------------------------------------
 */
 
 const configuredOrigins =
+
     [
 
         process.env.FRONTEND_ORIGIN,
 
         ...String(
+
             process.env.FRONTEND_ORIGINS ||
             ""
-        )
-        .split(",")
+
+        ).split(",")
 
     ]
+
     .map(
 
         function (
@@ -145,10 +148,14 @@ const configuredOrigins =
         ) {
 
             return String(
+
                 origin ||
                 ""
+
             )
+
             .trim()
+
             .replace(
                 /\/+$/,
                 ""
@@ -157,6 +164,7 @@ const configuredOrigins =
         }
 
     )
+
     .filter(
         Boolean
     );
@@ -169,6 +177,7 @@ const configuredOrigins =
 */
 
 const developmentOrigins =
+
     [
 
         "http://localhost:3000",
@@ -188,11 +197,12 @@ const developmentOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| ALLOWED ORIGINS
+| FINAL ALLOWED ORIGINS
 |--------------------------------------------------------------------------
 */
 
 const allowedOrigins =
+
     Array.from(
 
         new Set(
@@ -225,7 +235,7 @@ const allowedOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| CORS ORIGIN VALIDATION
+| CORS VALIDATION
 |--------------------------------------------------------------------------
 */
 
@@ -236,14 +246,10 @@ function validateCorsOrigin(
 
 
     /*
-    ---------------------------------------------------------
-    Requests without Origin.
-    Examples:
-    Render health checks
-    curl
-    Postman
-    Server-to-server requests
-    ---------------------------------------------------------
+    ----------------------------------------------------------
+    Allow requests without Origin
+    Render health checks, curl, Postman, server-to-server
+    ----------------------------------------------------------
     */
 
     if (
@@ -259,10 +265,13 @@ function validateCorsOrigin(
 
 
     const normalizedOrigin =
+
         String(
             origin
         )
+
         .trim()
+
         .replace(
             /\/+$/,
             ""
@@ -270,9 +279,9 @@ function validateCorsOrigin(
 
 
     /*
-    ---------------------------------------------------------
-    Allow configured origins.
-    ---------------------------------------------------------
+    ----------------------------------------------------------
+    Allow configured frontend origins
+    ----------------------------------------------------------
     */
 
     if (
@@ -292,9 +301,9 @@ function validateCorsOrigin(
 
 
     /*
-    ---------------------------------------------------------
-    Allow all origins during development.
-    ---------------------------------------------------------
+    ----------------------------------------------------------
+    Development fallback
+    ----------------------------------------------------------
     */
 
     if (
@@ -334,78 +343,71 @@ function validateCorsOrigin(
 
 /*
 |--------------------------------------------------------------------------
-| CORS CONFIGURATION
+| CORS OPTIONS
 |--------------------------------------------------------------------------
 */
 
-const corsOptions =
-    {
+const corsOptions = {
 
-        origin:
-            validateCorsOrigin,
-
-
-        credentials:
-            true,
+    origin:
+        validateCorsOrigin,
 
 
-        methods:
-
-            [
-
-                "GET",
-
-                "POST",
-
-                "PUT",
-
-                "PATCH",
-
-                "DELETE",
-
-                "OPTIONS"
-
-            ],
+    credentials:
+        true,
 
 
-        allowedHeaders:
+    methods:
 
-            [
+        [
 
-                "Content-Type",
+            "GET",
 
-                "Authorization",
+            "POST",
 
-                "Accept"
+            "PUT",
 
-            ],
+            "PATCH",
 
+            "DELETE",
 
-        exposedHeaders:
+            "OPTIONS"
 
-            [
-
-                "Content-Type"
-
-            ],
+        ],
 
 
-        optionsSuccessStatus:
-            204
+    allowedHeaders:
 
-    };
+        [
+
+            "Content-Type",
+
+            "Authorization",
+
+            "Accept"
+
+        ],
+
+
+    exposedHeaders:
+
+        [
+
+            "Content-Type"
+
+        ],
+
+
+    optionsSuccessStatus:
+        204
+
+};
 
 
 /*
 |--------------------------------------------------------------------------
 | ENABLE CORS
 |--------------------------------------------------------------------------
-|
-| IMPORTANT:
-| app.use(cors()) automatically handles preflight OPTIONS requests.
-| Do NOT add app.options("*", ...) because Express 5 can fail
-| with wildcard route syntax.
-|
 */
 
 app.use(
@@ -414,6 +416,20 @@ app.use(
         corsOptions
     )
 
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| HANDLE PREFLIGHT
+|--------------------------------------------------------------------------
+*/
+
+app.options(
+    "*",
+    cors(
+        corsOptions
+    )
 );
 
 
@@ -475,6 +491,7 @@ app.use(
         next
     ) {
 
+
         if (
 
             process.env.NODE_ENV !==
@@ -491,7 +508,7 @@ app.use(
         }
 
 
-        return next();
+        next();
 
     }
 
@@ -500,7 +517,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ROOT ENDPOINT
+| ROOT
 |--------------------------------------------------------------------------
 */
 
@@ -512,6 +529,7 @@ app.get(
         req,
         res
     ) {
+
 
         return res.status(200).json({
 
@@ -545,6 +563,7 @@ app.get(
         req,
         res
     ) {
+
 
         return res.status(200).json({
 
@@ -639,14 +658,14 @@ app.use(
 
     "/api/admin/deposits",
 
-    adminDepositRoutes
+    adminDepositRequestsRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| 404 HANDLER
+| API 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -657,6 +676,7 @@ app.use(
         res
     ) {
 
+
         return res.status(404).json({
 
             success:
@@ -666,7 +686,9 @@ app.use(
                 "NOT_FOUND",
 
             message:
-                `API endpoint not found: ${req.method} ${req.originalUrl}`
+
+                `API endpoint not found: ` +
+                `${req.method} ${req.originalUrl}`
 
         });
 
@@ -690,54 +712,13 @@ app.use(
         next
     ) {
 
-        console.error(
-            "========================================"
-        );
-
 
         console.error(
-            "UNHANDLED SERVER ERROR"
-        );
 
+            "UNHANDLED SERVER ERROR:",
 
-        console.error(
-            "MESSAGE:",
-            err?.message
-        );
+            err
 
-
-        console.error(
-            "CODE:",
-            err?.code
-        );
-
-
-        console.error(
-            "DETAIL:",
-            err?.detail
-        );
-
-
-        console.error(
-            "TABLE:",
-            err?.table
-        );
-
-
-        console.error(
-            "COLUMN:",
-            err?.column
-        );
-
-
-        console.error(
-            "CONSTRAINT:",
-            err?.constraint
-        );
-
-
-        console.error(
-            "========================================"
         );
 
 
@@ -753,9 +734,9 @@ app.use(
 
 
         /*
-        ---------------------------------------------------------
+        ------------------------------------------------------
         CORS ERROR
-        ---------------------------------------------------------
+        ------------------------------------------------------
         */
 
         if (
@@ -774,6 +755,7 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
+
                     "This frontend origin is not allowed to access the API."
 
             });
@@ -781,13 +763,8 @@ app.use(
         }
 
 
-        /*
-        ---------------------------------------------------------
-        STATUS CODE
-        ---------------------------------------------------------
-        */
-
         const rawStatus =
+
             Number(
 
                 err?.status ||
@@ -814,16 +791,12 @@ app.use(
                 500;
 
 
-        /*
-        ---------------------------------------------------------
-        RESPONSE
-        ---------------------------------------------------------
-        */
-
         return res
+
             .status(
                 statusCode
             )
+
             .json({
 
                 success:
@@ -866,164 +839,117 @@ app.use(
 |--------------------------------------------------------------------------
 */
 
-const server =
-    app.listen(
+app.listen(
 
-        PORT,
+    PORT,
 
-        "0.0.0.0",
-
-        function () {
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "SkillEarn Hub API started successfully"
-            );
-
-
-            console.log(
-                `Port: ${PORT}`
-            );
-
-
-            console.log(
-
-                `Environment: ${
-                    process.env.NODE_ENV ||
-                    "development"
-                }`
-
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Configured frontend origins:"
-            );
-
-
-            console.log(
-
-                allowedOrigins.length > 0
-
-                    ?
-
-                    allowedOrigins.join(
-                        ", "
-                    )
-
-                    :
-
-                    "No frontend origin configured"
-
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-
-            console.log(
-                "Server is ready."
-            );
-
-
-            console.log(
-                "========================================"
-            );
-
-        }
-
-    );
-
-
-/*
-|--------------------------------------------------------------------------
-| GRACEFUL SHUTDOWN
-|--------------------------------------------------------------------------
-*/
-
-function shutdown(
-    signal
-) {
-
-    console.log(
-        `${signal} received. Shutting down...`
-    );
-
-
-    server.close(
-
-        function () {
-
-            console.log(
-                "HTTP server closed."
-            );
-
-
-            process.exit(
-                0
-            );
-
-        }
-
-    );
-
-
-    setTimeout(
-
-        function () {
-
-            console.error(
-                "Forced shutdown."
-            );
-
-
-            process.exit(
-                1
-            );
-
-        },
-
-        10000
-
-    );
-
-}
-
-
-process.on(
-
-    "SIGTERM",
+    "0.0.0.0",
 
     function () {
 
-        shutdown(
-            "SIGTERM"
+
+        console.log(
+            "========================================"
         );
 
-    }
 
-);
+        console.log(
+            "SkillEarn Hub API started successfully"
+        );
 
 
-process.on(
+        console.log(
 
-    "SIGINT",
+            `Port: ${PORT}`
 
-    function () {
+        );
 
-        shutdown(
-            "SIGINT"
+
+        console.log(
+
+            `Environment: ${
+                process.env.NODE_ENV ||
+                "development"
+            }`
+
+        );
+
+
+        console.log(
+            "Allowed frontend origins:"
+        );
+
+
+        console.log(
+
+            allowedOrigins.length > 0
+
+                ?
+
+                allowedOrigins
+
+                :
+
+                "No frontend origin configured"
+
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        console.log(
+            "API Root:"
+        );
+
+
+        console.log(
+
+            `http://localhost:${PORT}/`
+
+        );
+
+
+        console.log(
+            "Health:"
+        );
+
+
+        console.log(
+
+            `http://localhost:${PORT}/api/health`
+
+        );
+
+
+        console.log(
+            "Admin users:"
+        );
+
+
+        console.log(
+
+            `http://localhost:${PORT}/api/admin/users`
+
+        );
+
+
+        console.log(
+            "Admin pending deposits:"
+        );
+
+
+        console.log(
+
+            `http://localhost:${PORT}/api/admin/deposits/pending`
+
+        );
+
+
+        console.log(
+            "========================================"
         );
 
     }

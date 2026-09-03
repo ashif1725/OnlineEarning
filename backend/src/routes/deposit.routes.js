@@ -3,7 +3,7 @@
 
 /*
 |--------------------------------------------------------------------------
-| PACKAGES
+| EXPRESS
 |--------------------------------------------------------------------------
 */
 
@@ -25,9 +25,9 @@ const router =
 
 const {
 
-    createDepositRequest,
+    createDeposit,
 
-    getUserDepositRequests
+    getMyDeposits
 
 } =
     require(
@@ -66,7 +66,7 @@ router.post(
 
     requireAuth,
 
-    createDepositRequest
+    createDeposit
 
 );
 
@@ -86,7 +86,7 @@ router.get(
 
     requireAuth,
 
-    getUserDepositRequests
+    getMyDeposits
 
 );
 

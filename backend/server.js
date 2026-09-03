@@ -66,19 +66,10 @@ const withdrawalRoutes =
     );
 
 
-const adminUsersRoutesModule =
+const adminUsersRoutes =
     require(
         "./src/routes/admin-users.routes"
     );
-
-
-const adminUsersRoutes =
-
-    adminUsersRoutesModule.router ||
-
-    adminUsersRoutesModule.default ||
-
-    adminUsersRoutesModule;
 
 
 /*
@@ -93,7 +84,8 @@ const app =
 
 const PORT =
     Number(
-        process.env.PORT || 8080
+        process.env.PORT ||
+        8080
     );
 
 
@@ -111,9 +103,6 @@ app.disable(
 /*
 |--------------------------------------------------------------------------
 | TRUST PROXY
-|--------------------------------------------------------------------------
-|
-| Required when deployed behind Render / reverse proxy.
 |--------------------------------------------------------------------------
 */
 
@@ -143,13 +132,6 @@ app.use(
 |--------------------------------------------------------------------------
 | ALLOWED FRONTEND ORIGINS
 |--------------------------------------------------------------------------
-|
-| FRONTEND_ORIGIN:
-| https://example.com
-|
-| FRONTEND_ORIGINS:
-| https://example.com,https://www.example.com
-|--------------------------------------------------------------------------
 */
 
 const configuredOrigins =
@@ -165,12 +147,14 @@ const configuredOrigins =
 
     ]
     .map(
+
         function (
             origin
         ) {
 
             return String(
-                origin || ""
+                origin ||
+                ""
             )
             .trim()
             .replace(
@@ -179,6 +163,7 @@ const configuredOrigins =
             );
 
         }
+
     )
     .filter(
         Boolean
@@ -256,9 +241,7 @@ function validateCorsOrigin(
     /*
     ---------------------------------------------------------
     Requests without Origin:
-    - Render health checks
-    - curl
-    - server-to-server
+    Render health checks, curl, server-to-server.
     ---------------------------------------------------------
     */
 
@@ -285,7 +268,7 @@ function validateCorsOrigin(
 
     /*
     ---------------------------------------------------------
-    Allowed frontend
+    Allowed configured origin
     ---------------------------------------------------------
     */
 
@@ -352,62 +335,61 @@ function validateCorsOrigin(
 |--------------------------------------------------------------------------
 */
 
-const corsOptions =
-    {
+const corsOptions = {
 
-        origin:
-            validateCorsOrigin,
-
-
-        credentials:
-            true,
+    origin:
+        validateCorsOrigin,
 
 
-        methods:
-
-            [
-
-                "GET",
-
-                "POST",
-
-                "PUT",
-
-                "PATCH",
-
-                "DELETE",
-
-                "OPTIONS"
-
-            ],
+    credentials:
+        true,
 
 
-        allowedHeaders:
+    methods:
 
-            [
+        [
 
-                "Content-Type",
+            "GET",
 
-                "Authorization",
+            "POST",
 
-                "Accept"
+            "PUT",
 
-            ],
+            "PATCH",
 
+            "DELETE",
 
-        exposedHeaders:
+            "OPTIONS"
 
-            [
-
-                "Content-Type"
-
-            ],
+        ],
 
 
-        optionsSuccessStatus:
-            204
+    allowedHeaders:
 
-    };
+        [
+
+            "Content-Type",
+
+            "Authorization",
+
+            "Accept"
+
+        ],
+
+
+    exposedHeaders:
+
+        [
+
+            "Content-Type"
+
+        ],
+
+
+    optionsSuccessStatus:
+        204
+
+};
 
 
 /*
@@ -489,9 +471,7 @@ app.use(
         ) {
 
             console.log(
-
                 `${req.method} ${req.originalUrl}`
-
             );
 
         }
@@ -506,7 +486,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ROOT API INFORMATION
+| ROOT
 |--------------------------------------------------------------------------
 */
 
@@ -519,9 +499,7 @@ app.get(
         res
     ) {
 
-        return res.status(
-            200
-        ).json({
+        return res.status(200).json({
 
             success:
                 true,
@@ -554,9 +532,7 @@ app.get(
         res
     ) {
 
-        return res.status(
-            200
-        ).json({
+        return res.status(200).json({
 
             success:
                 true,
@@ -583,12 +559,6 @@ app.get(
 |--------------------------------------------------------------------------
 | AUTH ROUTES
 |--------------------------------------------------------------------------
-|
-| POST /api/auth/register
-| POST /api/auth/login
-| POST /api/auth/logout
-| GET  /api/auth/me
-|--------------------------------------------------------------------------
 */
 
 app.use(
@@ -603,10 +573,6 @@ app.use(
 /*
 |--------------------------------------------------------------------------
 | DEPOSIT ROUTES
-|--------------------------------------------------------------------------
-|
-| POST /api/deposits
-| GET  /api/deposits
 |--------------------------------------------------------------------------
 */
 
@@ -623,13 +589,6 @@ app.use(
 |--------------------------------------------------------------------------
 | WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
-|
-| USER:
-|
-| POST /api/withdrawals
-| GET  /api/withdrawals/my
-|
-|--------------------------------------------------------------------------
 */
 
 app.use(
@@ -643,15 +602,13 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN USERS ROUTES
+| ADMIN USER ROUTES
 |--------------------------------------------------------------------------
 |
 | GET   /api/admin/users
-|
 | GET   /api/admin/users/:userId
-|
 | PATCH /api/admin/users/:userId/status
-|--------------------------------------------------------------------------
+|
 */
 
 app.use(
@@ -676,9 +633,7 @@ app.use(
         res
     ) {
 
-        return res.status(
-            404
-        ).json({
+        return res.status(404).json({
 
             success:
                 false,
@@ -687,7 +642,6 @@ app.use(
                 "NOT_FOUND",
 
             message:
-
                 `API endpoint not found: ${req.method} ${req.originalUrl}`
 
         });
@@ -713,18 +667,13 @@ app.use(
     ) {
 
         console.error(
-
             "UNHANDLED SERVER ERROR:",
-
             err
-
         );
 
 
         if (
-
             res.headersSent
-
         ) {
 
             return next(
@@ -736,7 +685,7 @@ app.use(
 
         /*
         -----------------------------------------------------
-        CORS ERROR
+        CORS error
         -----------------------------------------------------
         */
 
@@ -747,9 +696,7 @@ app.use(
 
         ) {
 
-            return res.status(
-                403
-            ).json({
+            return res.status(403).json({
 
                 success:
                     false,
@@ -758,19 +705,12 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
-
                     "This frontend origin is not allowed to access the API."
 
             });
 
         }
 
-
-        /*
-        -----------------------------------------------------
-        STATUS CODE
-        -----------------------------------------------------
-        */
 
         const rawStatus =
             Number(
@@ -794,12 +734,6 @@ app.use(
 
                 : 500;
 
-
-        /*
-        -----------------------------------------------------
-        RESPONSE
-        -----------------------------------------------------
-        */
 
         return res
             .status(
@@ -860,9 +794,7 @@ app.listen(
 
 
         console.log(
-
             `Port: ${PORT}`
-
         );
 
 
@@ -888,9 +820,7 @@ app.listen(
                 ? allowedOrigins
 
                 : [
-
                     "No production origin configured"
-
                 ]
 
         );

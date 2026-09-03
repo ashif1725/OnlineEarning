@@ -3,55 +3,13 @@
 
 /*
 |--------------------------------------------------------------------------
-| EXPRESS
+| DATABASE
 |--------------------------------------------------------------------------
 */
 
-const express =
+const pool =
     require(
-        "express"
-    );
-
-
-const router =
-    express.Router();
-
-
-/*
-|--------------------------------------------------------------------------
-| AUTH MIDDLEWARE
-|--------------------------------------------------------------------------
-*/
-
-const {
-
-    requireAuth,
-
-    requireAdmin
-
-} =
-    require(
-        "../middleware/auth.middleware"
-    );
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN USERS SERVICE
-|--------------------------------------------------------------------------
-*/
-
-const {
-
-    getUsers,
-
-    getUserDetails,
-
-    updateUserStatus
-
-} =
-    require(
-        "../services/admin-users.service"
+        "../config/db"
     );
 
 
@@ -61,110 +19,187 @@ const {
 |--------------------------------------------------------------------------
 */
 
-router.get(
+async function getUsers({
 
-    "/",
+    search,
 
-    requireAuth,
+    status,
 
-    requireAdmin,
+    limit = 25,
 
-    async function (
-        req,
-        res
-    ) {
+    offset = 0
 
-        try {
+}) {
 
-            const search =
-                req.query.search ||
-                null;
+    const values =
+        [];
 
 
-            const status =
-                req.query.status ||
-                null;
+    const conditions =
+        [];
 
 
-            const limit =
-                Math.min(
+    /*
+    ---------------------------------------------------------
+    Search
+    ---------------------------------------------------------
+    */
 
-                    Math.max(
+    if (search) {
 
-                        Number(
-                            req.query.limit
-                        ) || 25,
-
-                        1
-
-                    ),
-
-                    100
-
-                );
+        values.push(
+            `%${search}%`
+        );
 
 
-            const offset =
-                Math.max(
+        conditions.push(
+            `
+            (
+                u.public_user_id ILIKE $${values.length}
 
-                    Number(
-                        req.query.offset
-                    ) || 0,
+                OR
 
-                    0
+                u.full_name ILIKE $${values.length}
 
-                );
+                OR
 
-
-            const users =
-                await getUsers({
-
-                    search,
-
-                    status,
-
-                    limit,
-
-                    offset
-
-                });
-
-
-            return res.json({
-
-                success:
-                    true,
-
-                users
-
-            });
-
-        } catch (error) {
-
-            console.error(
-
-                "GET USERS ERROR:",
-
-                error
-
-            );
-
-
-            return res.status(500).json({
-
-                success:
-                    false,
-
-                error:
-                    "GET_USERS_FAILED"
-
-            });
-
-        }
+                u.email ILIKE $${values.length}
+            )
+            `
+        );
 
     }
 
-);
+
+    /*
+    ---------------------------------------------------------
+    Status filter
+    ---------------------------------------------------------
+    */
+
+    if (status) {
+
+        values.push(
+            String(status)
+                .trim()
+                .toLowerCase()
+        );
+
+
+        conditions.push(
+            `u.account_status = $${values.length}`
+        );
+
+    }
+
+
+    const whereClause =
+        conditions.length > 0
+
+            ? `WHERE ${conditions.join(" AND ")}`
+
+            : "";
+
+
+    /*
+    ---------------------------------------------------------
+    Pagination
+    ---------------------------------------------------------
+    */
+
+    values.push(
+        limit
+    );
+
+
+    const limitIndex =
+        values.length;
+
+
+    values.push(
+        offset
+    );
+
+
+    const offsetIndex =
+        values.length;
+
+
+    /*
+    ---------------------------------------------------------
+    Query
+    ---------------------------------------------------------
+    */
+
+    const result =
+        await pool.query(
+
+            `
+            SELECT
+
+                u.id,
+
+                u.public_user_id,
+
+                u.full_name,
+
+                u.email,
+
+                u.role,
+
+                u.account_status,
+
+                u.last_login_at,
+
+                u.created_at,
+
+
+                COALESCE(
+                    wb.available_balance,
+                    0
+                ) AS available_balance,
+
+
+                COALESCE(
+                    wb.pending_balance,
+                    0
+                ) AS pending_balance,
+
+
+                wb.currency
+
+
+            FROM users u
+
+
+            LEFT JOIN wallets w
+                ON w.user_id = u.id
+
+
+            LEFT JOIN wallet_balances wb
+                ON wb.wallet_id = w.id
+
+
+            ${whereClause}
+
+
+            ORDER BY
+                u.created_at DESC
+
+
+            LIMIT $${limitIndex}
+
+            OFFSET $${offsetIndex}
+            `,
+
+            values
+
+        );
+
+
+    return result.rows;
+
+}
 
 
 /*
@@ -173,79 +208,85 @@ router.get(
 |--------------------------------------------------------------------------
 */
 
-router.get(
+async function getUserDetails(
+    userId
+) {
 
-    "/:userId",
+    const result =
+        await pool.query(
 
-    requireAuth,
+            `
+            SELECT
 
-    requireAdmin,
+                u.id,
 
-    async function (
-        req,
-        res
+                u.public_user_id,
+
+                u.full_name,
+
+                u.email,
+
+                u.role,
+
+                u.account_status,
+
+                u.last_login_at,
+
+                u.created_at,
+
+
+                COALESCE(
+                    wb.available_balance,
+                    0
+                ) AS available_balance,
+
+
+                COALESCE(
+                    wb.pending_balance,
+                    0
+                ) AS pending_balance,
+
+
+                wb.currency
+
+
+            FROM users u
+
+
+            LEFT JOIN wallets w
+                ON w.user_id = u.id
+
+
+            LEFT JOIN wallet_balances wb
+                ON wb.wallet_id = w.id
+
+
+            WHERE
+                u.id = $1
+
+
+            LIMIT 1
+            `,
+
+            [
+                userId
+            ]
+
+        );
+
+
+    if (
+        result.rowCount === 0
     ) {
 
-        try {
-
-            const user =
-                await getUserDetails(
-
-                    req.params.userId
-
-                );
-
-
-            if (!user) {
-
-                return res.status(404).json({
-
-                    success:
-                        false,
-
-                    error:
-                        "USER_NOT_FOUND"
-
-                });
-
-            }
-
-
-            return res.json({
-
-                success:
-                    true,
-
-                user
-
-            });
-
-        } catch (error) {
-
-            console.error(
-
-                "GET USER DETAILS ERROR:",
-
-                error
-
-            );
-
-
-            return res.status(500).json({
-
-                success:
-                    false,
-
-                error:
-                    "GET_USER_DETAILS_FAILED"
-
-            });
-
-        }
+        return null;
 
     }
 
-);
+
+    return result.rows[0];
+
+}
 
 
 /*
@@ -254,122 +295,219 @@ router.get(
 |--------------------------------------------------------------------------
 */
 
-router.patch(
+async function updateUserStatus({
 
-    "/:userId/status",
+    userId,
 
-    requireAuth,
+    status,
 
-    requireAdmin,
+    adminUserId,
 
-    async function (
-        req,
-        res
-    ) {
+    ipAddress,
 
-        try {
+    userAgent
 
-            const result =
-                await updateUserStatus({
+}) {
 
-                    userId:
-                        req.params.userId,
+    /*
+    ---------------------------------------------------------
+    Validate user ID
+    ---------------------------------------------------------
+    */
 
+    if (!userId) {
 
-                    status:
-                        req.body.status,
-
-
-                    adminUserId:
-                        req.user.id,
-
-
-                    ipAddress:
-                        req.ip,
-
-
-                    userAgent:
-                        req.get(
-                            "user-agent"
-                        )
-
-                });
-
-
-            return res.json({
-
-                success:
-                    true,
-
-                user:
-                    result
-
-            });
-
-        } catch (error) {
-
-            console.error(
-
-                "UPDATE USER STATUS ERROR:",
-
-                error
-
-            );
-
-
-            const statusMap = {
-
-                USER_NOT_FOUND:
-                    404,
-
-                INVALID_ACCOUNT_STATUS:
-                    400,
-
-                STATUS_ALREADY_SET:
-                    409
-
-            };
-
-
-            const statusCode =
-                statusMap[
-                    error.message
-                ]
-                ||
-                500;
-
-
-            return res
-                .status(
-                    statusCode
-                )
-                .json({
-
-                    success:
-                        false,
-
-                    error:
-
-                        statusCode === 500
-
-                            ? "STATUS_UPDATE_FAILED"
-
-                            : error.message
-
-                });
-
-        }
+        throw new Error(
+            "USER_NOT_FOUND"
+        );
 
     }
 
-);
+
+    /*
+    ---------------------------------------------------------
+    Normalize status
+    ---------------------------------------------------------
+    */
+
+    const normalizedStatus =
+        String(
+            status ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    /*
+    ---------------------------------------------------------
+    Allowed statuses
+    ---------------------------------------------------------
+    */
+
+    const allowedStatuses = [
+
+        "active",
+
+        "inactive",
+
+        "disabled",
+
+        "suspended"
+
+    ];
+
+
+    if (
+        !allowedStatuses.includes(
+            normalizedStatus
+        )
+    ) {
+
+        throw new Error(
+            "INVALID_ACCOUNT_STATUS"
+        );
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Get current user
+    ---------------------------------------------------------
+    */
+
+    const existingResult =
+        await pool.query(
+
+            `
+            SELECT
+
+                id,
+
+                account_status
+
+            FROM users
+
+            WHERE id = $1
+
+            LIMIT 1
+            `,
+
+            [
+                userId
+            ]
+
+        );
+
+
+    if (
+        existingResult.rowCount === 0
+    ) {
+
+        throw new Error(
+            "USER_NOT_FOUND"
+        );
+
+    }
+
+
+    const existingUser =
+        existingResult.rows[0];
+
+
+    /*
+    ---------------------------------------------------------
+    Prevent duplicate status
+    ---------------------------------------------------------
+    */
+
+    const currentStatus =
+        String(
+            existingUser.account_status ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+        currentStatus ===
+        normalizedStatus
+    ) {
+
+        throw new Error(
+            "STATUS_ALREADY_SET"
+        );
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Update user
+    ---------------------------------------------------------
+    */
+
+    const result =
+        await pool.query(
+
+            `
+            UPDATE users
+
+            SET
+                account_status = $1
+
+            WHERE
+                id = $2
+
+            RETURNING
+
+                id,
+
+                public_user_id,
+
+                full_name,
+
+                email,
+
+                role,
+
+                account_status,
+
+                last_login_at,
+
+                created_at
+            `,
+
+            [
+
+                normalizedStatus,
+
+                userId
+
+            ]
+
+        );
+
+
+    return result.rows[0];
+
+}
 
 
 /*
 |--------------------------------------------------------------------------
-| EXPORT
+| EXPORTS
 |--------------------------------------------------------------------------
 */
 
-module.exports =
-    router;
+module.exports = {
+
+    getUsers,
+
+    getUserDetails,
+
+    updateUserStatus
+
+};

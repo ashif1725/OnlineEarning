@@ -74,14 +74,22 @@ const adminUsersRoutes =
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN DEPOSIT ROUTES
+| ADMIN DEPOSIT REQUEST ROUTES
 |--------------------------------------------------------------------------
+|
+| GET  /api/admin/deposits/pending
+| POST /api/admin/deposits/:depositId/approve
+| POST /api/admin/deposits/:depositId/reject
+|
 */
 
-const adminDepositRequestsRoutes =
-    require(
-        "./src/routes/admin-deposit-requests"
-    );
+app.use(
+
+    "/api/admin/deposits",
+
+    adminDepositRequestsRoutes
+
+);
 
 
 /*

@@ -133,11 +133,10 @@ const configuredOrigins =
         process.env.FRONTEND_ORIGIN,
 
         ...String(
-
             process.env.FRONTEND_ORIGINS ||
             ""
-
-        ).split(",")
+        )
+        .split(",")
 
     ]
 
@@ -148,14 +147,10 @@ const configuredOrigins =
         ) {
 
             return String(
-
                 origin ||
                 ""
-
             )
-
             .trim()
-
             .replace(
                 /\/+$/,
                 ""
@@ -247,7 +242,7 @@ function validateCorsOrigin(
 
     /*
     ----------------------------------------------------------
-    Allow requests without Origin
+    Requests without Origin:
     Render health checks, curl, Postman, server-to-server
     ----------------------------------------------------------
     */
@@ -421,20 +416,6 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| HANDLE PREFLIGHT
-|--------------------------------------------------------------------------
-*/
-
-app.options(
-    "*",
-    cors(
-        corsOptions
-    )
-);
-
-
-/*
-|--------------------------------------------------------------------------
 | BODY PARSERS
 |--------------------------------------------------------------------------
 */
@@ -508,7 +489,7 @@ app.use(
         }
 
 
-        next();
+        return next();
 
     }
 
@@ -755,7 +736,6 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
-
                     "This frontend origin is not allowed to access the API."
 
             });

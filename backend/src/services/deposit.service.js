@@ -681,82 +681,59 @@ async function approveDepositRequest({
 
 
         /*
-        --------------------------------------------------------------
-        CREATE WALLET TRANSACTION
-        --------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| CREATE WALLET TRANSACTION
+|--------------------------------------------------------------------------
+*/
 
-        const transactionResult =
-            await client.query(
-
-                `
-                INSERT INTO wallet_transactions (
-                    wallet_id,
-                    user_id,
-                    transaction_type,
-                    amount,
-                    currency,
-                    balance_before,
-                    balance_after,
-                    reference_type,
-                    reference_id,
-                    description
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    'deposit',
-                    $3,
-                    $4,
-                    $5,
-                    $6,
-                    'deposit',
-                    $7,
-                    $8
-                )
-                RETURNING
-                    id,
-                    wallet_id,
-                    user_id,
-                    transaction_type,
-                    amount,
-                    currency,
-                    balance_before,
-                    balance_after,
-                    reference_type,
-                    reference_id,
-                    description,
-                    created_at
-                `,
-
-                [
-
-                    wallet.id,
-
-                    deposit.user_id,
-
-                    depositAmount,
-
-                    deposit.currency ||
-                    wallet.currency,
-
-                    balanceBefore,
-
-                    balanceAfter,
-
-                    String(
-                        deposit.id
-                    ),
-
-                    "Deposit approved by administrator"
-
-                ]
-
-            );
+const transactionResult =
+    await client.query(
+        `
+        INSERT INTO wallet_transactions (
+            wallet_id,
+            transaction_type,
+            amount,
+            currency,
+            balance_before,
+            balance_after,
+            reference_type,
+            reference_id,
+            description
+        )
+        VALUES (
+            $1,
+            'deposit',
+            $2,
+            $3,
+            $4,
+            $5,
+            'deposit',
+            $6,
+            'Deposit approved by administrator'
+        )
+        RETURNING
+            id,
+            wallet_id,
+            transaction_type,
+            amount,
+            currency,
+            balance_before,
+            balance_after,
+            created_at
+        `,
+        [
+            wallet.id,
+            depositAmount,
+            deposit.currency,
+            balanceBefore,
+            balanceAfter,
+            deposit.id
+        ]
+    );
 
 
-        const transaction =
-            transactionResult.rows[0];
+const transaction =
+    transactionResult.rows[0];
 
 
         /*

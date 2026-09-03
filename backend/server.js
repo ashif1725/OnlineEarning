@@ -82,6 +82,7 @@ const walletRoutes =
         "./src/routes/wallet.routes"
     );
 
+
 const withdrawalRoutes =
     require(
         "./src/routes/withdrawal.routes"
@@ -104,20 +105,6 @@ const adminDepositRequestsRoutes =
 |--------------------------------------------------------------------------
 | ROUTE MODULE NORMALIZER
 |--------------------------------------------------------------------------
-|
-| Supports:
-|
-| module.exports = router;
-|
-| module.exports = {
-|     router
-| };
-|
-| module.exports = {
-|     default: router
-| };
-|
-|--------------------------------------------------------------------------
 */
 
 function getExpressRouter(
@@ -127,7 +114,7 @@ function getExpressRouter(
 
     /*
     ----------------------------------------------------------
-    Direct Router export
+    Direct Express Router export
     ----------------------------------------------------------
     */
 
@@ -253,6 +240,16 @@ const normalizedDepositRoutes =
         depositRoutes,
 
         "./src/routes/deposit.routes"
+
+    );
+
+
+const normalizedWalletRoutes =
+    getExpressRouter(
+
+        walletRoutes,
+
+        "./src/routes/wallet.routes"
 
     );
 
@@ -413,20 +410,9 @@ const allowedOrigins =
 
                 ...configuredOrigins,
 
-                ...(
-
-                    process.env.NODE_ENV !==
-                    "production"
-
-                        ?
-
-                        developmentOrigins
-
-                        :
-
-                        []
-
-                )
+                ...(process.env.NODE_ENV !== "production"
+                    ? developmentOrigins
+                    : [])
 
             ]
 
@@ -445,7 +431,6 @@ function validateCorsOrigin(
     origin,
     callback
 ) {
-
 
     /*
     ---------------------------------------------------------
@@ -584,7 +569,9 @@ const corsOptions =
 
                 "Authorization",
 
-                "Accept"
+                "Accept",
+
+                "Idempotency-Key"
 
             ],
 
@@ -806,6 +793,7 @@ app.use(
 
 );
 
+
 /*
 |--------------------------------------------------------------------------
 | USER DEPOSIT ROUTES
@@ -820,20 +808,6 @@ app.use(
 
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| WALLET ROUTES
-|--------------------------------------------------------------------------
-*/
-
-app.use(
-
-    "/api/wallet",
-
-    walletRoutes
-
-);
 
 /*
 |--------------------------------------------------------------------------
@@ -976,7 +950,6 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
-
                     "This frontend origin is not allowed to access the API."
 
             });
@@ -1065,7 +1038,6 @@ app.listen(
 
     function () {
 
-
         console.log(
             "========================================"
         );
@@ -1141,12 +1113,22 @@ app.listen(
 
 
         console.log(
-            "Admin users:"
+            "Wallet:"
         );
 
 
         console.log(
-            `http://localhost:${PORT}/api/admin/users`
+            `http://localhost:${PORT}/api/wallet`
+        );
+
+
+        console.log(
+            "Wallet transactions:"
+        );
+
+
+        console.log(
+            `http://localhost:${PORT}/api/wallet/transactions`
         );
 
 

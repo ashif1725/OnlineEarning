@@ -45,10 +45,16 @@ async function getUsers({
     ---------------------------------------------------------
     */
 
-    if (search) {
+    if (
+
+        search &&
+
+        String(search).trim()
+
+    ) {
 
         values.push(
-            `%${search}%`
+            `%${String(search).trim()}%`
         );
 
 
@@ -75,27 +81,39 @@ async function getUsers({
 
     /*
     ---------------------------------------------------------
-    Status filter
+    Account status filter
     ---------------------------------------------------------
     */
 
-    if (status) {
+    if (
+
+        status &&
+
+        String(status).trim()
+
+    ) {
 
         values.push(
-            status
+            String(status)
+                .trim()
+                .toLowerCase()
         );
 
 
         conditions.push(
 
-            `
-            u.account_status = $${values.length}
-            `
+            `u.account_status = $${values.length}`
 
         );
 
     }
 
+
+    /*
+    ---------------------------------------------------------
+    WHERE clause
+    ---------------------------------------------------------
+    */
 
     const whereClause =
 
@@ -108,7 +126,7 @@ async function getUsers({
 
     /*
     ---------------------------------------------------------
-    Pagination
+    Limit
     ---------------------------------------------------------
     */
 
@@ -121,6 +139,12 @@ async function getUsers({
         values.length;
 
 
+    /*
+    ---------------------------------------------------------
+    Offset
+    ---------------------------------------------------------
+    */
+
     values.push(
         offset
     );
@@ -132,7 +156,7 @@ async function getUsers({
 
     /*
     ---------------------------------------------------------
-    Query users
+    Query
     ---------------------------------------------------------
     */
 
@@ -165,8 +189,7 @@ async function getUsers({
 
                     0
 
-                )
-                AS available_balance,
+                ) AS available_balance,
 
 
                 COALESCE(
@@ -175,8 +198,7 @@ async function getUsers({
 
                     0
 
-                )
-                AS pending_balance,
+                ) AS pending_balance,
 
 
                 wb.currency
@@ -257,8 +279,7 @@ async function getUserDetails(
 
                     0
 
-                )
-                AS available_balance,
+                ) AS available_balance,
 
 
                 COALESCE(
@@ -267,8 +288,7 @@ async function getUserDetails(
 
                     0
 
-                )
-                AS pending_balance,
+                ) AS pending_balance,
 
 
                 wb.currency
@@ -344,13 +364,9 @@ async function updateUserStatus({
 
     if (!userId) {
 
-        const error =
-            new Error(
-                "USER_NOT_FOUND"
-            );
-
-
-        throw error;
+        throw new Error(
+            "USER_NOT_FOUND"
+        );
 
     }
 
@@ -383,26 +399,24 @@ async function updateUserStatus({
 
             "inactive",
 
-            "disabled",
+            "suspended",
 
-            "suspended"
+            "blocked"
 
         ];
 
 
     if (
+
         !allowedStatuses.includes(
             normalizedStatus
         )
+
     ) {
 
-        const error =
-            new Error(
-                "INVALID_ACCOUNT_STATUS"
-            );
-
-
-        throw error;
+        throw new Error(
+            "INVALID_ACCOUNT_STATUS"
+        );
 
     }
 
@@ -413,7 +427,7 @@ async function updateUserStatus({
     ---------------------------------------------------------
     */
 
-    const existingResult =
+    const currentResult =
         await pool.query(
 
             `
@@ -438,59 +452,54 @@ async function updateUserStatus({
 
 
     if (
-        existingResult.rowCount === 0
+        currentResult.rowCount === 0
     ) {
 
-        const error =
-            new Error(
-                "USER_NOT_FOUND"
-            );
-
-
-        throw error;
+        throw new Error(
+            "USER_NOT_FOUND"
+        );
 
     }
 
 
-    const existingUser =
-        existingResult.rows[0];
+    const currentUser =
+        currentResult.rows[0];
 
 
     /*
     ---------------------------------------------------------
-    Status already set
+    Same status
     ---------------------------------------------------------
     */
 
-    if (
-
+    const currentStatus =
         String(
-            existingUser.account_status ||
+
+            currentUser.account_status ||
             ""
+
         )
         .trim()
-        .toLowerCase()
+        .toLowerCase();
 
-        ===
 
+    if (
+
+        currentStatus ===
         normalizedStatus
 
     ) {
 
-        const error =
-            new Error(
-                "STATUS_ALREADY_SET"
-            );
-
-
-        throw error;
+        throw new Error(
+            "STATUS_ALREADY_SET"
+        );
 
     }
 
 
     /*
     ---------------------------------------------------------
-    Update status
+    Update
     ---------------------------------------------------------
     */
 
@@ -504,9 +513,11 @@ async function updateUserStatus({
 
                 account_status = $1
 
+
             WHERE
 
                 id = $2
+
 
             RETURNING
 
@@ -555,12 +566,13 @@ async function updateUserStatus({
 |--------------------------------------------------------------------------
 */
 
-module.exports = {
+module.exports =
+    {
 
-    getUsers,
+        getUsers,
 
-    getUserDetails,
+        getUserDetails,
 
-    updateUserStatus
+        updateUserStatus
 
-};
+    };

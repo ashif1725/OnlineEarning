@@ -7,7 +7,9 @@
 |--------------------------------------------------------------------------
 */
 
-require("dotenv").config();
+require(
+    "dotenv"
+).config();
 
 
 /*
@@ -17,19 +19,27 @@ require("dotenv").config();
 */
 
 const express =
-    require("express");
+    require(
+        "express"
+    );
 
 
 const helmet =
-    require("helmet");
+    require(
+        "helmet"
+    );
 
 
 const cors =
-    require("cors");
+    require(
+        "cors"
+    );
 
 
 const cookieParser =
-    require("cookie-parser");
+    require(
+        "cookie-parser"
+    );
 
 
 /*
@@ -53,6 +63,12 @@ const depositRoutes =
 const withdrawalRoutes =
     require(
         "./src/routes/withdrawal.routes"
+    );
+
+
+const adminUsersRoutes =
+    require(
+        "./src/routes/admin-users.routes"
     );
 
 
@@ -119,14 +135,11 @@ app.use(
 | ALLOWED FRONTEND ORIGINS
 |--------------------------------------------------------------------------
 |
-| FRONTEND_ORIGIN can contain one origin:
-|
+| FRONTEND_ORIGIN:
 | https://example.com
 |
-| FRONTEND_ORIGINS can contain multiple origins:
-|
+| FRONTEND_ORIGINS:
 | https://example.com,https://www.example.com
-|
 |--------------------------------------------------------------------------
 */
 
@@ -135,15 +148,17 @@ const configuredOrigins =
 
         process.env.FRONTEND_ORIGIN,
 
-        ...(String(
+        ...String(
             process.env.FRONTEND_ORIGINS ||
             ""
         )
-        .split(","))
+        .split(",")
 
     ]
     .map(
-        function (origin) {
+        function (
+            origin
+        ) {
 
             return String(
                 origin || ""
@@ -193,22 +208,28 @@ const developmentOrigins =
 
 const allowedOrigins =
     Array.from(
+
         new Set(
+
             [
 
                 ...configuredOrigins,
 
                 ...(
+
                     process.env.NODE_ENV !==
                     "production"
 
                         ? developmentOrigins
 
                         : []
+
                 )
 
             ]
+
         )
+
     );
 
 
@@ -224,12 +245,12 @@ function validateCorsOrigin(
 ) {
 
     /*
-    ----------------------------------------------------------------------
-    Requests without Origin header:
+    ---------------------------------------------------------
+    Requests without Origin:
     - Render health checks
     - curl
-    - server-to-server requests
-    ----------------------------------------------------------------------
+    - server-to-server
+    ---------------------------------------------------------
     */
 
     if (!origin) {
@@ -243,24 +264,28 @@ function validateCorsOrigin(
 
 
     const normalizedOrigin =
-        String(origin)
-            .trim()
-            .replace(
-                /\/+$/,
-                ""
-            );
+        String(
+            origin
+        )
+        .trim()
+        .replace(
+            /\/+$/,
+            ""
+        );
 
 
     /*
-    ----------------------------------------------------------------------
-    Explicitly configured frontend
-    ----------------------------------------------------------------------
+    ---------------------------------------------------------
+    Allowed frontend
+    ---------------------------------------------------------
     */
 
     if (
+
         allowedOrigins.includes(
             normalizedOrigin
         )
+
     ) {
 
         return callback(
@@ -272,14 +297,16 @@ function validateCorsOrigin(
 
 
     /*
-    ----------------------------------------------------------------------
-    Helpful development fallback
-    ----------------------------------------------------------------------
+    ---------------------------------------------------------
+    Development fallback
+    ---------------------------------------------------------
     */
 
     if (
+
         process.env.NODE_ENV !==
         "production"
+
     ) {
 
         return callback(
@@ -291,15 +318,20 @@ function validateCorsOrigin(
 
 
     console.warn(
+
         "CORS BLOCKED ORIGIN:",
+
         normalizedOrigin
+
     );
 
 
     return callback(
+
         new Error(
             "CORS origin is not allowed"
         )
+
     );
 
 }
@@ -311,55 +343,62 @@ function validateCorsOrigin(
 |--------------------------------------------------------------------------
 */
 
-const corsOptions = {
+const corsOptions =
+    {
 
-    origin:
-        validateCorsOrigin,
-
-
-    credentials:
-        true,
+        origin:
+            validateCorsOrigin,
 
 
-    methods: [
-
-        "GET",
-
-        "POST",
-
-        "PUT",
-
-        "PATCH",
-
-        "DELETE",
-
-        "OPTIONS"
-
-    ],
+        credentials:
+            true,
 
 
-    allowedHeaders: [
+        methods:
 
-        "Content-Type",
+            [
 
-        "Authorization",
+                "GET",
 
-        "Accept"
+                "POST",
 
-    ],
+                "PUT",
+
+                "PATCH",
+
+                "DELETE",
+
+                "OPTIONS"
+
+            ],
 
 
-    exposedHeaders: [
+        allowedHeaders:
 
-        "Content-Type"
+            [
 
-    ],
+                "Content-Type",
+
+                "Authorization",
+
+                "Accept"
+
+            ],
 
 
-    optionsSuccessStatus:
-        204
+        exposedHeaders:
 
-};
+            [
+
+                "Content-Type"
+
+            ],
+
+
+        optionsSuccessStatus:
+            204
+
+    };
 
 
 /*
@@ -382,16 +421,19 @@ app.use(
 */
 
 app.use(
+
     express.json({
 
         limit:
             "100kb"
 
     })
+
 );
 
 
 app.use(
+
     express.urlencoded({
 
         extended:
@@ -401,6 +443,7 @@ app.use(
             "100kb"
 
     })
+
 );
 
 
@@ -419,12 +462,10 @@ app.use(
 |--------------------------------------------------------------------------
 | REQUEST LOGGER
 |--------------------------------------------------------------------------
-|
-| Useful on Render logs while debugging API requests.
-|--------------------------------------------------------------------------
 */
 
 app.use(
+
     function (
         req,
         res,
@@ -432,20 +473,25 @@ app.use(
     ) {
 
         if (
+
             process.env.NODE_ENV !==
             "production"
+
         ) {
 
             console.log(
+
                 `${req.method} ${req.originalUrl}`
+
             );
 
         }
 
 
-        next();
+        return next();
 
     }
+
 );
 
 
@@ -456,6 +502,7 @@ app.use(
 */
 
 app.get(
+
     "/",
 
     function (
@@ -463,7 +510,9 @@ app.get(
         res
     ) {
 
-        return res.status(200).json({
+        return res.status(
+            200
+        ).json({
 
             success:
                 true,
@@ -477,6 +526,7 @@ app.get(
         });
 
     }
+
 );
 
 
@@ -487,6 +537,7 @@ app.get(
 */
 
 app.get(
+
     "/api/health",
 
     function (
@@ -494,7 +545,9 @@ app.get(
         res
     ) {
 
-        return res.status(200).json({
+        return res.status(
+            200
+        ).json({
 
             success:
                 true,
@@ -506,12 +559,14 @@ app.get(
                 "healthy",
 
             environment:
+
                 process.env.NODE_ENV ||
                 "development"
 
         });
 
     }
+
 );
 
 
@@ -524,13 +579,15 @@ app.get(
 | POST /api/auth/login
 | POST /api/auth/logout
 | GET  /api/auth/me
-|
+|--------------------------------------------------------------------------
 */
 
 app.use(
+
     "/api/auth",
 
     authRoutes
+
 );
 
 
@@ -541,13 +598,15 @@ app.use(
 |
 | POST /api/deposits
 | GET  /api/deposits
-|
+|--------------------------------------------------------------------------
 */
 
 app.use(
+
     "/api/deposits",
 
     depositRoutes
+
 );
 
 
@@ -559,22 +618,17 @@ app.use(
 | USER:
 |
 | POST /api/withdrawals
-| GET  /api/withdrawals
+| GET  /api/withdrawals/my
 |
-| ADMIN:
-|
-| GET  /api/withdrawals/admin/pending
-|
-| POST /api/withdrawals/admin/:withdrawalId/approve
-|
-| POST /api/withdrawals/admin/:withdrawalId/reject
-|
+|--------------------------------------------------------------------------
 */
 
 app.use(
+
     "/api/withdrawals",
 
     withdrawalRoutes
+
 );
 
 
@@ -582,11 +636,21 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN USERS ROUTES
 |--------------------------------------------------------------------------
+|
+| GET   /api/admin/users
+|
+| GET   /api/admin/users/:userId
+|
+| PATCH /api/admin/users/:userId/status
+|--------------------------------------------------------------------------
 */
 
 app.use(
+
     "/api/admin/users",
+
     adminUsersRoutes
+
 );
 
 
@@ -597,12 +661,15 @@ app.use(
 */
 
 app.use(
+
     function (
         req,
         res
     ) {
 
-        return res.status(404).json({
+        return res.status(
+            404
+        ).json({
 
             success:
                 false,
@@ -611,11 +678,13 @@ app.use(
                 "NOT_FOUND",
 
             message:
+
                 `API endpoint not found: ${req.method} ${req.originalUrl}`
 
         });
 
     }
+
 );
 
 
@@ -626,6 +695,7 @@ app.use(
 */
 
 app.use(
+
     function (
         err,
         req,
@@ -634,13 +704,18 @@ app.use(
     ) {
 
         console.error(
+
             "UNHANDLED SERVER ERROR:",
+
             err
+
         );
 
 
         if (
+
             res.headersSent
+
         ) {
 
             return next(
@@ -651,17 +726,21 @@ app.use(
 
 
         /*
-        ------------------------------------------------------------------
-        CORS error
-        ------------------------------------------------------------------
+        -----------------------------------------------------
+        CORS ERROR
+        -----------------------------------------------------
         */
 
         if (
+
             err?.message ===
             "CORS origin is not allowed"
+
         ) {
 
-            return res.status(403).json({
+            return res.status(
+                403
+            ).json({
 
                 success:
                     false,
@@ -670,6 +749,7 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
+
                     "This frontend origin is not allowed to access the API."
 
             });
@@ -677,11 +757,21 @@ app.use(
         }
 
 
+        /*
+        -----------------------------------------------------
+        STATUS CODE
+        -----------------------------------------------------
+        */
+
         const rawStatus =
             Number(
+
                 err?.status ||
+
                 err?.statusCode ||
+
                 500
+
             );
 
 
@@ -696,6 +786,12 @@ app.use(
                 : 500;
 
 
+        /*
+        -----------------------------------------------------
+        RESPONSE
+        -----------------------------------------------------
+        */
+
         return res
             .status(
                 statusCode
@@ -704,6 +800,7 @@ app.use(
 
                 success:
                     false,
+
 
                 error:
 
@@ -725,6 +822,7 @@ app.use(
             });
 
     }
+
 );
 
 
@@ -753,15 +851,19 @@ app.listen(
 
 
         console.log(
+
             `Port: ${PORT}`
+
         );
 
 
         console.log(
+
             `Environment: ${
                 process.env.NODE_ENV ||
                 "development"
             }`
+
         );
 
 
@@ -771,13 +873,17 @@ app.listen(
 
 
         console.log(
+
             allowedOrigins.length
 
                 ? allowedOrigins
 
                 : [
+
                     "No production origin configured"
+
                 ]
+
         );
 
 

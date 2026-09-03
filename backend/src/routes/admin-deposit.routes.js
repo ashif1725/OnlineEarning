@@ -1,28 +1,45 @@
 "use strict";
 
-const express = require("express");
+
+const express =
+    require(
+        "express"
+    );
+
+
+const router =
+    express.Router();
+
 
 const {
-    requireAuth
-} = require("../middleware/auth");
 
-const {
+    requireAuth,
+
     requireAdmin
-} = require("../middleware/admin");
+
+} =
+    require(
+        "../middleware/auth.middleware"
+    );
+
 
 const {
+
     getPendingDeposits,
+
     approveDepositRequest,
+
     rejectDepositRequest
-} = require("../services/deposit.service");
 
-
-const router = express.Router();
+} =
+    require(
+        "../services/deposit.service"
+    );
 
 
 /*
 |--------------------------------------------------------------------------
-| GET PENDING DEPOSIT REQUESTS
+| GET PENDING DEPOSITS
 |--------------------------------------------------------------------------
 |
 | GET /api/admin/deposits/pending
@@ -30,25 +47,33 @@ const router = express.Router();
 */
 
 router.get(
+
     "/pending",
 
     requireAuth,
+
     requireAdmin,
 
-    async (req, res) => {
+    async function (
+        req,
+        res
+    ) {
 
         try {
 
             const deposits =
                 await getPendingDeposits();
 
+
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 deposits
 
             });
+
 
         } catch (error) {
 
@@ -57,37 +82,45 @@ router.get(
                 error
             );
 
+
             return res.status(500).json({
 
-                success: false,
+                success:
+                    false,
 
                 error:
-                    "ADMIN_DEPOSITS_FETCH_FAILED"
+                    "ADMIN_DEPOSITS_FETCH_FAILED",
+
+                message:
+                    "Unable to load pending deposits."
 
             });
 
         }
 
     }
+
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| APPROVE DEPOSIT REQUEST
+| APPROVE DEPOSIT
 |--------------------------------------------------------------------------
-|
-| POST /api/admin/deposits/:depositId/approve
-|
 */
 
 router.post(
+
     "/:depositId/approve",
 
     requireAuth,
+
     requireAdmin,
 
-    async (req, res) => {
+    async function (
+        req,
+        res
+    ) {
 
         try {
 
@@ -105,7 +138,8 @@ router.post(
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 message:
                     "Deposit approved successfully.",
@@ -114,12 +148,18 @@ router.post(
 
             });
 
+
         } catch (error) {
 
             console.error(
                 "APPROVE DEPOSIT ERROR:",
                 error
             );
+
+
+            const errorCode =
+                error.code ||
+                error.message;
 
 
             const statusMap = {
@@ -139,46 +179,60 @@ router.post(
             };
 
 
-            const status =
+            const statusCode =
                 statusMap[
-                    error.code ||
-                    error.message
+                    errorCode
                 ] || 500;
 
 
-            return res.status(status).json({
+            return res
+                .status(
+                    statusCode
+                )
+                .json({
 
-                success: false,
+                    success:
+                        false,
 
-                error:
-                    error.code ||
-                    error.message ||
-                    "DEPOSIT_APPROVAL_FAILED"
+                    error:
+                        errorCode ||
+                        "DEPOSIT_APPROVAL_FAILED",
 
-            });
+                    message:
+
+                        statusCode === 500
+
+                            ? "Deposit approval failed."
+
+                            : errorCode
+
+                });
 
         }
 
     }
+
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| REJECT DEPOSIT REQUEST
+| REJECT DEPOSIT
 |--------------------------------------------------------------------------
-|
-| POST /api/admin/deposits/:depositId/reject
-|
 */
 
 router.post(
+
     "/:depositId/reject",
 
     requireAuth,
+
     requireAdmin,
 
-    async (req, res) => {
+    async function (
+        req,
+        res
+    ) {
 
         try {
 
@@ -192,14 +246,16 @@ router.post(
                         req.user.id,
 
                     reason:
-                        req.body?.reason
+                        req.body?.reason ||
+                        null
 
                 });
 
 
             return res.status(200).json({
 
-                success: true,
+                success:
+                    true,
 
                 message:
                     "Deposit rejected successfully.",
@@ -208,12 +264,18 @@ router.post(
 
             });
 
+
         } catch (error) {
 
             console.error(
                 "REJECT DEPOSIT ERROR:",
                 error
             );
+
+
+            const errorCode =
+                error.code ||
+                error.message;
 
 
             const statusMap = {
@@ -227,28 +289,33 @@ router.post(
             };
 
 
-            const status =
+            const statusCode =
                 statusMap[
-                    error.code ||
-                    error.message
+                    errorCode
                 ] || 500;
 
 
-            return res.status(status).json({
+            return res
+                .status(
+                    statusCode
+                )
+                .json({
 
-                success: false,
+                    success:
+                        false,
 
-                error:
-                    error.code ||
-                    error.message ||
-                    "DEPOSIT_REJECTION_FAILED"
+                    error:
+                        errorCode ||
+                        "DEPOSIT_REJECTION_FAILED"
 
-            });
+                });
 
         }
 
     }
+
 );
 
 
-module.exports = router;
+module.exports =
+    router;

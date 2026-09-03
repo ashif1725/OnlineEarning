@@ -44,6 +44,23 @@ const cookieParser =
 
 /*
 |--------------------------------------------------------------------------
+| APP
+|--------------------------------------------------------------------------
+*/
+
+const app =
+    express();
+
+
+const PORT =
+    Number(
+        process.env.PORT ||
+        8080
+    );
+
+
+/*
+|--------------------------------------------------------------------------
 | ROUTES
 |--------------------------------------------------------------------------
 */
@@ -80,23 +97,6 @@ const adminDepositRequestsRoutes =
 
 /*
 |--------------------------------------------------------------------------
-| APP
-|--------------------------------------------------------------------------
-*/
-
-const app =
-    express();
-
-
-const PORT =
-    Number(
-        process.env.PORT ||
-        8080
-    );
-
-
-/*
-|--------------------------------------------------------------------------
 | SECURITY
 |--------------------------------------------------------------------------
 */
@@ -106,11 +106,23 @@ app.disable(
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| TRUST PROXY
+|--------------------------------------------------------------------------
+*/
+
 app.set(
     "trust proxy",
     1
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY HEADERS
+|--------------------------------------------------------------------------
+*/
 
 app.use(
 
@@ -166,6 +178,12 @@ const configuredOrigins =
     );
 
 
+/*
+|--------------------------------------------------------------------------
+| LOCAL DEVELOPMENT ORIGINS
+|--------------------------------------------------------------------------
+*/
+
 const developmentOrigins =
     [
 
@@ -184,6 +202,12 @@ const developmentOrigins =
     ];
 
 
+/*
+|--------------------------------------------------------------------------
+| FINAL ALLOWED ORIGINS
+|--------------------------------------------------------------------------
+*/
+
 const allowedOrigins =
     Array.from(
 
@@ -199,9 +223,13 @@ const allowedOrigins =
                     process.env.NODE_ENV !==
                     "production"
 
-                        ? developmentOrigins
+                        ?
 
-                        : []
+                        developmentOrigins
+
+                        :
+
+                        []
 
                 )
 
@@ -214,7 +242,7 @@ const allowedOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| CORS
+| CORS ORIGIN VALIDATION
 |--------------------------------------------------------------------------
 */
 
@@ -223,7 +251,17 @@ function validateCorsOrigin(
     callback
 ) {
 
-    if (!origin) {
+
+    /*
+    ---------------------------------------------------------
+    Requests without Origin:
+    health checks, curl, server-to-server.
+    ---------------------------------------------------------
+    */
+
+    if (
+        !origin
+    ) {
 
         return callback(
             null,
@@ -244,6 +282,12 @@ function validateCorsOrigin(
         );
 
 
+    /*
+    ---------------------------------------------------------
+    Allowed configured origin
+    ---------------------------------------------------------
+    */
+
     if (
 
         allowedOrigins.includes(
@@ -259,6 +303,12 @@ function validateCorsOrigin(
 
     }
 
+
+    /*
+    ---------------------------------------------------------
+    Development fallback
+    ---------------------------------------------------------
+    */
 
     if (
 
@@ -276,8 +326,11 @@ function validateCorsOrigin(
 
 
     console.warn(
+
         "CORS BLOCKED ORIGIN:",
+
         normalizedOrigin
+
     );
 
 
@@ -292,51 +345,81 @@ function validateCorsOrigin(
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| CORS OPTIONS
+|--------------------------------------------------------------------------
+*/
+
+const corsOptions = {
+
+
+    origin:
+        validateCorsOrigin,
+
+
+    credentials:
+        true,
+
+
+    methods:
+
+        [
+
+            "GET",
+
+            "POST",
+
+            "PUT",
+
+            "PATCH",
+
+            "DELETE",
+
+            "OPTIONS"
+
+        ],
+
+
+    allowedHeaders:
+
+        [
+
+            "Content-Type",
+
+            "Authorization",
+
+            "Accept"
+
+        ],
+
+
+    exposedHeaders:
+
+        [
+
+            "Content-Type"
+
+        ],
+
+
+    optionsSuccessStatus:
+        204
+
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| ENABLE CORS
+|--------------------------------------------------------------------------
+*/
+
 app.use(
 
-    cors({
-
-        origin:
-            validateCorsOrigin,
-
-        credentials:
-            true,
-
-        methods:
-
-            [
-
-                "GET",
-                "POST",
-                "PUT",
-                "PATCH",
-                "DELETE",
-                "OPTIONS"
-
-            ],
-
-        allowedHeaders:
-
-            [
-
-                "Content-Type",
-                "Authorization",
-                "Accept"
-
-            ],
-
-        exposedHeaders:
-
-            [
-
-                "Content-Type"
-
-            ],
-
-        optionsSuccessStatus:
-            204
-
-    })
+    cors(
+        corsOptions
+    )
 
 );
 
@@ -374,8 +457,49 @@ app.use(
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| COOKIE PARSER
+|--------------------------------------------------------------------------
+*/
+
 app.use(
     cookieParser()
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| REQUEST LOGGER
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+
+    function (
+        req,
+        res,
+        next
+    ) {
+
+        if (
+
+            process.env.NODE_ENV !==
+            "production"
+
+        ) {
+
+            console.log(
+                `${req.method} ${req.originalUrl}`
+            );
+
+        }
+
+
+        return next();
+
+    }
+
 );
 
 
@@ -414,7 +538,7 @@ app.get(
 
 /*
 |--------------------------------------------------------------------------
-| HEALTH
+| HEALTH CHECK
 |--------------------------------------------------------------------------
 */
 
@@ -454,6 +578,9 @@ app.get(
 |--------------------------------------------------------------------------
 | AUTH ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/auth
+|
 */
 
 app.use(
@@ -469,6 +596,9 @@ app.use(
 |--------------------------------------------------------------------------
 | USER DEPOSIT ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/deposits
+|
 */
 
 app.use(
@@ -484,6 +614,9 @@ app.use(
 |--------------------------------------------------------------------------
 | USER WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/withdrawals
+|
 */
 
 app.use(
@@ -499,6 +632,11 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN USER ROUTES
 |--------------------------------------------------------------------------
+|
+| GET   /api/admin/users
+| GET   /api/admin/users/:userId
+| PATCH /api/admin/users/:userId/status
+|
 */
 
 app.use(
@@ -514,6 +652,13 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN DEPOSIT ROUTES
 |--------------------------------------------------------------------------
+|
+| GET  /api/admin/deposits/pending
+|
+| POST /api/admin/deposits/:depositId/approve
+|
+| POST /api/admin/deposits/:depositId/reject
+|
 */
 
 app.use(
@@ -527,7 +672,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| API 404
+| API 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -572,8 +717,11 @@ app.use(
     ) {
 
         console.error(
+
             "UNHANDLED SERVER ERROR:",
+
             err
+
         );
 
 
@@ -587,6 +735,12 @@ app.use(
 
         }
 
+
+        /*
+        -----------------------------------------------------
+        CORS ERROR
+        -----------------------------------------------------
+        */
 
         if (
 
@@ -611,19 +765,63 @@ app.use(
         }
 
 
-        return res.status(500).json({
+        const rawStatus =
+            Number(
 
-            success:
-                false,
+                err?.status ||
 
-            error:
-                err?.code ||
-                "INTERNAL_SERVER_ERROR",
+                err?.statusCode ||
 
-            message:
-                "Internal server error."
+                500
 
-        });
+            );
+
+
+        const statusCode =
+
+            rawStatus >= 400 &&
+
+            rawStatus < 600
+
+                ?
+
+                rawStatus
+
+                :
+
+                500;
+
+
+        return res
+            .status(
+                statusCode
+            )
+            .json({
+
+                success:
+                    false,
+
+                error:
+
+                    err?.code ||
+
+                    "INTERNAL_SERVER_ERROR",
+
+                message:
+
+                    err?.message &&
+
+                    statusCode < 500
+
+                        ?
+
+                        err.message
+
+                        :
+
+                        "Internal server error."
+
+            });
 
     }
 
@@ -644,6 +842,12 @@ app.listen(
 
     function () {
 
+
+        console.log(
+            "========================================"
+        );
+
+
         console.log(
             "SkillEarn Hub API started successfully"
         );
@@ -655,10 +859,71 @@ app.listen(
 
 
         console.log(
+
             `Environment: ${
                 process.env.NODE_ENV ||
                 "development"
             }`
+
+        );
+
+
+        console.log(
+            "Allowed frontend origins:"
+        );
+
+
+        console.log(
+
+            allowedOrigins.length
+
+                ?
+
+                allowedOrigins
+
+                :
+
+                [
+
+                    "No production origin configured"
+
+                ]
+
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        console.log(
+            "Admin users endpoint:"
+        );
+
+
+        console.log(
+            `GET http://localhost:${PORT}/api/admin/users`
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        console.log(
+            "Admin pending deposits endpoint:"
+        );
+
+
+        console.log(
+            `GET http://localhost:${PORT}/api/admin/deposits/pending`
+        );
+
+
+        console.log(
+            "========================================"
         );
 
     }

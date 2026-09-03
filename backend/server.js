@@ -77,6 +77,11 @@ const depositRoutes =
     );
 
 
+const walletRoutes =
+    require(
+        "./src/routes/wallet.routes"
+    );
+
 const withdrawalRoutes =
     require(
         "./src/routes/withdrawal.routes"

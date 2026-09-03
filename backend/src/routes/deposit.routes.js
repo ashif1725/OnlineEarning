@@ -1,9 +1,53 @@
 "use strict";
 
 
-const depositService =
+/*
+|--------------------------------------------------------------------------
+| PACKAGES
+|--------------------------------------------------------------------------
+*/
+
+const express =
     require(
-        "../services/deposit.service"
+        "express"
+    );
+
+
+const router =
+    express.Router();
+
+
+/*
+|--------------------------------------------------------------------------
+| DEPOSIT CONTROLLER
+|--------------------------------------------------------------------------
+*/
+
+const {
+
+    createDepositRequest,
+
+    getUserDepositRequests
+
+} =
+    require(
+        "../controllers/deposit.controller"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
+
+const {
+
+    requireAuth
+
+} =
+    require(
+        "../middleware/auth.middleware"
     );
 
 
@@ -11,177 +55,47 @@ const depositService =
 |--------------------------------------------------------------------------
 | CREATE DEPOSIT REQUEST
 |--------------------------------------------------------------------------
+|
+| POST /api/deposits
+|
 */
 
-async function createDepositRequest(
-    req,
-    res
-) {
+router.post(
 
-    try {
+    "/",
 
-        const amount =
-            req.body?.amount;
+    requireAuth,
 
+    createDepositRequest
 
-        if (
-
-            amount ===
-            undefined
-
-            ||
-
-            amount ===
-            null
-
-            ||
-
-            amount ===
-            ""
-
-        ) {
-
-            return res.status(400).json({
-
-                success:
-                    false,
-
-                message:
-                    "Deposit amount is required."
-
-            });
-
-        }
-
-
-        const deposit =
-            await depositService
-                .createDepositRequest({
-
-                    userId:
-                        req.user.id,
-
-                    amount:
-                        amount
-
-                });
-
-
-        return res.status(201).json({
-
-            success:
-                true,
-
-            message:
-                "Deposit request created successfully.",
-
-            deposit
-
-        });
-
-
-    } catch (
-        error
-    ) {
-
-        console.error(
-            "CREATE DEPOSIT CONTROLLER ERROR:",
-            error
-        );
-
-
-        return res.status(400).json({
-
-            success:
-                false,
-
-            code:
-
-                error.code ||
-
-                "CREATE_DEPOSIT_FAILED",
-
-            message:
-
-                error.message ||
-
-                "Unable to create deposit request."
-
-        });
-
-    }
-
-}
+);
 
 
 /*
 |--------------------------------------------------------------------------
 | GET CURRENT USER DEPOSIT REQUESTS
 |--------------------------------------------------------------------------
+|
+| GET /api/deposits
+|
 */
 
-async function getUserDepositRequests(
-    req,
-    res
-) {
+router.get(
 
-    try {
+    "/",
 
-        const deposits =
-            await depositService
-                .getUserDepositRequests({
+    requireAuth,
 
-                    userId:
-                        req.user.id
+    getUserDepositRequests
 
-                });
-
-
-        return res.status(200).json({
-
-            success:
-                true,
-
-            deposits
-
-        });
-
-
-    } catch (
-        error
-    ) {
-
-        console.error(
-            "GET USER DEPOSITS ERROR:",
-            error
-        );
-
-
-        return res.status(500).json({
-
-            success:
-                false,
-
-            message:
-                "Unable to load deposit requests."
-
-        });
-
-    }
-
-}
+);
 
 
 /*
 |--------------------------------------------------------------------------
-| EXPORTS
+| EXPORT ROUTER
 |--------------------------------------------------------------------------
 */
 
-module.exports = {
-
-    createDepositRequest,
-
-    getUserDepositRequests
-
-};
+module.exports =
+    router;

@@ -1,931 +1,1024 @@
-"use strict";
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
 
-/*
-|--------------------------------------------------------------------------
-| ENVIRONMENT
-|--------------------------------------------------------------------------
-*/
+    <meta charset="UTF-8">
 
-require(
-    "dotenv"
-).config();
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
+    <title>
+        Admin Dashboard — SkillEarn Hub
+    </title>
 
-/*
-|--------------------------------------------------------------------------
-| PACKAGES
-|--------------------------------------------------------------------------
-*/
 
-const express =
-    require(
-        "express"
-    );
+    <!-- Main CSS -->
 
+    <link
+        rel="stylesheet"
+        href="../assets/css/app.css"
+    >
 
-const helmet =
-    require(
-        "helmet"
-    );
 
+    <!-- Dashboard CSS -->
 
-const cors =
-    require(
-        "cors"
-    );
+    <link
+        rel="stylesheet"
+        href="../assets/css/dashboard.css"
+    >
 
+</head>
 
-const cookieParser =
-    require(
-        "cookie-parser"
-    );
 
+<body class="dashboard-page">
 
-/*
-|--------------------------------------------------------------------------
-| APP
-|--------------------------------------------------------------------------
-*/
 
-const app =
-    express();
+<!-- =========================================
+     MOBILE SIDEBAR OVERLAY
+========================================= -->
 
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+></div>
 
-const PORT =
-    Number(
-        process.env.PORT ||
-        8080
-    );
 
 
-/*
-|--------------------------------------------------------------------------
-| ROUTES
-|--------------------------------------------------------------------------
-*/
+<!-- =========================================
+     DASHBOARD SHELL
+========================================= -->
 
-const authRoutes =
-    require(
-        "./src/routes/auth.routes"
-    );
+<div class="dashboard-shell">
 
 
-const depositRoutes =
-    require(
-        "./src/routes/deposit.routes"
-    );
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
 
+    <aside
+        class="dashboard-sidebar"
+        id="dashboardSidebar"
+    >
 
-const withdrawalRoutes =
-    require(
-        "./src/routes/withdrawal.routes"
-    );
 
+        <!-- BRAND -->
 
-const adminUsersRoutes =
-    require(
-        "./src/routes/admin-users.routes"
-    );
+        <div class="sidebar-brand">
 
+            <a
+                href="../index.html"
+                class="brand"
+            >
 
-const adminDepositRequestsRoutes =
-    require(
-        "./src/routes/admin-deposit.routes"
-    );
+                <span class="brand-mark">
+                    S
+                </span>
 
 
-/*
-|--------------------------------------------------------------------------
-| SECURITY
-|--------------------------------------------------------------------------
-*/
+                <span class="brand-text">
+                    SkillEarn Admin
+                </span>
 
-app.disable(
-    "x-powered-by"
-);
+            </a>
 
+        </div>
 
-/*
-|--------------------------------------------------------------------------
-| TRUST PROXY
-|--------------------------------------------------------------------------
-*/
 
-app.set(
-    "trust proxy",
-    1
-);
 
+        <!-- =====================================
+             ADMIN PROFILE
+        ====================================== -->
 
-/*
-|--------------------------------------------------------------------------
-| SECURITY HEADERS
-|--------------------------------------------------------------------------
-*/
+        <div class="sidebar-profile">
 
-app.use(
 
-    helmet({
+            <div
+                class="profile-avatar"
+                id="adminAvatar"
+            >
+                A
+            </div>
 
-        crossOriginResourcePolicy:
-            false
 
-    })
+            <div class="profile-info">
 
-);
 
+                <strong
+                    id="adminName"
+                >
+                    Admin
+                </strong>
 
-/*
-|--------------------------------------------------------------------------
-| ALLOWED FRONTEND ORIGINS
-|--------------------------------------------------------------------------
-*/
 
-const configuredOrigins =
-    [
+                <span
+                    id="adminEmail"
+                >
+                    Loading...
+                </span>
 
-        process.env.FRONTEND_ORIGIN,
 
-        ...String(
-            process.env.FRONTEND_ORIGINS ||
-            ""
-        )
-        .split(",")
+            </div>
 
-    ]
-    .map(
 
-        function (
-            origin
-        ) {
+        </div>
 
-            return String(
-                origin ||
-                ""
-            )
-            .trim()
-            .replace(
-                /\/+$/,
-                ""
-            );
 
-        }
 
-    )
-    .filter(
-        Boolean
-    );
+        <!-- =====================================
+             NAVIGATION
+        ====================================== -->
 
+        <nav class="dashboard-nav">
 
-/*
-|--------------------------------------------------------------------------
-| LOCAL DEVELOPMENT ORIGINS
-|--------------------------------------------------------------------------
-*/
 
-const developmentOrigins =
-    [
+            <!-- OVERVIEW -->
 
-        "http://localhost:3000",
+            <a
+                href="#overview"
+                class="nav-item active"
+                data-section="overview"
+            >
 
-        "http://127.0.0.1:3000",
+                <span class="nav-icon">
+                    📊
+                </span>
 
-        "http://localhost:5173",
 
-        "http://127.0.0.1:5173",
+                <span>
+                    Overview
+                </span>
 
-        "http://localhost:5500",
+            </a>
 
-        "http://127.0.0.1:5500"
 
-    ];
 
+            <!-- USERS -->
 
-/*
-|--------------------------------------------------------------------------
-| FINAL ALLOWED ORIGINS
-|--------------------------------------------------------------------------
-*/
+            <a
+                href="#users"
+                class="nav-item"
+                data-section="users"
+            >
 
-const allowedOrigins =
-    Array.from(
+                <span class="nav-icon">
+                    👥
+                </span>
 
-        new Set(
 
-            [
+                <span>
+                    Users
+                </span>
 
-                ...configuredOrigins,
+            </a>
 
-                ...(
 
 
-                    process.env.NODE_ENV !==
-                    "production"
+            <!-- DEPOSITS -->
 
-                        ?
+            <a
+                href="#deposits"
+                class="nav-item"
+                data-section="deposits"
+            >
 
-                        developmentOrigins
+                <span class="nav-icon">
+                    💳
+                </span>
 
-                        :
 
-                        []
+                <span>
+                    Deposits
+                </span>
 
-                )
+            </a>
 
-            ]
 
-        )
+        </nav>
 
-    );
 
 
-/*
-|--------------------------------------------------------------------------
-| CORS ORIGIN VALIDATION
-|--------------------------------------------------------------------------
-*/
+        <!-- =====================================
+             SIDEBAR FOOTER
+        ====================================== -->
 
-function validateCorsOrigin(
-    origin,
-    callback
-) {
+        <div class="sidebar-footer">
 
 
-    /*
-    ---------------------------------------------------------
-    Requests without Origin:
-    health checks, curl, server-to-server.
-    ---------------------------------------------------------
-    */
+            <button
+                id="logoutButton"
+                class="logout-button"
+                type="button"
+                data-action="logout"
+            >
 
-    if (
-        !origin
-    ) {
+                <span>
+                    🚪
+                </span>
 
-        return callback(
-            null,
-            true
-        );
 
-    }
+                <span>
+                    Logout
+                </span>
 
+            </button>
 
-    const normalizedOrigin =
-        String(
-            origin
-        )
-        .trim()
-        .replace(
-            /\/+$/,
-            ""
-        );
 
+        </div>
 
-    /*
-    ---------------------------------------------------------
-    Allowed configured origin
-    ---------------------------------------------------------
-    */
 
-    if (
+    </aside>
 
-        allowedOrigins.includes(
-            normalizedOrigin
-        )
 
-    ) {
 
-        return callback(
-            null,
-            true
-        );
+    <!-- =========================================
+         MAIN AREA
+    ========================================== -->
 
-    }
+    <main class="dashboard-main">
 
 
-    /*
-    ---------------------------------------------------------
-    Development fallback
-    ---------------------------------------------------------
-    */
+        <!-- =====================================
+             TOPBAR
+        ====================================== -->
 
-    if (
+        <header class="dashboard-topbar">
 
-        process.env.NODE_ENV !==
-        "production"
 
-    ) {
+            <!-- MOBILE MENU BUTTON -->
 
-        return callback(
-            null,
-            true
-        );
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+                type="button"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
 
-    }
 
 
-    console.warn(
+            <!-- TITLE -->
 
-        "CORS BLOCKED ORIGIN:",
+            <div class="topbar-title">
 
-        normalizedOrigin
 
-    );
+                <span class="eyebrow">
+                    ADMINISTRATION
+                </span>
 
 
-    return callback(
+                <h1>
+                    Admin Dashboard
+                </h1>
 
-        new Error(
-            "CORS origin is not allowed"
-        )
 
-    );
+            </div>
 
-}
 
 
-/*
-|--------------------------------------------------------------------------
-| CORS OPTIONS
-|--------------------------------------------------------------------------
-*/
+            <!-- ACTIONS -->
 
-const corsOptions = {
+            <div class="topbar-actions">
 
 
-    origin:
-        validateCorsOrigin,
+                <button
+                    class="notification-button"
+                    type="button"
+                    aria-label="Notifications"
+                >
 
+                    🔔
 
-    credentials:
-        true,
 
+                    <span class="notification-dot">
+                    </span>
 
-    methods:
 
-        [
+                </button>
 
-            "GET",
 
-            "POST",
 
-            "PUT",
+                <div class="topbar-user">
 
-            "PATCH",
 
-            "DELETE",
+                    <div
+                        class="topbar-avatar"
+                        id="topbarAvatar"
+                    >
+                        A
+                    </div>
 
-            "OPTIONS"
 
-        ],
+                    <div>
 
 
-    allowedHeaders:
+                        <strong
+                            id="topbarName"
+                        >
+                            Admin
+                        </strong>
 
-        [
 
-            "Content-Type",
+                        <span>
+                            Administrator
+                        </span>
 
-            "Authorization",
 
-            "Accept"
+                    </div>
 
-        ],
 
+                </div>
 
-    exposedHeaders:
 
-        [
+            </div>
 
-            "Content-Type"
 
-        ],
+        </header>
 
 
-    optionsSuccessStatus:
-        204
 
-};
+        <!-- =====================================
+             CONTENT
+        ====================================== -->
 
+        <div class="dashboard-content">
 
-/*
-|--------------------------------------------------------------------------
-| ENABLE CORS
-|--------------------------------------------------------------------------
-*/
 
-app.use(
 
-    cors(
-        corsOptions
-    )
+            <!-- =================================
+                 OVERVIEW SECTION
+            ================================== -->
 
-);
+            <section
+                id="overview"
+                class="dashboard-section active-section"
+            >
 
 
-/*
-|--------------------------------------------------------------------------
-| BODY PARSERS
-|--------------------------------------------------------------------------
-*/
+                <!-- PAGE HEADING -->
 
-app.use(
+                <div class="welcome-row">
 
-    express.json({
 
-        limit:
-            "100kb"
+                    <div>
 
-    })
 
-);
+                        <span class="section-kicker">
+                            ADMINISTRATION
+                        </span>
 
 
-app.use(
+                        <h2>
 
-    express.urlencoded({
+                            Welcome,
 
-        extended:
-            false,
+                            <span
+                                id="adminWelcomeName"
+                            >
+                                Admin
+                            </span>
 
-        limit:
-            "100kb"
+                        </h2>
 
-    })
 
-);
+                        <p>
+                            SkillEarn Hub administration panel.
+                        </p>
 
 
-/*
-|--------------------------------------------------------------------------
-| COOKIE PARSER
-|--------------------------------------------------------------------------
-*/
+                    </div>
 
-app.use(
-    cookieParser()
-);
 
 
-/*
-|--------------------------------------------------------------------------
-| REQUEST LOGGER
-|--------------------------------------------------------------------------
-*/
+                    <div class="account-status-pill">
 
-app.use(
 
-    function (
-        req,
-        res,
-        next
-    ) {
+                        <span class="status-dot">
+                        </span>
 
-        if (
 
-            process.env.NODE_ENV !==
-            "production"
+                        Admin Account
 
-        ) {
 
-            console.log(
-                `${req.method} ${req.originalUrl}`
-            );
+                    </div>
 
-        }
 
+                </div>
 
-        return next();
 
-    }
 
-);
+                <!-- =================================
+                     ADMIN STATS
+                ================================== -->
 
+                <div class="stats-grid">
 
-/*
-|--------------------------------------------------------------------------
-| ROOT
-|--------------------------------------------------------------------------
-*/
 
-app.get(
+                    <!-- TOTAL USERS -->
 
-    "/",
+                    <div class="stat-card">
 
-    function (
-        req,
-        res
-    ) {
 
-        return res.status(200).json({
+                        <div class="stat-card-top">
 
-            success:
-                true,
 
-            service:
-                "SkillEarn Hub API",
+                            <span>
+                                Total Users
+                            </span>
 
-            status:
-                "running"
 
-        });
+                            <span class="stat-icon">
+                                👥
+                            </span>
 
-    }
 
-);
+                        </div>
 
 
-/*
-|--------------------------------------------------------------------------
-| HEALTH CHECK
-|--------------------------------------------------------------------------
-*/
+                        <strong
+                            id="totalUsers"
+                        >
+                            0
+                        </strong>
 
-app.get(
 
-    "/api/health",
+                        <small>
+                            Registered users
+                        </small>
 
-    function (
-        req,
-        res
-    ) {
 
-        return res.status(200).json({
+                    </div>
 
-            success:
-                true,
 
-            service:
-                "SkillEarn Hub API",
 
-            status:
-                "healthy",
+                    <!-- PENDING DEPOSITS -->
 
-            environment:
+                    <div class="stat-card">
 
-                process.env.NODE_ENV ||
-                "development"
 
-        });
+                        <div class="stat-card-top">
 
-    }
 
-);
+                            <span>
+                                Pending Deposits
+                            </span>
 
 
-/*
-|--------------------------------------------------------------------------
-| AUTH ROUTES
-|--------------------------------------------------------------------------
-|
-| /api/auth
-|
-*/
+                            <span class="stat-icon">
+                                ⏳
+                            </span>
 
-app.use(
 
-    "/api/auth",
+                        </div>
 
-    authRoutes
 
-);
+                        <strong
+                            id="pendingDeposits"
+                        >
+                            0
+                        </strong>
 
 
-/*
-|--------------------------------------------------------------------------
-| USER DEPOSIT ROUTES
-|--------------------------------------------------------------------------
-|
-| /api/deposits
-|
-*/
+                        <small>
+                            Awaiting review
+                        </small>
 
-app.use(
 
-    "/api/deposits",
+                    </div>
 
-    depositRoutes
 
-);
 
+                    <!-- TOTAL DEPOSITS -->
 
-/*
-|--------------------------------------------------------------------------
-| USER WITHDRAWAL ROUTES
-|--------------------------------------------------------------------------
-|
-| /api/withdrawals
-|
-*/
+                    <div class="stat-card">
 
-app.use(
 
-    "/api/withdrawals",
+                        <div class="stat-card-top">
 
-    withdrawalRoutes
 
-);
+                            <span>
+                                Total Deposits
+                            </span>
 
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN USER ROUTES
-|--------------------------------------------------------------------------
-|
-| GET   /api/admin/users
-| GET   /api/admin/users/:userId
-| PATCH /api/admin/users/:userId/status
-|
-*/
+                            <span class="stat-icon">
+                                💳
+                            </span>
 
-app.use(
 
-    "/api/admin/users",
+                        </div>
 
-    adminUsersRoutes
 
-);
+                        <strong
+                            id="totalDeposits"
+                        >
+                            0
+                        </strong>
 
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN DEPOSIT ROUTES
-|--------------------------------------------------------------------------
-|
-| GET  /api/admin/deposits/pending
-|
-| POST /api/admin/deposits/:depositId/approve
-|
-| POST /api/admin/deposits/:depositId/reject
-|
-*/
+                        <small>
+                            Deposit records
+                        </small>
 
-app.use(
 
-    "/api/admin/deposits",
+                    </div>
 
-    adminDepositRequestsRoutes
 
-);
 
+                    <!-- ADMIN -->
 
-/*
-|--------------------------------------------------------------------------
-| API 404 HANDLER
-|--------------------------------------------------------------------------
-*/
+                    <div class="stat-card wallet-card">
 
-app.use(
 
-    function (
-        req,
-        res
-    ) {
+                        <div class="stat-card-top">
 
-        return res.status(404).json({
 
-            success:
-                false,
+                            <span>
+                                Administrator
+                            </span>
 
-            error:
-                "NOT_FOUND",
 
-            message:
-                `API endpoint not found: ${req.method} ${req.originalUrl}`
+                            <span class="stat-icon">
+                                🛡️
+                            </span>
 
-        });
 
-    }
+                        </div>
 
-);
 
+                        <strong>
+                            Admin
+                        </strong>
 
-/*
-|--------------------------------------------------------------------------
-| GLOBAL ERROR HANDLER
-|--------------------------------------------------------------------------
-*/
 
-app.use(
+                        <small>
+                            SkillEarn Hub
+                        </small>
 
-    function (
-        err,
-        req,
-        res,
-        next
-    ) {
 
-        console.error(
+                    </div>
 
-            "UNHANDLED SERVER ERROR:",
 
-            err
+                </div>
 
-        );
 
 
-        if (
-            res.headersSent
-        ) {
+                <!-- =================================
+                     ADMIN ACCOUNT
+                ================================== -->
 
-            return next(
-                err
-            );
+                <div class="content-card">
 
-        }
 
+                    <div class="card-heading">
 
-        /*
-        -----------------------------------------------------
-        CORS ERROR
-        -----------------------------------------------------
-        */
 
-        if (
+                        <div>
 
-            err?.message ===
-            "CORS origin is not allowed"
 
-        ) {
+                            <span class="section-kicker">
+                                ACCOUNT
+                            </span>
 
-            return res.status(403).json({
 
-                success:
-                    false,
+                            <h3>
+                                Administrator Account
+                            </h3>
 
-                error:
-                    "CORS_NOT_ALLOWED",
 
-                message:
-                    "This frontend origin is not allowed to access the API."
+                        </div>
 
-            });
 
-        }
+                    </div>
 
 
-        const rawStatus =
-            Number(
 
-                err?.status ||
+                    <div class="profile-details">
 
-                err?.statusCode ||
 
-                500
+                        <div>
 
-            );
 
+                            <span>
+                                Full Name
+                            </span>
 
-        const statusCode =
 
-            rawStatus >= 400 &&
+                            <strong
+                                id="adminProfileName"
+                            >
+                                —
+                            </strong>
 
-            rawStatus < 600
 
-                ?
+                        </div>
 
-                rawStatus
 
-                :
 
-                500;
+                        <div>
 
 
-        return res
-            .status(
-                statusCode
-            )
-            .json({
+                            <span>
+                                Email
+                            </span>
 
-                success:
-                    false,
 
-                error:
+                            <strong
+                                id="adminProfileEmail"
+                            >
+                                —
+                            </strong>
 
-                    err?.code ||
 
-                    "INTERNAL_SERVER_ERROR",
+                        </div>
 
-                message:
 
-                    err?.message &&
 
-                    statusCode < 500
+                        <div>
 
-                        ?
 
-                        err.message
+                            <span>
+                                Role
+                            </span>
 
-                        :
 
-                        "Internal server error."
+                            <strong
+                                id="adminRole"
+                            >
+                                admin
+                            </strong>
 
-            });
 
-    }
+                        </div>
 
-);
 
 
-/*
-|--------------------------------------------------------------------------
-| START SERVER
-|--------------------------------------------------------------------------
-*/
+                        <div>
 
-app.listen(
 
-    PORT,
+                            <span>
+                                Account Status
+                            </span>
 
-    "0.0.0.0",
 
-    function () {
+                            <strong>
+                                Active
+                            </strong>
 
 
-        console.log(
-            "========================================"
-        );
+                        </div>
 
 
-        console.log(
-            "SkillEarn Hub API started successfully"
-        );
+                    </div>
 
 
-        console.log(
-            `Port: ${PORT}`
-        );
+                </div>
 
 
-        console.log(
 
-            `Environment: ${
-                process.env.NODE_ENV ||
-                "development"
-            }`
+                <!-- =================================
+                     QUICK ACTIONS
+                ================================== -->
 
-        );
+                <div class="content-card">
 
 
-        console.log(
-            "Allowed frontend origins:"
-        );
+                    <div class="card-heading">
 
 
-        console.log(
+                        <div>
 
-            allowedOrigins.length
 
-                ?
+                            <span class="section-kicker">
+                                MANAGEMENT
+                            </span>
 
-                allowedOrigins
 
-                :
+                            <h3>
+                                Quick Actions
+                            </h3>
 
-                [
 
-                    "No production origin configured"
+                        </div>
 
-                ]
 
-        );
+                    </div>
 
 
-        console.log(
-            "========================================"
-        );
 
+                    <div class="quick-actions-grid">
 
-        console.log(
-            "Admin users endpoint:"
-        );
 
+                        <button
+                            class="action-card"
+                            type="button"
+                            data-open-section="users"
+                        >
 
-        console.log(
-            `GET http://localhost:${PORT}/api/admin/users`
-        );
 
+                            <span class="action-icon">
+                                👥
+                            </span>
 
-        console.log(
-            "========================================"
-        );
 
+                            <strong>
+                                Manage Users
+                            </strong>
 
-        console.log(
-            "Admin pending deposits endpoint:"
-        );
 
+                            <small>
+                                View registered users
+                            </small>
 
-        console.log(
-            `GET http://localhost:${PORT}/api/admin/deposits/pending`
-        );
 
+                        </button>
 
-        console.log(
-            "========================================"
-        );
 
-    }
 
-);
+                        <button
+                            class="action-card"
+                            type="button"
+                            data-open-section="deposits"
+                        >
+
+
+                            <span class="action-icon">
+                                💳
+                            </span>
+
+
+                            <strong>
+                                Manage Deposits
+                            </strong>
+
+
+                            <small>
+                                Review deposit requests
+                            </small>
+
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================
+                 USERS SECTION
+            ================================== -->
+
+            <section
+                id="users"
+                class="dashboard-section"
+            >
+
+
+                <div class="page-heading">
+
+
+                    <span class="section-kicker">
+                        USER MANAGEMENT
+                    </span>
+
+
+                    <h2>
+                        Users
+                    </h2>
+
+
+                    <p>
+                        View and manage registered users.
+                    </p>
+
+
+                </div>
+
+
+
+                <div
+                    id="usersMessage"
+                    class="dashboard-message"
+                    style="display: none;"
+                ></div>
+
+
+
+                <div class="content-card">
+
+
+                    <div class="card-heading">
+
+
+                        <div>
+
+
+                            <span class="section-kicker">
+                                DATABASE
+                            </span>
+
+
+                            <h3>
+                                Registered Users
+                            </h3>
+
+
+                        </div>
+
+
+
+                        <button
+                            id="refreshUsersButton"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            Refresh
+                        </button>
+
+
+                    </div>
+
+
+
+                    <div
+                        id="usersList"
+                        class="transactions-list"
+                    >
+
+
+                        <div class="empty-state">
+
+
+                            <div class="empty-icon">
+                                👥
+                            </div>
+
+
+                            <strong>
+                                Users not loaded yet
+                            </strong>
+
+
+                            <p>
+                                Click Refresh to load users.
+                            </p>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================
+                 DEPOSITS SECTION
+            ================================== -->
+
+            <section
+                id="deposits"
+                class="dashboard-section"
+            >
+
+
+                <div class="page-heading">
+
+
+                    <span class="section-kicker">
+                        PAYMENT MANAGEMENT
+                    </span>
+
+
+                    <h2>
+                        Deposits
+                    </h2>
+
+
+                    <p>
+                        Review and manage pending deposit requests.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="content-card">
+
+
+                    <div class="card-heading">
+
+
+                        <div>
+
+
+                            <span class="section-kicker">
+                                PAYMENTS
+                            </span>
+
+
+                            <h3>
+                                Pending Deposit Requests
+                            </h3>
+
+
+                        </div>
+
+
+
+                        <button
+                            id="refreshDepositsButton"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            Refresh
+                        </button>
+
+
+                    </div>
+
+
+
+                    <div
+                        id="depositsList"
+                        class="transactions-list"
+                    >
+
+
+                        <div class="empty-state">
+
+
+                            <div class="empty-icon">
+                                💳
+                            </div>
+
+
+                            <strong>
+                                No deposits loaded
+                            </strong>
+
+
+                            <p>
+                                Pending deposit requests will appear here.
+                            </p>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+    </main>
+
+
+</div>
+
+
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+
+<!-- CONFIG MUST LOAD FIRST -->
+
+<script src="../assets/js/config.js"></script>
+
+
+<!-- AUTH -->
+
+<script src="../assets/js/auth.js"></script>
+
+
+<!-- ADMIN DASHBOARD -->
+
+<script src="../assets/js/admin-dashboard.js"></script>
+
+
+</body>
+
+</html>

@@ -72,24 +72,10 @@ const adminUsersRoutes =
     );
 
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN DEPOSIT REQUEST ROUTES
-|--------------------------------------------------------------------------
-|
-| GET  /api/admin/deposits/pending
-| POST /api/admin/deposits/:depositId/approve
-| POST /api/admin/deposits/:depositId/reject
-|
-*/
-
-app.use(
-
-    "/api/admin/deposits",
-
-    adminDepositRequestsRoutes
-
-);
+const adminDepositRequestsRoutes =
+    require(
+        "./src/routes/admin-deposit.routes"
+    );
 
 
 /*
@@ -120,23 +106,11 @@ app.disable(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| TRUST PROXY
-|--------------------------------------------------------------------------
-*/
-
 app.set(
     "trust proxy",
     1
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| SECURITY HEADERS
-|--------------------------------------------------------------------------
-*/
 
 app.use(
 
@@ -192,12 +166,6 @@ const configuredOrigins =
     );
 
 
-/*
-|--------------------------------------------------------------------------
-| LOCAL DEVELOPMENT ORIGINS
-|--------------------------------------------------------------------------
-*/
-
 const developmentOrigins =
     [
 
@@ -215,12 +183,6 @@ const developmentOrigins =
 
     ];
 
-
-/*
-|--------------------------------------------------------------------------
-| FINAL ALLOWED ORIGINS
-|--------------------------------------------------------------------------
-*/
 
 const allowedOrigins =
     Array.from(
@@ -252,7 +214,7 @@ const allowedOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| CORS ORIGIN VALIDATION
+| CORS
 |--------------------------------------------------------------------------
 */
 
@@ -260,14 +222,6 @@ function validateCorsOrigin(
     origin,
     callback
 ) {
-
-
-    /*
-    ---------------------------------------------------------
-    Requests without Origin:
-    Render health checks, curl, server-to-server.
-    ---------------------------------------------------------
-    */
 
     if (!origin) {
 
@@ -290,12 +244,6 @@ function validateCorsOrigin(
         );
 
 
-    /*
-    ---------------------------------------------------------
-    Allowed configured origin
-    ---------------------------------------------------------
-    */
-
     if (
 
         allowedOrigins.includes(
@@ -311,12 +259,6 @@ function validateCorsOrigin(
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    Development fallback
-    ---------------------------------------------------------
-    */
 
     if (
 
@@ -334,11 +276,8 @@ function validateCorsOrigin(
 
 
     console.warn(
-
         "CORS BLOCKED ORIGIN:",
-
         normalizedOrigin
-
     );
 
 
@@ -353,81 +292,51 @@ function validateCorsOrigin(
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CORS OPTIONS
-|--------------------------------------------------------------------------
-*/
-
-const corsOptions = {
-
-
-    origin:
-        validateCorsOrigin,
-
-
-    credentials:
-        true,
-
-
-    methods:
-
-        [
-
-            "GET",
-
-            "POST",
-
-            "PUT",
-
-            "PATCH",
-
-            "DELETE",
-
-            "OPTIONS"
-
-        ],
-
-
-    allowedHeaders:
-
-        [
-
-            "Content-Type",
-
-            "Authorization",
-
-            "Accept"
-
-        ],
-
-
-    exposedHeaders:
-
-        [
-
-            "Content-Type"
-
-        ],
-
-
-    optionsSuccessStatus:
-        204
-
-};
-
-
-/*
-|--------------------------------------------------------------------------
-| ENABLE CORS
-|--------------------------------------------------------------------------
-*/
-
 app.use(
 
-    cors(
-        corsOptions
-    )
+    cors({
+
+        origin:
+            validateCorsOrigin,
+
+        credentials:
+            true,
+
+        methods:
+
+            [
+
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+
+            ],
+
+        allowedHeaders:
+
+            [
+
+                "Content-Type",
+                "Authorization",
+                "Accept"
+
+            ],
+
+        exposedHeaders:
+
+            [
+
+                "Content-Type"
+
+            ],
+
+        optionsSuccessStatus:
+            204
+
+    })
 
 );
 
@@ -465,49 +374,8 @@ app.use(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| COOKIE PARSER
-|--------------------------------------------------------------------------
-*/
-
 app.use(
     cookieParser()
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| REQUEST LOGGER
-|--------------------------------------------------------------------------
-*/
-
-app.use(
-
-    function (
-        req,
-        res,
-        next
-    ) {
-
-        if (
-
-            process.env.NODE_ENV !==
-            "production"
-
-        ) {
-
-            console.log(
-                `${req.method} ${req.originalUrl}`
-            );
-
-        }
-
-
-        return next();
-
-    }
-
 );
 
 
@@ -546,7 +414,7 @@ app.get(
 
 /*
 |--------------------------------------------------------------------------
-| HEALTH CHECK
+| HEALTH
 |--------------------------------------------------------------------------
 */
 
@@ -586,9 +454,6 @@ app.get(
 |--------------------------------------------------------------------------
 | AUTH ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/auth
-|
 */
 
 app.use(
@@ -604,9 +469,6 @@ app.use(
 |--------------------------------------------------------------------------
 | USER DEPOSIT ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/deposits
-|
 */
 
 app.use(
@@ -622,9 +484,6 @@ app.use(
 |--------------------------------------------------------------------------
 | USER WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
-|
-| /api/withdrawals
-|
 */
 
 app.use(
@@ -640,11 +499,6 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN USER ROUTES
 |--------------------------------------------------------------------------
-|
-| GET   /api/admin/users
-| GET   /api/admin/users/:userId
-| PATCH /api/admin/users/:userId/status
-|
 */
 
 app.use(
@@ -660,13 +514,6 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN DEPOSIT ROUTES
 |--------------------------------------------------------------------------
-|
-| GET  /api/admin/deposits
-|
-| POST /api/admin/deposits/:depositId/approve
-|
-| POST /api/admin/deposits/:depositId/reject
-|
 */
 
 app.use(
@@ -680,7 +527,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| API 404 HANDLER
+| API 404
 |--------------------------------------------------------------------------
 */
 
@@ -696,10 +543,8 @@ app.use(
             success:
                 false,
 
-
             error:
                 "NOT_FOUND",
-
 
             message:
                 `API endpoint not found: ${req.method} ${req.originalUrl}`
@@ -727,18 +572,13 @@ app.use(
     ) {
 
         console.error(
-
             "UNHANDLED SERVER ERROR:",
-
             err
-
         );
 
 
         if (
-
             res.headersSent
-
         ) {
 
             return next(
@@ -747,12 +587,6 @@ app.use(
 
         }
 
-
-        /*
-        -----------------------------------------------------
-        CORS error
-        -----------------------------------------------------
-        */
 
         if (
 
@@ -766,10 +600,8 @@ app.use(
                 success:
                     false,
 
-
                 error:
                     "CORS_NOT_ALLOWED",
-
 
                 message:
                     "This frontend origin is not allowed to access the API."
@@ -779,57 +611,19 @@ app.use(
         }
 
 
-        const rawStatus =
-            Number(
+        return res.status(500).json({
 
-                err?.status ||
+            success:
+                false,
 
-                err?.statusCode ||
+            error:
+                err?.code ||
+                "INTERNAL_SERVER_ERROR",
 
-                500
+            message:
+                "Internal server error."
 
-            );
-
-
-        const statusCode =
-
-            rawStatus >= 400 &&
-
-            rawStatus < 600
-
-                ? rawStatus
-
-                : 500;
-
-
-        return res
-            .status(
-                statusCode
-            )
-            .json({
-
-                success:
-                    false,
-
-
-                error:
-
-                    err?.code ||
-
-                    "INTERNAL_SERVER_ERROR",
-
-
-                message:
-
-                    err?.message &&
-
-                    statusCode < 500
-
-                        ? err.message
-
-                        : "Internal server error."
-
-            });
+        });
 
     }
 
@@ -850,12 +644,6 @@ app.listen(
 
     function () {
 
-
-        console.log(
-            "========================================"
-        );
-
-
         console.log(
             "SkillEarn Hub API started successfully"
         );
@@ -867,52 +655,10 @@ app.listen(
 
 
         console.log(
-
             `Environment: ${
                 process.env.NODE_ENV ||
                 "development"
             }`
-
-        );
-
-
-        console.log(
-            "Allowed frontend origins:"
-        );
-
-
-        console.log(
-
-            allowedOrigins.length
-
-                ? allowedOrigins
-
-                : [
-
-                    "No production origin configured"
-
-                ]
-
-        );
-
-
-        console.log(
-            "========================================"
-        );
-
-
-        console.log(
-            "Admin deposits endpoint:"
-        );
-
-
-        console.log(
-            `GET http://localhost:${PORT}/api/admin/deposits`
-        );
-
-
-        console.log(
-            "========================================"
         );
 
     }

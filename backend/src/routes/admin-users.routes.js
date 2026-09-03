@@ -1,108 +1,198 @@
 "use strict";
 
-const express = require("express");
+
+/*
+|--------------------------------------------------------------------------
+| EXPRESS
+|--------------------------------------------------------------------------
+*/
+
+const express =
+    require(
+        "express"
+    );
+
+
+const router =
+    express.Router();
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
 
 const {
-    requireAuth
-} = require("../middleware/auth");
 
-const {
+    requireAuth,
+
     requireAdmin
-} = require("../middleware/admin");
+
+} =
+    require(
+        "../middleware/auth.middleware"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN USERS SERVICE
+|--------------------------------------------------------------------------
+*/
 
 const {
+
     getUsers,
-    getUserDetails
-} = require("../services/admin-users.service");
+
+    getUserDetails,
+
+    updateUserStatus
+
+} =
+    require(
+        "../services/admin-users.service"
+    );
 
 
-const router = express.Router();
-
+/*
+|--------------------------------------------------------------------------
+| GET USERS
+|--------------------------------------------------------------------------
+*/
 
 router.get(
+
     "/",
+
     requireAuth,
+
     requireAdmin,
 
-    async (req, res) => {
+    async function (
+        req,
+        res
+    ) {
 
         try {
 
+            const search =
+                req.query.search ||
+                null;
+
+
+            const status =
+                req.query.status ||
+                null;
+
+
             const limit =
                 Math.min(
+
                     Math.max(
-                        Number(req.query.limit) || 25,
+
+                        Number(
+                            req.query.limit
+                        ) || 25,
+
                         1
+
                     ),
+
                     100
+
                 );
 
 
             const offset =
                 Math.max(
-                    Number(req.query.offset) || 0,
+
+                    Number(
+                        req.query.offset
+                    ) || 0,
+
                     0
+
                 );
 
 
             const users =
                 await getUsers({
 
-                    search:
-                        req.query.search,
+                    search,
 
-                    status:
-                        req.query.status,
+                    status,
 
                     limit,
 
                     offset
+
                 });
 
 
-            res.json({
+            return res.json({
 
-                success: true,
+                success:
+                    true,
 
-                users,
-
-                pagination: {
-                    limit,
-                    offset,
-                    count: users.length
-                }
+                users
 
             });
-
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
 
-            res.status(500).json({
+                "GET USERS ERROR:",
 
-                success: false,
+                error
+
+            );
+
+
+            return res.status(500).json({
+
+                success:
+                    false,
 
                 error:
-                    "ADMIN_USERS_FETCH_FAILED"
+                    "GET_USERS_FAILED"
+
             });
+
         }
+
     }
+
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| GET USER DETAILS
+|--------------------------------------------------------------------------
+*/
+
 router.get(
+
     "/:userId",
+
     requireAuth,
+
     requireAdmin,
 
-    async (req, res) => {
+    async function (
+        req,
+        res
+    ) {
 
         try {
 
             const user =
                 await getUserDetails(
+
                     req.params.userId
+
                 );
 
 
@@ -110,37 +200,176 @@ router.get(
 
                 return res.status(404).json({
 
-                    success: false,
+                    success:
+                        false,
 
                     error:
                         "USER_NOT_FOUND"
+
                 });
+
             }
 
 
-            res.json({
+            return res.json({
 
-                success: true,
+                success:
+                    true,
 
                 user
 
             });
 
-
         } catch (error) {
 
-            console.error(error);
+            console.error(
 
-            res.status(500).json({
+                "GET USER DETAILS ERROR:",
 
-                success: false,
+                error
+
+            );
+
+
+            return res.status(500).json({
+
+                success:
+                    false,
 
                 error:
-                    "ADMIN_USER_FETCH_FAILED"
+                    "GET_USER_DETAILS_FAILED"
+
             });
+
         }
+
     }
+
 );
 
 
-module.exports = router;
+/*
+|--------------------------------------------------------------------------
+| UPDATE USER STATUS
+|--------------------------------------------------------------------------
+*/
+
+router.patch(
+
+    "/:userId/status",
+
+    requireAuth,
+
+    requireAdmin,
+
+    async function (
+        req,
+        res
+    ) {
+
+        try {
+
+            const result =
+                await updateUserStatus({
+
+                    userId:
+                        req.params.userId,
+
+
+                    status:
+                        req.body.status,
+
+
+                    adminUserId:
+                        req.user.id,
+
+
+                    ipAddress:
+                        req.ip,
+
+
+                    userAgent:
+                        req.get(
+                            "user-agent"
+                        )
+
+                });
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                user:
+                    result
+
+            });
+
+        } catch (error) {
+
+            console.error(
+
+                "UPDATE USER STATUS ERROR:",
+
+                error
+
+            );
+
+
+            const statusMap = {
+
+                USER_NOT_FOUND:
+                    404,
+
+                INVALID_ACCOUNT_STATUS:
+                    400,
+
+                STATUS_ALREADY_SET:
+                    409
+
+            };
+
+
+            const statusCode =
+                statusMap[
+                    error.message
+                ]
+                ||
+                500;
+
+
+            return res
+                .status(
+                    statusCode
+                )
+                .json({
+
+                    success:
+                        false,
+
+                    error:
+
+                        statusCode === 500
+
+                            ? "STATUS_UPDATE_FAILED"
+
+                            : error.message
+
+                });
+
+        }
+
+    }
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+*/
+
+module.exports =
+    router;

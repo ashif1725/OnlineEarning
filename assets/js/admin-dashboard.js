@@ -1,16 +1,36 @@
 "use strict";
 
 
+/* =========================================================
+   SKILLEARN HUB — ADMIN DASHBOARD
+========================================================= */
+
 document.addEventListener(
     "DOMContentLoaded",
     function () {
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ELEMENTS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           API SAFETY CHECK
+        ================================================= */
+
+        if (
+            typeof window.apiRequest !==
+            "function"
+        ) {
+
+            console.error(
+                "ADMIN DASHBOARD ERROR: window.apiRequest is not available."
+            );
+
+            return;
+
+        }
+
+
+        /* =================================================
+           ELEMENTS
+        ================================================= */
 
         const sidebar =
             document.getElementById(
@@ -48,16 +68,15 @@ document.addEventListener(
             );
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | MOBILE MENU
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           MOBILE SIDEBAR
+        ================================================= */
 
         function openSidebar() {
 
-
-            if (sidebar) {
+            if (
+                sidebar
+            ) {
 
                 sidebar.classList.add(
                     "open"
@@ -66,7 +85,9 @@ document.addEventListener(
             }
 
 
-            if (overlay) {
+            if (
+                overlay
+            ) {
 
                 overlay.classList.add(
                     "visible"
@@ -77,11 +98,11 @@ document.addEventListener(
         }
 
 
-
         function closeSidebar() {
 
-
-            if (sidebar) {
+            if (
+                sidebar
+            ) {
 
                 sidebar.classList.remove(
                     "open"
@@ -90,7 +111,9 @@ document.addEventListener(
             }
 
 
-            if (overlay) {
+            if (
+                overlay
+            ) {
 
                 overlay.classList.remove(
                     "visible"
@@ -101,14 +124,13 @@ document.addEventListener(
         }
 
 
-
-        if (mobileMenuButton) {
-
+        if (
+            mobileMenuButton
+        ) {
 
             mobileMenuButton.addEventListener(
                 "click",
                 function () {
-
 
                     if (
 
@@ -122,7 +144,9 @@ document.addEventListener(
 
                         closeSidebar();
 
-                    } else {
+                    }
+
+                    else {
 
                         openSidebar();
 
@@ -134,8 +158,9 @@ document.addEventListener(
         }
 
 
-
-        if (overlay) {
+        if (
+            overlay
+        ) {
 
             overlay.addEventListener(
                 "click",
@@ -145,17 +170,13 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | SECTION NAVIGATION
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           SECTION NAVIGATION
+        ================================================= */
 
         function showSection(
             sectionId
         ) {
-
 
             sections.forEach(
                 function (
@@ -176,7 +197,9 @@ document.addEventListener(
                 );
 
 
-            if (targetSection) {
+            if (
+                targetSection
+            ) {
 
                 targetSection.classList.add(
                     "active-section"
@@ -189,7 +212,6 @@ document.addEventListener(
                 function (
                     item
                 ) {
-
 
                     item.classList.remove(
                         "active"
@@ -228,9 +250,9 @@ document.addEventListener(
 
 
             /*
-            --------------------------------------------------
+            ---------------------------------------------
             LOAD USERS
-            --------------------------------------------------
+            ---------------------------------------------
             */
 
             if (
@@ -244,9 +266,9 @@ document.addEventListener(
 
 
             /*
-            --------------------------------------------------
+            ---------------------------------------------
             LOAD DEPOSITS
-            --------------------------------------------------
+            ---------------------------------------------
             */
 
             if (
@@ -261,12 +283,10 @@ document.addEventListener(
         }
 
 
-
         navItems.forEach(
             function (
                 item
             ) {
-
 
                 item.addEventListener(
                     "click",
@@ -274,12 +294,20 @@ document.addEventListener(
                         event
                     ) {
 
-
                         event.preventDefault();
 
 
                         const sectionId =
                             item.dataset.section;
+
+
+                        if (
+                            !sectionId
+                        ) {
+
+                            return;
+
+                        }
 
 
                         showSection(
@@ -305,30 +333,46 @@ document.addEventListener(
         );
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | QUICK ACTION BUTTONS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           QUICK ACTIONS
+        ================================================= */
 
         quickActionButtons.forEach(
             function (
                 button
             ) {
 
-
                 button.addEventListener(
                     "click",
                     function () {
-
 
                         const sectionId =
                             button.dataset.openSection;
 
 
+                        if (
+                            !sectionId
+                        ) {
+
+                            return;
+
+                        }
+
+
                         showSection(
                             sectionId
+                        );
+
+
+                        window.history.replaceState(
+
+                            null,
+
+                            "",
+
+                            "#" +
+                            sectionId
+
                         );
 
                     }
@@ -338,117 +382,483 @@ document.addEventListener(
         );
 
 
+        /* =================================================
+           HELPERS
+        ================================================= */
 
-        /*
-        |--------------------------------------------------------------------------
-        | API URL
-        |--------------------------------------------------------------------------
-        */
+        function setText(
+            id,
+            value
+        ) {
 
-        function getApiUrl() {
-
-
-            const apiUrl =
-                window.API_URL ||
-                "";
+            const element =
+                document.getElementById(
+                    id
+                );
 
 
             if (
-                !apiUrl
+                element
             ) {
 
-                throw new Error(
-                    "API URL not configured"
-                );
+                element.textContent =
+                    value ===
+                    undefined ||
+
+                    value ===
+                    null
+
+                        ?
+
+                        ""
+
+                        :
+
+                        String(
+                            value
+                        );
+
+            }
+
+        }
+
+
+        function getInitial(
+            name
+        ) {
+
+            if (
+                !name
+            ) {
+
+                return "A";
 
             }
 
 
-            return apiUrl.replace(
-                /\/+$/,
-                ""
+            return String(
+                name
+            )
+            .trim()
+            .charAt(
+                0
+            )
+            .toUpperCase();
+
+        }
+
+
+        function escapeHtml(
+            value
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.textContent =
+
+                value === null ||
+
+                value === undefined
+
+                    ?
+
+                    ""
+
+                    :
+
+                    String(
+                        value
+                    );
+
+
+            return div.innerHTML;
+
+        }
+
+
+        function escapeAttribute(
+            value
+        ) {
+
+            return escapeHtml(
+                value
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
             );
 
         }
 
 
+        function formatAmount(
+            amount
+        ) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | AUTHORIZATION HEADERS
-        |--------------------------------------------------------------------------
-        */
-
-        function getHeaders() {
-
-
-            const token =
-
-                localStorage.getItem(
-                    "skilllearn_token"
-                ) ||
-
-                localStorage.getItem(
-                    "token"
+            const number =
+                Number(
+                    amount ||
+                    0
                 );
 
 
-            const headers = {
-
-                "Content-Type":
-                    "application/json"
-
-            };
-
-
             if (
-                token
+                Number.isNaN(
+                    number
+                )
             ) {
 
-                headers.Authorization =
-                    "Bearer " +
-                    token;
+                return "₹0.00";
 
             }
 
 
-            return headers;
+            return "₹" +
+                number.toLocaleString(
+                    "en-IN",
+                    {
+
+                        minimumFractionDigits:
+                            2,
+
+                        maximumFractionDigits:
+                            2
+
+                    }
+                );
 
         }
 
 
+        function formatDate(
+            value
+        ) {
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOAD ADMIN PROFILE
-        |--------------------------------------------------------------------------
-        */
+            if (
+                !value
+            ) {
 
-        function loadAdminProfile() {
+                return "—";
+
+            }
 
 
             try {
 
-
-                const storedUser =
-                    localStorage.getItem(
-                        "skilllearn_user"
+                const date =
+                    new Date(
+                        value
                     );
 
 
                 if (
-                    !storedUser
+
+                    Number.isNaN(
+                        date.getTime()
+                    )
+
+                ) {
+
+                    return String(
+                        value
+                    );
+
+                }
+
+
+                return date.toLocaleString(
+                    "en-IN",
+                    {
+
+                        dateStyle:
+                            "medium",
+
+                        timeStyle:
+                            "short"
+
+                    }
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                return String(
+                    value
+                );
+
+            }
+
+        }
+
+
+        function getApiErrorMessage(
+            error,
+            fallback
+        ) {
+
+            return (
+
+                error?.data?.message ||
+
+                error?.data?.error ||
+
+                error?.message ||
+
+                fallback
+
+            );
+
+        }
+
+
+        function getArrayFromResponse(
+            data,
+            key
+        ) {
+
+            if (
+                Array.isArray(
+                    data?.[key]
+                )
+            ) {
+
+                return data[
+                    key
+                ];
+
+            }
+
+
+            if (
+                Array.isArray(
+                    data?.data
+                )
+            ) {
+
+                return data.data;
+
+            }
+
+
+            if (
+                Array.isArray(
+                    data
+                )
+            ) {
+
+                return data;
+
+            }
+
+
+            return [];
+
+        }
+
+
+        /* =================================================
+           ADMIN MESSAGE
+        ================================================= */
+
+        function showMessage(
+            message,
+            type =
+                "info"
+        ) {
+
+            let container =
+                document.getElementById(
+                    "adminActionMessage"
+                );
+
+
+            if (
+                !container
+            ) {
+
+                container =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                container.id =
+                    "adminActionMessage";
+
+
+                container.style.position =
+                    "fixed";
+
+
+                container.style.left =
+                    "20px";
+
+
+                container.style.right =
+                    "20px";
+
+
+                container.style.bottom =
+                    "20px";
+
+
+                container.style.zIndex =
+                    "9999";
+
+
+                container.style.padding =
+                    "16px";
+
+
+                container.style.borderRadius =
+                    "12px";
+
+
+                container.style.fontWeight =
+                    "700";
+
+
+                container.style.textAlign =
+                    "center";
+
+
+                container.style.boxShadow =
+                    "0 10px 30px rgba(0,0,0,0.15)";
+
+
+                document.body.appendChild(
+                    container
+                );
+
+            }
+
+
+            container.textContent =
+                message ||
+                "";
+
+
+            if (
+                type ===
+                "success"
+            ) {
+
+                container.style.background =
+                    "#dcfce7";
+
+
+                container.style.color =
+                    "#166534";
+
+
+                container.style.border =
+                    "1px solid #86efac";
+
+            }
+
+            else if (
+                type ===
+                "error"
+            ) {
+
+                container.style.background =
+                    "#fee2e2";
+
+
+                container.style.color =
+                    "#991b1b";
+
+
+                container.style.border =
+                    "1px solid #fca5a5";
+
+            }
+
+            else {
+
+                container.style.background =
+                    "#dbeafe";
+
+
+                container.style.color =
+                    "#1e40af";
+
+
+                container.style.border =
+                    "1px solid #93c5fd";
+
+            }
+
+
+            container.style.display =
+                "block";
+
+
+            window.clearTimeout(
+                window.__adminMessageTimer
+            );
+
+
+            window.__adminMessageTimer =
+                window.setTimeout(
+                    function () {
+
+                        if (
+                            container
+                        ) {
+
+                            container.style.display =
+                                "none";
+
+                        }
+
+                    },
+                    3500
+                );
+
+        }
+
+
+        /* =================================================
+           LOAD ADMIN PROFILE
+        ================================================= */
+
+        function loadAdminProfile() {
+
+            try {
+
+                const user =
+
+                    typeof window.getSavedUser ===
+                    "function"
+
+                        ?
+
+                        window.getSavedUser()
+
+                        :
+
+                        null;
+
+
+                if (
+                    !user
                 ) {
 
                     return;
 
                 }
-
-
-                const user =
-                    JSON.parse(
-                        storedUser
-                    );
 
 
                 const name =
@@ -472,6 +882,10 @@ document.addEventListener(
                 const role =
 
                     user.role ||
+
+                    user.userRole ||
+
+                    user.user_role ||
 
                     "admin";
 
@@ -533,13 +947,14 @@ document.addEventListener(
                     )
                 );
 
+            }
 
-            } catch (
+            catch (
                 error
             ) {
 
                 console.error(
-                    "Admin profile error:",
+                    "ADMIN PROFILE ERROR:",
                     error
                 );
 
@@ -548,438 +963,11 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | HELPERS
-        |--------------------------------------------------------------------------
-        */
-
-        function setText(
-            id,
-            value
-        ) {
-
-
-            const element =
-                document.getElementById(
-                    id
-                );
-
-
-            if (
-                element
-            ) {
-
-                element.textContent =
-                    value;
-
-            }
-
-        }
-
-
-
-        function getInitial(
-            name
-        ) {
-
-
-            if (
-                !name
-            ) {
-
-                return "A";
-
-            }
-
-
-            return String(
-                name
-            )
-            .trim()
-            .charAt(
-                0
-            )
-            .toUpperCase();
-
-        }
-
-
-
-        function escapeHtml(
-            value
-        ) {
-
-
-            const div =
-                document.createElement(
-                    "div"
-                );
-
-
-            div.textContent =
-                value === null ||
-                value === undefined
-
-                    ? ""
-
-                    : String(
-                        value
-                    );
-
-
-            return div.innerHTML;
-
-        }
-
-
-
-        function escapeAttribute(
-            value
-        ) {
-
-
-            return escapeHtml(
-                value
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
-            );
-
-        }
-
-
-
-        function formatAmount(
-            amount
-        ) {
-
-
-            const number =
-                Number(
-                    amount ||
-                    0
-                );
-
-
-            if (
-                Number.isNaN(
-                    number
-                )
-            ) {
-
-                return "₹0.00";
-
-            }
-
-
-            return "₹" +
-                number.toLocaleString(
-                    "en-IN",
-                    {
-
-                        minimumFractionDigits:
-                            2,
-
-                        maximumFractionDigits:
-                            2
-
-                    }
-                );
-
-        }
-
-
-
-        function formatDate(
-            value
-        ) {
-
-
-            if (
-                !value
-            ) {
-
-                return "—";
-
-            }
-
-
-            try {
-
-
-                const date =
-                    new Date(
-                        value
-                    );
-
-
-                if (
-
-                    Number.isNaN(
-                        date.getTime()
-                    )
-
-                ) {
-
-                    return String(
-                        value
-                    );
-
-                }
-
-
-                return date.toLocaleString(
-                    "en-IN",
-                    {
-
-                        dateStyle:
-                            "medium",
-
-                        timeStyle:
-                            "short"
-
-                    }
-                );
-
-
-            } catch (
-                error
-            ) {
-
-                return String(
-                    value
-                );
-
-            }
-
-        }
-
-
-
-        function getErrorMessage(
-            data,
-            fallback
-        ) {
-
-
-            if (
-
-                data &&
-
-                typeof data ===
-                "object"
-
-            ) {
-
-                return (
-
-                    data.message ||
-
-                    data.error ||
-
-                    fallback
-
-                );
-
-            }
-
-
-            return fallback;
-
-        }
-
-
-
-        async function getResponseData(
-            response
-        ) {
-
-
-            try {
-
-                return await response.json();
-
-            } catch (
-                error
-            ) {
-
-                return null;
-
-            }
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | SHOW MESSAGE
-        |--------------------------------------------------------------------------
-        */
-
-        function showMessage(
-            message,
-            type
-        ) {
-
-
-            let container =
-                document.getElementById(
-                    "adminActionMessage"
-                );
-
-
-            if (
-                !container
-            ) {
-
-
-                container =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                container.id =
-                    "adminActionMessage";
-
-
-                container.style.position =
-                    "fixed";
-
-
-                container.style.left =
-                    "20px";
-
-
-                container.style.right =
-                    "20px";
-
-
-                container.style.bottom =
-                    "20px";
-
-
-                container.style.zIndex =
-                    "9999";
-
-
-                container.style.padding =
-                    "16px";
-
-
-                container.style.borderRadius =
-                    "12px";
-
-
-                container.style.fontWeight =
-                    "700";
-
-
-                container.style.textAlign =
-                    "center";
-
-
-                document.body.appendChild(
-                    container
-                );
-
-            }
-
-
-            container.textContent =
-                message;
-
-
-            if (
-                type ===
-                "success"
-            ) {
-
-                container.style.background =
-                    "#dcfce7";
-
-
-                container.style.color =
-                    "#166534";
-
-
-                container.style.border =
-                    "1px solid #86efac";
-
-            } else if (
-                type ===
-                "error"
-            ) {
-
-                container.style.background =
-                    "#fee2e2";
-
-
-                container.style.color =
-                    "#991b1b";
-
-
-                container.style.border =
-                    "1px solid #fca5a5";
-
-            } else {
-
-                container.style.background =
-                    "#dbeafe";
-
-
-                container.style.color =
-                    "#1e40af";
-
-
-                container.style.border =
-                    "1px solid #93c5fd";
-
-            }
-
-
-            container.style.display =
-                "block";
-
-
-            window.clearTimeout(
-                window.__adminMessageTimer
-            );
-
-
-            window.__adminMessageTimer =
-                window.setTimeout(
-                    function () {
-
-
-                        container.style.display =
-                            "none";
-
-
-                    },
-                    3500
-                );
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | USERS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           USERS
+        ================================================= */
 
         async function loadUsers() {
-
 
             const usersList =
                 document.getElementById(
@@ -1021,80 +1009,32 @@ document.addEventListener(
 
             try {
 
+                const data =
+                    await window.apiRequest(
 
-                const apiUrl =
-                    getApiUrl();
-
-
-                const response =
-                    await fetch(
-
-                        apiUrl +
                         "/api/admin/users",
 
                         {
 
-                            headers:
-                                getHeaders()
+                            method:
+                                "GET"
 
                         }
 
                     );
 
 
-                const data =
-                    await getResponseData(
-                        response
-                    );
-
-
-                if (
-                    !response.ok
-                ) {
-
-                    throw new Error(
-
-                        getErrorMessage(
-
-                            data,
-
-                            "Unable to load users"
-
-                        )
-
-                    );
-
-                }
-
-
                 const users =
-
-                    data?.users ||
-
-                    data?.data ||
-
-                    data ||
-
-                    [];
-
-
-                if (
-
-                    Array.isArray(
-                        users
-                    )
-
-                ) {
-
-                    setText(
-
-                        "totalUsers",
-
-                        users.length
-
+                    getArrayFromResponse(
+                        data,
+                        "users"
                     );
 
-                }
+
+                setText(
+                    "totalUsers",
+                    users.length
+                );
 
 
                 renderUsers(
@@ -1111,15 +1051,26 @@ document.addEventListener(
 
                 }
 
+            }
 
-            } catch (
+            catch (
                 error
             ) {
 
-
                 console.error(
+                    "LOAD USERS ERROR:",
                     error
                 );
+
+
+                const errorMessage =
+                    getApiErrorMessage(
+
+                        error,
+
+                        "Unable to load users"
+
+                    );
 
 
                 usersList.innerHTML = `
@@ -1136,7 +1087,7 @@ document.addEventListener(
 
                         <p>
                             ${escapeHtml(
-                                error.message
+                                errorMessage
                             )}
                         </p>
 
@@ -1154,7 +1105,7 @@ document.addEventListener(
 
 
                     usersMessage.textContent =
-                        error.message;
+                        errorMessage;
 
                 }
 
@@ -1163,11 +1114,9 @@ document.addEventListener(
         }
 
 
-
         function renderUsers(
             users
         ) {
-
 
             const usersList =
                 document.getElementById(
@@ -1194,7 +1143,6 @@ document.addEventListener(
                 0
 
             ) {
-
 
                 usersList.innerHTML = `
 
@@ -1224,19 +1172,22 @@ document.addEventListener(
                         user
                     ) {
 
-
                         const userId =
 
                             user.id ||
 
                             user.user_id ||
 
-                            user.public_user_id;
+                            user.public_user_id ||
+
+                            "";
 
 
                         const name =
 
                             user.full_name ||
+
+                            user.fullName ||
 
                             user.name ||
 
@@ -1251,7 +1202,6 @@ document.addEventListener(
 
 
                         const status =
-
                             String(
 
                                 user.status ||
@@ -1259,16 +1209,8 @@ document.addEventListener(
                                 "active"
 
                             )
+                            .trim()
                             .toLowerCase();
-
-
-                        const isBlocked =
-
-                            status ===
-                            "blocked" ||
-
-                            status ===
-                            "inactive";
 
 
                         return `
@@ -1293,20 +1235,28 @@ document.addEventListener(
 
 
                                 <p>
+
                                     Email:
+
                                     ${escapeHtml(
                                         email
                                     )}
+
                                 </p>
 
 
                                 <p>
+
                                     Status:
+
                                     <strong>
+
                                         ${escapeHtml(
                                             status
                                         )}
+
                                     </strong>
+
                                 </p>
 
 
@@ -1328,8 +1278,7 @@ document.addEventListener(
                                         data-user-status="active"
                                     >
 
-                                        Unblock /
-                                        Activate
+                                        Unblock / Activate
 
                                     </button>
 
@@ -1365,93 +1314,88 @@ document.addEventListener(
         }
 
 
-
         function bindUserActionButtons() {
 
-
-            const buttons =
-                document.querySelectorAll(
+            document
+                .querySelectorAll(
                     ".admin-user-action"
-                );
+                )
+                .forEach(
+                    function (
+                        button
+                    ) {
+
+                        button.addEventListener(
+                            "click",
+                            async function () {
+
+                                const userId =
+                                    button.dataset.userId;
 
 
-            buttons.forEach(
-                function (
-                    button
-                ) {
+                                const status =
+                                    button.dataset.userStatus;
 
 
-                    button.addEventListener(
-                        "click",
-                        async function () {
+                                if (
+                                    !userId
+                                ) {
+
+                                    showMessage(
+
+                                        "User ID not found.",
+
+                                        "error"
+
+                                    );
 
 
-                            const userId =
-                                button.dataset.userId;
+                                    return;
+
+                                }
 
 
-                            const status =
-                                button.dataset.userStatus;
+                                const confirmed =
+                                    window.confirm(
+
+                                        status ===
+                                        "blocked"
+
+                                            ?
+
+                                            "Are you sure you want to block this user?"
+
+                                            :
+
+                                            "Are you sure you want to activate this user?"
+
+                                    );
 
 
-                            if (
-                                !userId
-                            ) {
+                                if (
+                                    !confirmed
+                                ) {
 
-                                return;
+                                    return;
 
-                            }
-
-
-                            const confirmed =
-                                window.confirm(
-
-                                    status ===
-                                    "blocked"
-
-                                        ?
-
-                                        "Are you sure you want to block this user?"
-
-                                        :
-
-                                        "Are you sure you want to unblock this user?"
-
-                                );
+                                }
 
 
-                            if (
-                                !confirmed
-                            ) {
-
-                                return;
-
-                            }
+                                const originalText =
+                                    button.textContent;
 
 
-                            const originalText =
-                                button.textContent;
+                                button.disabled =
+                                    true;
 
 
-                            button.disabled =
-                                true;
+                                button.textContent =
+                                    "Processing...";
 
 
-                            button.textContent =
-                                "Processing...";
+                                try {
 
-
-                            try {
-
-
-                                const apiUrl =
-                                    getApiUrl();
-
-
-                                const response =
-                                    await fetch(
-
-                                        apiUrl +
+                                    await window.apiRequest(
 
                                         "/api/admin/users/" +
 
@@ -1466,109 +1410,89 @@ document.addEventListener(
                                             method:
                                                 "PATCH",
 
-                                            headers:
-                                                getHeaders(),
-
                                             body:
-                                                JSON.stringify({
+                                                {
 
                                                     status:
                                                         status
 
-                                                })
+                                                }
 
                                         }
 
                                     );
 
 
-                                const data =
-                                    await getResponseData(
-                                        response
-                                    );
+                                    showMessage(
 
+                                        status ===
+                                        "blocked"
 
-                                if (
-                                    !response.ok
-                                ) {
+                                            ?
 
-                                    throw new Error(
+                                            "User blocked successfully."
 
-                                        getErrorMessage(
+                                            :
 
-                                            data,
+                                            "User activated successfully.",
 
-                                            "Unable to update user status"
-
-                                        )
+                                        "success"
 
                                     );
+
+
+                                    await loadUsers();
 
                                 }
 
+                                catch (
+                                    error
+                                ) {
 
-                                showMessage(
-
-                                    status ===
-                                    "blocked"
-
-                                        ?
-
-                                        "User blocked successfully."
-
-                                        :
-
-                                        "User unblocked successfully.",
-
-                                    "success"
-
-                                );
+                                    console.error(
+                                        "UPDATE USER ERROR:",
+                                        error
+                                    );
 
 
-                                loadUsers();
+                                    showMessage(
+
+                                        getApiErrorMessage(
+
+                                            error,
+
+                                            "Unable to update user status"
+
+                                        ),
+
+                                        "error"
+
+                                    );
 
 
-                            } catch (
-                                error
-                            ) {
+                                    button.disabled =
+                                        false;
 
 
-                                showMessage(
+                                    button.textContent =
+                                        originalText;
 
-                                    error.message,
-
-                                    "error"
-
-                                );
-
-
-                                button.disabled =
-                                    false;
-
-
-                                button.textContent =
-                                    originalText;
+                                }
 
                             }
+                        );
 
-                        }
-                    );
-
-                }
-            );
+                    }
+                );
 
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPOSITS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           DEPOSITS
+        ================================================= */
 
         async function loadDeposits() {
-
 
             const depositsList =
                 document.getElementById(
@@ -1604,94 +1528,49 @@ document.addEventListener(
 
             try {
 
-
-                const apiUrl =
-                    getApiUrl();
-
-
                 /*
-                --------------------------------------------------------------
-                CORRECT BACKEND ENDPOINT
-                --------------------------------------------------------------
+                ---------------------------------------------
+                EXACT BACKEND ENDPOINT:
+                GET /api/admin/deposits/pending
+                ---------------------------------------------
                 */
 
-                const response =
-                    await fetch(
+                const data =
+                    await window.apiRequest(
 
-                        apiUrl +
                         "/api/admin/deposits/pending",
 
                         {
 
-                            headers:
-                                getHeaders()
+                            method:
+                                "GET"
 
                         }
 
                     );
 
 
-                const data =
-                    await getResponseData(
-                        response
-                    );
-
-
-                if (
-                    !response.ok
-                ) {
-
-                    throw new Error(
-
-                        getErrorMessage(
-
-                            data,
-
-                            "Unable to load deposits"
-
-                        )
-
-                    );
-
-                }
-
-
                 const deposits =
-
-                    data?.deposits ||
-
-                    data?.data ||
-
-                    data ||
-
-                    [];
-
-
-                const pendingDeposits =
-                    Array.isArray(
-                        deposits
-                    )
-
-                        ? deposits.length
-
-                        : 0;
+                    getArrayFromResponse(
+                        data,
+                        "deposits"
+                    );
 
 
                 setText(
-
                     "pendingDeposits",
-
-                    pendingDeposits
-
+                    deposits.length
                 );
 
 
+                /*
+                Current backend endpoint returns pending
+                deposits only.
+                */
+
                 setText(
-
                     "totalDeposits",
-
-                    pendingDeposits
-
+                    deposits.length
                 );
 
 
@@ -1699,15 +1578,26 @@ document.addEventListener(
                     deposits
                 );
 
+            }
 
-            } catch (
+            catch (
                 error
             ) {
 
-
                 console.error(
+                    "LOAD DEPOSITS ERROR:",
                     error
                 );
+
+
+                const errorMessage =
+                    getApiErrorMessage(
+
+                        error,
+
+                        "Unable to load deposits"
+
+                    );
 
 
                 depositsList.innerHTML = `
@@ -1724,7 +1614,7 @@ document.addEventListener(
 
                         <p>
                             ${escapeHtml(
-                                error.message
+                                errorMessage
                             )}
                         </p>
 
@@ -1737,17 +1627,13 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | RENDER DEPOSITS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           RENDER DEPOSITS
+        ================================================= */
 
         function renderDeposits(
             deposits
         ) {
-
 
             const depositsList =
                 document.getElementById(
@@ -1774,7 +1660,6 @@ document.addEventListener(
                 0
 
             ) {
-
 
                 depositsList.innerHTML = `
 
@@ -1808,14 +1693,15 @@ document.addEventListener(
                         deposit
                     ) {
 
-
                         const depositId =
 
                             deposit.id ||
 
                             deposit.deposit_id ||
 
-                            deposit.public_deposit_id;
+                            deposit.public_deposit_id ||
+
+                            "";
 
 
                         const name =
@@ -1823,6 +1709,8 @@ document.addEventListener(
                             deposit.user_name ||
 
                             deposit.full_name ||
+
+                            deposit.user_full_name ||
 
                             deposit.name ||
 
@@ -1841,20 +1729,20 @@ document.addEventListener(
 
 
                         const amount =
+
                             deposit.amount ||
+
+                            deposit.deposit_amount ||
+
                             0;
 
 
                         const status =
+
                             deposit.status ||
+
                             "pending";
 
-
-                        /*
-                        ------------------------------------------------------
-                        UTR / PAYMENT REFERENCE
-                        ------------------------------------------------------
-                        */
 
                         const utr =
 
@@ -1868,14 +1756,10 @@ document.addEventListener(
 
                             deposit.payment_reference ||
 
+                            deposit.reference_number ||
+
                             "Not provided";
 
-
-                        /*
-                        ------------------------------------------------------
-                        PAYMENT METHOD
-                        ------------------------------------------------------
-                        */
 
                         const paymentMethod =
 
@@ -1886,26 +1770,16 @@ document.addEventListener(
                             "UPI";
 
 
-                        /*
-                        ------------------------------------------------------
-                        UPI ID
-                        ------------------------------------------------------
-                        */
-
                         const upiId =
 
                             deposit.upi_id ||
 
                             deposit.payment_upi_id ||
 
+                            deposit.sender_upi_id ||
+
                             "—";
 
-
-                        /*
-                        ------------------------------------------------------
-                        QR / PAYMENT PROOF
-                        ------------------------------------------------------
-                        */
 
                         const proofUrl =
 
@@ -1915,7 +1789,7 @@ document.addEventListener(
 
                             deposit.screenshot_url ||
 
-                            deposit.qr_image_url ||
+                            deposit.payment_screenshot_url ||
 
                             null;
 
@@ -1928,7 +1802,15 @@ document.addEventListener(
 
                             deposit.requested_at ||
 
+                            deposit.requestedAt ||
+
                             null;
+
+
+                        const safeDepositId =
+                            escapeAttribute(
+                                depositId
+                            );
 
 
                         return `
@@ -1942,7 +1824,6 @@ document.addEventListener(
                                     border-radius:24px;
                                 "
                             >
-
 
                                 <div
                                     style="
@@ -1961,16 +1842,20 @@ document.addEventListener(
                                                 font-size:22px;
                                             "
                                         >
+
                                             ${escapeHtml(
                                                 name
                                             )}
+
                                         </strong>
 
 
                                         <p>
+
                                             ${escapeHtml(
                                                 email
                                             )}
+
                                         </p>
 
                                     </div>
@@ -1979,11 +1864,13 @@ document.addEventListener(
                                     <div>
 
                                         <strong>
+
                                             ${escapeHtml(
                                                 String(
                                                     status
                                                 )
                                             )}
+
                                         </strong>
 
                                     </div>
@@ -2147,9 +2034,7 @@ document.addEventListener(
                                     <button
                                         type="button"
                                         class="deposit-approve-button"
-                                        data-deposit-id="${escapeAttribute(
-                                            depositId
-                                        )}"
+                                        data-deposit-id="${safeDepositId}"
                                     >
 
                                         ✓ Approve Deposit
@@ -2160,9 +2045,7 @@ document.addEventListener(
                                     <button
                                         type="button"
                                         class="deposit-reject-button"
-                                        data-deposit-id="${escapeAttribute(
-                                            depositId
-                                        )}"
+                                        data-deposit-id="${safeDepositId}"
                                     >
 
                                         ✕ Reject Deposit
@@ -2170,7 +2053,6 @@ document.addEventListener(
                                     </button>
 
                                 </div>
-
 
                             </div>
 
@@ -2188,96 +2070,78 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | DEPOSIT BUTTONS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           DEPOSIT BUTTON EVENTS
+        ================================================= */
 
         function bindDepositActionButtons() {
 
-
-            const approveButtons =
-                document.querySelectorAll(
+            document
+                .querySelectorAll(
                     ".deposit-approve-button"
+                )
+                .forEach(
+                    function (
+                        button
+                    ) {
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+
+                                approveDeposit(
+
+                                    button.dataset.depositId,
+
+                                    button
+
+                                );
+
+                            }
+                        );
+
+                    }
                 );
 
 
-            const rejectButtons =
-                document.querySelectorAll(
+            document
+                .querySelectorAll(
                     ".deposit-reject-button"
+                )
+                .forEach(
+                    function (
+                        button
+                    ) {
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+
+                                rejectDeposit(
+
+                                    button.dataset.depositId,
+
+                                    button
+
+                                );
+
+                            }
+                        );
+
+                    }
                 );
-
-
-            approveButtons.forEach(
-                function (
-                    button
-                ) {
-
-
-                    button.addEventListener(
-                        "click",
-                        function () {
-
-
-                            const depositId =
-                                button.dataset.depositId;
-
-
-                            approveDeposit(
-                                depositId,
-                                button
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-
-            rejectButtons.forEach(
-                function (
-                    button
-                ) {
-
-
-                    button.addEventListener(
-                        "click",
-                        function () {
-
-
-                            const depositId =
-                                button.dataset.depositId;
-
-
-                            rejectDeposit(
-                                depositId,
-                                button
-                            );
-
-                        }
-                    );
-
-                }
-            );
 
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | APPROVE DEPOSIT
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           APPROVE DEPOSIT
+        ================================================= */
 
         async function approveDeposit(
             depositId,
             button
         ) {
-
 
             if (
                 !depositId
@@ -2328,15 +2192,15 @@ document.addEventListener(
 
             try {
 
+                /*
+                ---------------------------------------------
+                EXACT BACKEND ENDPOINT:
+                POST /api/admin/deposits/:depositId/approve
+                ---------------------------------------------
+                */
 
-                const apiUrl =
-                    getApiUrl();
-
-
-                const response =
-                    await fetch(
-
-                        apiUrl +
+                const data =
+                    await window.apiRequest(
 
                         "/api/admin/deposits/" +
 
@@ -2351,49 +2215,19 @@ document.addEventListener(
                             method:
                                 "POST",
 
-                            headers:
-                                getHeaders(),
-
                             body:
-                                JSON.stringify(
-                                    {}
-                                )
+                                {}
 
                         }
 
                     );
 
 
-                const data =
-                    await getResponseData(
-                        response
-                    );
-
-
-                if (
-                    !response.ok
-                ) {
-
-                    throw new Error(
-
-                        getErrorMessage(
-
-                            data,
-
-                            "Deposit approval failed"
-
-                        )
-
-                    );
-
-                }
-
-
                 showMessage(
 
                     data?.message ||
 
-                    "Deposit approved successfully. Customer status is now successful.",
+                    "Deposit approved successfully.",
 
                     "success"
 
@@ -2402,22 +2236,27 @@ document.addEventListener(
 
                 await loadDeposits();
 
+            }
 
-            } catch (
+            catch (
                 error
             ) {
 
-
                 console.error(
+                    "APPROVE DEPOSIT ERROR:",
                     error
                 );
 
 
                 showMessage(
 
-                    error.message ||
+                    getApiErrorMessage(
 
-                    "Deposit approval failed.",
+                        error,
+
+                        "Deposit approval failed."
+
+                    ),
 
                     "error"
 
@@ -2436,18 +2275,14 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | REJECT DEPOSIT
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           REJECT DEPOSIT
+        ================================================= */
 
         async function rejectDeposit(
             depositId,
             button
         ) {
-
 
             if (
                 !depositId
@@ -2518,15 +2353,15 @@ document.addEventListener(
 
             try {
 
+                /*
+                ---------------------------------------------
+                EXACT BACKEND ENDPOINT:
+                POST /api/admin/deposits/:depositId/reject
+                ---------------------------------------------
+                */
 
-                const apiUrl =
-                    getApiUrl();
-
-
-                const response =
-                    await fetch(
-
-                        apiUrl +
+                const data =
+                    await window.apiRequest(
 
                         "/api/admin/deposits/" +
 
@@ -2541,46 +2376,23 @@ document.addEventListener(
                             method:
                                 "POST",
 
-                            headers:
-                                getHeaders(),
-
                             body:
-                                JSON.stringify({
+
+                                {
 
                                     reason:
-                                        reason ||
+                                        String(
+                                            reason ||
+                                            ""
+                                        )
+                                        .trim() ||
                                         null
 
-                                })
+                                }
 
                         }
 
                     );
-
-
-                const data =
-                    await getResponseData(
-                        response
-                    );
-
-
-                if (
-                    !response.ok
-                ) {
-
-                    throw new Error(
-
-                        getErrorMessage(
-
-                            data,
-
-                            "Deposit rejection failed"
-
-                        )
-
-                    );
-
-                }
 
 
                 showMessage(
@@ -2596,22 +2408,27 @@ document.addEventListener(
 
                 await loadDeposits();
 
+            }
 
-            } catch (
+            catch (
                 error
             ) {
 
-
                 console.error(
+                    "REJECT DEPOSIT ERROR:",
                     error
                 );
 
 
                 showMessage(
 
-                    error.message ||
+                    getApiErrorMessage(
 
-                    "Deposit rejection failed.",
+                        error,
+
+                        "Deposit rejection failed."
+
+                    ),
 
                     "error"
 
@@ -2630,12 +2447,9 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | REFRESH USERS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           REFRESH USERS
+        ================================================= */
 
         const refreshUsersButton =
             document.getElementById(
@@ -2662,12 +2476,9 @@ document.addEventListener(
         }
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | REFRESH DEPOSITS
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           REFRESH DEPOSITS
+        ================================================= */
 
         const refreshDepositsButton =
             document.getElementById(
@@ -2694,71 +2505,33 @@ document.addEventListener(
         }
 
 
+        /* =================================================
+           LOGOUT
+        ================================================= */
 
         /*
-        |--------------------------------------------------------------------------
-        | LOGOUT
-        |--------------------------------------------------------------------------
+        auth.js already handles:
+
+        [data-action="logout"]
+
+        Therefore we do not create another
+        conflicting logout listener here.
         */
 
-        const logoutButton =
-            document.getElementById(
-                "logoutButton"
-            );
 
-
-        if (
-            logoutButton
-        ) {
-
-
-            logoutButton.addEventListener(
-
-                "click",
-
-                function () {
-
-
-                    localStorage.removeItem(
-                        "skilllearn_user"
-                    );
-
-
-                    localStorage.removeItem(
-                        "skilllearn_token"
-                    );
-
-
-                    localStorage.removeItem(
-                        "token"
-                    );
-
-
-                    window.location.href =
-                        "../login.html";
-
-                }
-
-            );
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | INITIALIZE
-        |--------------------------------------------------------------------------
-        */
+        /* =================================================
+           INITIALIZATION
+        ================================================= */
 
         loadAdminProfile();
 
 
         const hash =
-            window.location.hash.replace(
-                "#",
-                ""
-            );
+            window.location.hash
+                .replace(
+                    "#",
+                    ""
+                );
 
 
         if (
@@ -2778,42 +2551,40 @@ document.addEventListener(
         }
 
 
-        /*
-        --------------------------------------------------------------
-        AUTO LOAD ACTIVE SECTION
-        --------------------------------------------------------------
-        */
+        else {
 
-        const activeSection =
-            document.querySelector(
-                ".dashboard-section.active-section"
-            );
+            const activeSection =
+                document.querySelector(
+                    ".dashboard-section.active-section"
+                );
 
 
-        if (
+            if (
 
-            activeSection &&
+                activeSection &&
 
-            activeSection.id ===
-            "deposits"
+                activeSection.id ===
+                "users"
 
-        ) {
+            ) {
 
-            loadDeposits();
+                loadUsers();
 
-        }
+            }
 
 
-        if (
+            if (
 
-            activeSection &&
+                activeSection &&
 
-            activeSection.id ===
-            "users"
+                activeSection.id ===
+                "deposits"
 
-        ) {
+            ) {
 
-            loadUsers();
+                loadDeposits();
+
+            }
 
         }
 

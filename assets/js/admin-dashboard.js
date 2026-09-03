@@ -2,10 +2,12 @@
 
 
 /* =========================================================
-   ADMIN ELEMENT
+   ELEMENT
 ========================================================= */
 
-function adminElement(id) {
+function adminElement(
+    id
+) {
 
     return document.getElementById(
         id
@@ -13,6 +15,11 @@ function adminElement(id) {
 
 }
 
+
+
+/* =========================================================
+   SET TEXT
+========================================================= */
 
 function setAdminText(
     id,
@@ -26,7 +33,9 @@ function setAdminText(
 
 
     if (!element) {
+
         return;
+
     }
 
 
@@ -34,13 +43,16 @@ function setAdminText(
 
         value !== undefined &&
         value !== null &&
-        String(value).trim()
+        String(
+            value
+        ).trim()
 
             ? value
 
             : "—";
 
 }
+
 
 
 /* =========================================================
@@ -56,6 +68,7 @@ function redirectToLogin() {
 }
 
 
+
 /* =========================================================
    GET SAVED ADMIN
 ========================================================= */
@@ -63,8 +76,10 @@ function redirectToLogin() {
 function getSavedAdmin() {
 
     if (
+
         typeof window.getSavedUser !==
         "function"
+
     ) {
 
         return null;
@@ -77,7 +92,9 @@ function getSavedAdmin() {
 
 
     if (!user) {
+
         return null;
+
     }
 
 
@@ -110,6 +127,7 @@ function getSavedAdmin() {
 }
 
 
+
 /* =========================================================
    RENDER ADMIN
 ========================================================= */
@@ -119,7 +137,9 @@ function renderAdmin(
 ) {
 
     if (!user) {
+
         return;
+
     }
 
 
@@ -196,15 +216,12 @@ function renderAdmin(
 }
 
 
+
 /* =========================================================
    LOAD ADMIN
 ========================================================= */
 
 async function loadAdminDashboard() {
-
-    /*
-       Show saved admin immediately.
-    */
 
     const savedAdmin =
         getSavedAdmin();
@@ -227,10 +244,8 @@ async function loadAdminDashboard() {
                 "/api/auth/me",
 
                 {
-
                     method:
                         "GET"
-
                 }
 
             );
@@ -298,10 +313,6 @@ async function loadAdminDashboard() {
         );
 
 
-        /*
-           If token is invalid, login again.
-        */
-
         if (
 
             error?.status === 401 ||
@@ -319,11 +330,6 @@ async function loadAdminDashboard() {
         }
 
 
-        /*
-           Network problem:
-           Keep saved admin visible.
-        */
-
         if (!savedAdmin) {
 
             redirectToLogin();
@@ -335,11 +341,163 @@ async function loadAdminDashboard() {
 }
 
 
+
 /* =========================================================
-   ADMIN NAVIGATION
+   MOBILE MENU
 ========================================================= */
 
-function setupAdminNavigation() {
+function setupMobileMenu() {
+
+    const button =
+        adminElement(
+            "mobileMenuButton"
+        );
+
+
+    const sidebar =
+        adminElement(
+            "dashboardSidebar"
+        );
+
+
+    const overlay =
+        adminElement(
+            "sidebarOverlay"
+        );
+
+
+    if (
+
+        !button ||
+
+        !sidebar ||
+
+        !overlay
+
+    ) {
+
+        return;
+
+    }
+
+
+    function openMenu() {
+
+        sidebar.classList.add(
+            "open"
+        );
+
+
+        overlay.classList.add(
+            "visible"
+        );
+
+    }
+
+
+    function closeMenu() {
+
+        sidebar.classList.remove(
+            "open"
+        );
+
+
+        overlay.classList.remove(
+            "visible"
+        );
+
+    }
+
+
+    button.addEventListener(
+
+        "click",
+
+        function () {
+
+            if (
+
+                sidebar.classList.contains(
+                    "open"
+                )
+
+            ) {
+
+                closeMenu();
+
+            } else {
+
+                openMenu();
+
+            }
+
+        }
+
+    );
+
+
+    overlay.addEventListener(
+
+        "click",
+
+        closeMenu
+
+    );
+
+
+    return {
+
+        closeMenu
+
+    };
+
+}
+
+
+
+/* =========================================================
+   SHOW SECTION
+========================================================= */
+
+function showAdminSection(
+    targetId
+) {
+
+    const sections =
+        document.querySelectorAll(
+            ".dashboard-section"
+        );
+
+
+    sections.forEach(
+
+        function (
+            section
+        ) {
+
+            section.classList.remove(
+                "active-section"
+            );
+
+        }
+
+    );
+
+
+    const target =
+        document.getElementById(
+            targetId
+        );
+
+
+    if (target) {
+
+        target.classList.add(
+            "active-section"
+        );
+
+    }
+
 
     const items =
         document.querySelectorAll(
@@ -349,13 +507,94 @@ function setupAdminNavigation() {
 
     items.forEach(
 
-        function (item) {
+        function (
+            item
+        ) {
+
+            const href =
+                item.getAttribute(
+                    "href"
+                );
+
+
+            if (
+
+                href ===
+                "#" + targetId
+
+            ) {
+
+                item.classList.add(
+                    "active"
+                );
+
+            } else {
+
+                item.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+
+    );
+
+
+    history.replaceState(
+
+        null,
+
+        "",
+
+        "#" +
+        targetId
+
+    );
+
+
+    if (
+
+        targetId ===
+        "users"
+
+    ) {
+
+        loadUsers();
+
+    }
+
+}
+
+
+
+/* =========================================================
+   ADMIN NAVIGATION
+========================================================= */
+
+function setupAdminNavigation(
+    mobileMenu
+) {
+
+    const items =
+        document.querySelectorAll(
+            ".dashboard-nav a[href^='#']"
+        );
+
+
+    items.forEach(
+
+        function (
+            item
+        ) {
 
             item.addEventListener(
 
                 "click",
 
-                function (event) {
+                function (
+                    event
+                ) {
 
                     event.preventDefault();
 
@@ -371,65 +610,22 @@ function setupAdminNavigation() {
                             );
 
 
-                    const target =
-                        document.getElementById(
-                            targetId
-                        );
-
-
-                    if (!target) {
-                        return;
-                    }
-
-
-                    document
-                        .querySelectorAll(
-                            ".dashboard-content section"
-                        )
-                        .forEach(
-
-                            function (section) {
-
-                                section.style.display =
-                                    "none";
-
-                            }
-
-                        );
-
-
-                    target.style.display =
-                        "block";
-
-
-                    items.forEach(
-
-                        function (nav) {
-
-                            nav.classList.remove(
-                                "active"
-                            );
-
-                        }
-
-                    );
-
-
-                    item.classList.add(
-                        "active"
-                    );
-
-
-                    history.replaceState(
-
-                        null,
-
-                        "",
-
-                        "#" +
+                    showAdminSection(
                         targetId
-
                     );
+
+
+                    if (
+
+                        mobileMenu &&
+                        typeof mobileMenu.closeMenu ===
+                        "function"
+
+                    ) {
+
+                        mobileMenu.closeMenu();
+
+                    }
 
                 }
 
@@ -440,32 +636,368 @@ function setupAdminNavigation() {
     );
 
 
-    const sections =
-        document.querySelectorAll(
-            ".dashboard-content section"
+    const hash =
+        window.location.hash
+            .replace(
+                "#",
+                ""
+            );
+
+
+    if (
+
+        hash === "users" ||
+
+        hash === "deposits" ||
+
+        hash === "overview"
+
+    ) {
+
+        showAdminSection(
+            hash
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   USERS MESSAGE
+========================================================= */
+
+function showUsersMessage(
+    message
+) {
+
+    const element =
+        adminElement(
+            "usersMessage"
         );
 
 
-    sections.forEach(
+    if (!element) {
 
-        function (
-            section,
-            index
+        return;
+
+    }
+
+
+    if (!message) {
+
+        element.style.display =
+            "none";
+
+        element.textContent =
+            "";
+
+        return;
+
+    }
+
+
+    element.style.display =
+        "block";
+
+
+    element.textContent =
+        message;
+
+}
+
+
+
+/* =========================================================
+   LOAD USERS
+========================================================= */
+
+async function loadUsers() {
+
+    const usersList =
+        adminElement(
+            "usersList"
+        );
+
+
+    if (!usersList) {
+
+        return;
+
+    }
+
+
+    usersList.innerHTML =
+
+        `
+        <div class="empty-state">
+
+            <strong>
+                Loading users...
+            </strong>
+
+            <p>
+                Please wait.
+            </p>
+
+        </div>
+        `;
+
+
+    showUsersMessage(
+        ""
+    );
+
+
+    try {
+
+        const result =
+            await window.apiRequest(
+
+                "/api/admin/users",
+
+                {
+                    method:
+                        "GET"
+                }
+
+            );
+
+
+        const users =
+            Array.isArray(
+                result?.users
+            )
+
+                ? result.users
+
+                : [];
+
+
+        if (
+            users.length === 0
         ) {
 
-            section.style.display =
+            usersList.innerHTML =
 
-                index === 0
+                `
+                <div class="empty-state">
 
-                    ? "block"
+                    <strong>
+                        No users found
+                    </strong>
 
-                    : "none";
+                    <p>
+                        There are currently no users.
+                    </p>
+
+                </div>
+                `;
+
+
+            return;
+
+        }
+
+
+        usersList.innerHTML =
+            "";
+
+
+        users.forEach(
+
+            function (
+                user
+            ) {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                card.className =
+                    "content-card";
+
+
+                const name =
+
+                    user.full_name ||
+
+                    user.fullName ||
+
+                    "Unknown User";
+
+
+                const email =
+
+                    user.email ||
+
+                    "—";
+
+
+                const publicUserId =
+
+                    user.public_user_id ||
+
+                    user.publicUserId ||
+
+                    "—";
+
+
+                const status =
+
+                    user.account_status ||
+
+                    "unknown";
+
+
+                card.innerHTML =
+
+                    `
+                    <strong>
+                        ${escapeHtml(name)}
+                    </strong>
+
+                    <p>
+                        ${escapeHtml(email)}
+                    </p>
+
+                    <p>
+                        User ID:
+                        ${escapeHtml(publicUserId)}
+                    </p>
+
+                    <p>
+                        Status:
+                        ${escapeHtml(status)}
+                    </p>
+                    `;
+
+
+                usersList.appendChild(
+                    card
+                );
+
+            }
+
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "LOAD USERS ERROR:",
+            error
+        );
+
+
+        usersList.innerHTML =
+
+            `
+            <div class="empty-state">
+
+                <strong>
+                    Unable to load users
+                </strong>
+
+                <p>
+                    Please try again.
+                </p>
+
+            </div>
+            `;
+
+
+        showUsersMessage(
+            error?.message ||
+            "Users could not be loaded."
+        );
+
+    }
+
+}
+
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(
+    value
+) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.textContent =
+        value === undefined ||
+        value === null
+
+            ? ""
+
+            : String(
+                value
+            );
+
+
+    return div.innerHTML;
+
+}
+
+
+
+/* =========================================================
+   REFRESH USERS
+========================================================= */
+
+function setupUsersRefresh() {
+
+    const button =
+        adminElement(
+            "refreshUsersButton"
+        );
+
+
+    if (!button) {
+
+        return;
+
+    }
+
+
+    button.addEventListener(
+
+        "click",
+
+        async function () {
+
+            button.disabled =
+                true;
+
+
+            try {
+
+                await loadUsers();
+
+            } finally {
+
+                button.disabled =
+                    false;
+
+            }
 
         }
 
     );
 
 }
+
 
 
 /* =========================================================
@@ -481,7 +1013,9 @@ function setupAdminLogout() {
 
 
     if (!button) {
+
         return;
+
     }
 
 
@@ -502,10 +1036,8 @@ function setupAdminLogout() {
                     "/api/auth/logout",
 
                     {
-
                         method:
                             "POST"
-
                     }
 
                 );
@@ -532,6 +1064,7 @@ function setupAdminLogout() {
 }
 
 
+
 /* =========================================================
    INITIALIZE
 ========================================================= */
@@ -542,9 +1075,20 @@ document.addEventListener(
 
     async function () {
 
-        setupAdminNavigation();
+        const mobileMenu =
+            setupMobileMenu();
+
+
+        setupAdminNavigation(
+            mobileMenu
+        );
+
 
         setupAdminLogout();
+
+
+        setupUsersRefresh();
+
 
         await loadAdminDashboard();
 

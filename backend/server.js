@@ -7,7 +7,9 @@
 |--------------------------------------------------------------------------
 */
 
-require("dotenv").config();
+require(
+    "dotenv"
+).config();
 
 
 /*
@@ -17,19 +19,27 @@ require("dotenv").config();
 */
 
 const express =
-    require("express");
+    require(
+        "express"
+    );
 
 
 const helmet =
-    require("helmet");
+    require(
+        "helmet"
+    );
 
 
 const cors =
-    require("cors");
+    require(
+        "cors"
+    );
 
 
 const cookieParser =
-    require("cookie-parser");
+    require(
+        "cookie-parser"
+    );
 
 
 /*
@@ -87,6 +97,193 @@ const adminDepositRequestsRoutes =
 
 /*
 |--------------------------------------------------------------------------
+| ROUTE MODULE NORMALIZER
+|--------------------------------------------------------------------------
+|
+| Supports:
+|
+| module.exports = router;
+|
+| module.exports = {
+|     router
+| };
+|
+| module.exports = {
+|     default: router
+| };
+|
+|--------------------------------------------------------------------------
+*/
+
+function getExpressRouter(
+    routeModule,
+    routeName
+) {
+
+    /*
+    ----------------------------------------------------------
+    Direct Router export
+    ----------------------------------------------------------
+    */
+
+    if (
+        typeof routeModule ===
+        "function"
+    ) {
+
+        return routeModule;
+
+    }
+
+
+    /*
+    ----------------------------------------------------------
+    Object containing router
+    ----------------------------------------------------------
+    */
+
+    if (
+
+        routeModule &&
+
+        typeof routeModule.router ===
+        "function"
+
+    ) {
+
+        return routeModule.router;
+
+    }
+
+
+    /*
+    ----------------------------------------------------------
+    Default export containing router
+    ----------------------------------------------------------
+    */
+
+    if (
+
+        routeModule &&
+
+        typeof routeModule.default ===
+        "function"
+
+    ) {
+
+        return routeModule.default;
+
+    }
+
+
+    /*
+    ----------------------------------------------------------
+    Invalid export
+    ----------------------------------------------------------
+    */
+
+    console.error(
+        "========================================"
+    );
+
+
+    console.error(
+        "INVALID ROUTE EXPORT DETECTED"
+    );
+
+
+    console.error(
+        "Route file:",
+        routeName
+    );
+
+
+    console.error(
+        "Received type:",
+        typeof routeModule
+    );
+
+
+    console.error(
+        "Received value:",
+        routeModule
+    );
+
+
+    console.error(
+        "========================================"
+    );
+
+
+    throw new TypeError(
+
+        "Invalid Express Router export from " +
+        routeName +
+        ". The route file must export an Express router."
+
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| NORMALIZE ROUTES
+|--------------------------------------------------------------------------
+*/
+
+const normalizedAuthRoutes =
+    getExpressRouter(
+
+        authRoutes,
+
+        "./src/routes/auth.routes"
+
+    );
+
+
+const normalizedDepositRoutes =
+    getExpressRouter(
+
+        depositRoutes,
+
+        "./src/routes/deposit.routes"
+
+    );
+
+
+const normalizedWithdrawalRoutes =
+    getExpressRouter(
+
+        withdrawalRoutes,
+
+        "./src/routes/withdrawal.routes"
+
+    );
+
+
+const normalizedAdminUsersRoutes =
+    getExpressRouter(
+
+        adminUsersRoutes,
+
+        "./src/routes/admin-users.routes"
+
+    );
+
+
+const normalizedAdminDepositRoutes =
+    getExpressRouter(
+
+        adminDepositRequestsRoutes,
+
+        "./src/routes/admin-deposit.routes"
+
+    );
+
+
+/*
+|--------------------------------------------------------------------------
 | SECURITY
 |--------------------------------------------------------------------------
 */
@@ -95,6 +292,12 @@ app.disable(
     "x-powered-by"
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| TRUST PROXY
+|--------------------------------------------------------------------------
+*/
 
 app.set(
     "trust proxy",
@@ -127,19 +330,19 @@ app.use(
 */
 
 const configuredOrigins =
-
     [
 
         process.env.FRONTEND_ORIGIN,
 
         ...String(
+
             process.env.FRONTEND_ORIGINS ||
             ""
+
         )
         .split(",")
 
     ]
-
     .map(
 
         function (
@@ -147,8 +350,10 @@ const configuredOrigins =
         ) {
 
             return String(
+
                 origin ||
                 ""
+
             )
             .trim()
             .replace(
@@ -159,7 +364,6 @@ const configuredOrigins =
         }
 
     )
-
     .filter(
         Boolean
     );
@@ -167,12 +371,11 @@ const configuredOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| DEVELOPMENT ORIGINS
+| LOCAL DEVELOPMENT ORIGINS
 |--------------------------------------------------------------------------
 */
 
 const developmentOrigins =
-
     [
 
         "http://localhost:3000",
@@ -197,7 +400,6 @@ const developmentOrigins =
 */
 
 const allowedOrigins =
-
     Array.from(
 
         new Set(
@@ -230,7 +432,7 @@ const allowedOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| CORS VALIDATION
+| CORS ORIGIN VALIDATION
 |--------------------------------------------------------------------------
 */
 
@@ -241,10 +443,10 @@ function validateCorsOrigin(
 
 
     /*
-    ----------------------------------------------------------
+    ---------------------------------------------------------
     Requests without Origin:
-    Render health checks, curl, Postman, server-to-server
-    ----------------------------------------------------------
+    Render health checks, curl, Postman, server-to-server.
+    ---------------------------------------------------------
     */
 
     if (
@@ -260,13 +462,10 @@ function validateCorsOrigin(
 
 
     const normalizedOrigin =
-
         String(
             origin
         )
-
         .trim()
-
         .replace(
             /\/+$/,
             ""
@@ -274,9 +473,9 @@ function validateCorsOrigin(
 
 
     /*
-    ----------------------------------------------------------
-    Allow configured frontend origins
-    ----------------------------------------------------------
+    ---------------------------------------------------------
+    Allowed configured origin
+    ---------------------------------------------------------
     */
 
     if (
@@ -296,9 +495,9 @@ function validateCorsOrigin(
 
 
     /*
-    ----------------------------------------------------------
+    ---------------------------------------------------------
     Development fallback
-    ----------------------------------------------------------
+    ---------------------------------------------------------
     */
 
     if (
@@ -342,61 +541,62 @@ function validateCorsOrigin(
 |--------------------------------------------------------------------------
 */
 
-const corsOptions = {
+const corsOptions =
+    {
 
-    origin:
-        validateCorsOrigin,
-
-
-    credentials:
-        true,
+        origin:
+            validateCorsOrigin,
 
 
-    methods:
-
-        [
-
-            "GET",
-
-            "POST",
-
-            "PUT",
-
-            "PATCH",
-
-            "DELETE",
-
-            "OPTIONS"
-
-        ],
+        credentials:
+            true,
 
 
-    allowedHeaders:
+        methods:
 
-        [
+            [
 
-            "Content-Type",
+                "GET",
 
-            "Authorization",
+                "POST",
 
-            "Accept"
+                "PUT",
 
-        ],
+                "PATCH",
 
+                "DELETE",
 
-    exposedHeaders:
+                "OPTIONS"
 
-        [
-
-            "Content-Type"
-
-        ],
+            ],
 
 
-    optionsSuccessStatus:
-        204
+        allowedHeaders:
 
-};
+            [
+
+                "Content-Type",
+
+                "Authorization",
+
+                "Accept"
+
+            ],
+
+
+        exposedHeaders:
+
+            [
+
+                "Content-Type"
+
+            ],
+
+
+        optionsSuccessStatus:
+            204
+
+    };
 
 
 /*
@@ -472,7 +672,6 @@ app.use(
         next
     ) {
 
-
         if (
 
             process.env.NODE_ENV !==
@@ -511,8 +710,10 @@ app.get(
         res
     ) {
 
-
-        return res.status(200).json({
+        return res.status(
+            200
+        )
+        .json({
 
             success:
                 true,
@@ -545,8 +746,10 @@ app.get(
         res
     ) {
 
-
-        return res.status(200).json({
+        return res.status(
+            200
+        )
+        .json({
 
             success:
                 true,
@@ -579,7 +782,7 @@ app.use(
 
     "/api/auth",
 
-    authRoutes
+    normalizedAuthRoutes
 
 );
 
@@ -594,7 +797,7 @@ app.use(
 
     "/api/deposits",
 
-    depositRoutes
+    normalizedDepositRoutes
 
 );
 
@@ -609,7 +812,7 @@ app.use(
 
     "/api/withdrawals",
 
-    withdrawalRoutes
+    normalizedWithdrawalRoutes
 
 );
 
@@ -624,7 +827,7 @@ app.use(
 
     "/api/admin/users",
 
-    adminUsersRoutes
+    normalizedAdminUsersRoutes
 
 );
 
@@ -639,7 +842,7 @@ app.use(
 
     "/api/admin/deposits",
 
-    adminDepositRequestsRoutes
+    normalizedAdminDepositRoutes
 
 );
 
@@ -657,8 +860,10 @@ app.use(
         res
     ) {
 
-
-        return res.status(404).json({
+        return res.status(
+            404
+        )
+        .json({
 
             success:
                 false,
@@ -693,7 +898,6 @@ app.use(
         next
     ) {
 
-
         console.error(
 
             "UNHANDLED SERVER ERROR:",
@@ -715,9 +919,9 @@ app.use(
 
 
         /*
-        ------------------------------------------------------
+        -----------------------------------------------------
         CORS ERROR
-        ------------------------------------------------------
+        -----------------------------------------------------
         */
 
         if (
@@ -727,7 +931,10 @@ app.use(
 
         ) {
 
-            return res.status(403).json({
+            return res.status(
+                403
+            )
+            .json({
 
                 success:
                     false,
@@ -736,6 +943,7 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
+
                     "This frontend origin is not allowed to access the API."
 
             });
@@ -744,7 +952,6 @@ app.use(
 
 
         const rawStatus =
-
             Number(
 
                 err?.status ||
@@ -772,11 +979,9 @@ app.use(
 
 
         return res
-
             .status(
                 statusCode
             )
-
             .json({
 
                 success:
@@ -839,9 +1044,7 @@ app.listen(
 
 
         console.log(
-
             `Port: ${PORT}`
-
         );
 
 
@@ -870,7 +1073,11 @@ app.listen(
 
                 :
 
-                "No frontend origin configured"
+                [
+
+                    "No frontend origin configured"
+
+                ]
 
         );
 
@@ -886,9 +1093,7 @@ app.listen(
 
 
         console.log(
-
             `http://localhost:${PORT}/`
-
         );
 
 
@@ -898,9 +1103,7 @@ app.listen(
 
 
         console.log(
-
             `http://localhost:${PORT}/api/health`
-
         );
 
 
@@ -910,9 +1113,7 @@ app.listen(
 
 
         console.log(
-
             `http://localhost:${PORT}/api/admin/users`
-
         );
 
 
@@ -922,9 +1123,7 @@ app.listen(
 
 
         console.log(
-
             `http://localhost:${PORT}/api/admin/deposits/pending`
-
         );
 
 

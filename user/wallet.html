@@ -282,7 +282,79 @@
 
 <main class="dashboard-main">
 
+<section class="wallet-balance-section">
 
+    <div class="section-heading">
+
+        <p>
+            CURRENT BALANCE
+        </p>
+
+        <h2>
+            Wallet Balance
+        </h2>
+
+    </div>
+
+
+    <div class="wallet-balance-card">
+
+        <p class="balance-label">
+            Available Balance
+        </p>
+
+        <h2
+            id="walletBalance"
+        >
+            Loading...
+        </h2>
+
+
+        <p>
+
+            Pending:
+
+            <span
+                id="pendingBalance"
+            >
+                Loading...
+            </span>
+
+        </p>
+
+    </div>
+
+</section>
+
+
+<section class="transactions-section">
+
+    <div class="section-heading">
+
+        <p>
+            PAYMENT HISTORY
+        </p>
+
+        <h2>
+            Recent Transactions
+        </h2>
+
+    </div>
+
+
+    <div
+        id="transactionList"
+    >
+
+        <p>
+            Loading transactions...
+        </p>
+
+    </div>
+
+</section>
+
+    
     <!-- HERO -->
 
     <section class="hero-card">
@@ -1207,3 +1279,370 @@ document.addEventListener(
 </body>
 
 </html>
+
+
+<script src="../assets/js/config.js"></script>
+
+<script src="../assets/js/auth.js"></script>
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+
+        try {
+
+            /*
+            --------------------------------------------------
+            API BASE URL
+            --------------------------------------------------
+            */
+
+            const API_BASE_URL =
+                window.API_BASE_URL ||
+                window.API_URL ||
+                "http://localhost:8080";
+
+
+            /*
+            --------------------------------------------------
+            GET TOKEN
+            --------------------------------------------------
+            */
+
+            const token =
+                localStorage.getItem(
+                    "accessToken"
+                ) ||
+                localStorage.getItem(
+                    "token"
+                );
+
+
+            /*
+            --------------------------------------------------
+            AUTH HEADERS
+            --------------------------------------------------
+            */
+
+            const headers =
+                {
+
+                    "Content-Type":
+                        "application/json"
+
+                };
+
+
+            if (
+                token
+            ) {
+
+                headers.Authorization =
+                    `Bearer ${token}`;
+
+            }
+
+
+            /*
+            --------------------------------------------------
+            LOAD WALLET
+            --------------------------------------------------
+            */
+
+            const walletResponse =
+                await fetch(
+
+                    `${API_BASE_URL}/api/wallet`,
+
+                    {
+
+                        method:
+                            "GET",
+
+                        headers:
+                            headers,
+
+                        credentials:
+                            "include"
+
+                    }
+
+                );
+
+
+            const walletData =
+                await walletResponse.json();
+
+
+            if (
+                !walletResponse.ok
+            ) {
+
+                throw new Error(
+
+                    walletData.message ||
+                    "Unable to load wallet"
+
+                );
+
+            }
+
+
+            /*
+            --------------------------------------------------
+            DISPLAY WALLET BALANCE
+            --------------------------------------------------
+            */
+
+            const wallet =
+                walletData.wallet;
+
+
+            const currency =
+                wallet.currency ||
+                "INR";
+
+
+            const availableBalance =
+                Number(
+                    wallet.available_balance ||
+                    0
+                );
+
+
+            const pendingBalance =
+                Number(
+                    wallet.pending_balance ||
+                    0
+                );
+
+
+            document.getElementById(
+                "walletBalance"
+            ).textContent =
+
+                `${currency} ${availableBalance.toFixed(2)}`;
+
+
+            document.getElementById(
+                "pendingBalance"
+            ).textContent =
+
+                `${currency} ${pendingBalance.toFixed(2)}`;
+
+
+            /*
+            --------------------------------------------------
+            LOAD TRANSACTIONS
+            --------------------------------------------------
+            */
+
+            const transactionResponse =
+                await fetch(
+
+                    `${API_BASE_URL}/api/wallet/transactions`,
+
+                    {
+
+                        method:
+                            "GET",
+
+                        headers:
+                            headers,
+
+                        credentials:
+                            "include"
+
+                    }
+
+                );
+
+
+            const transactionData =
+                await transactionResponse.json();
+
+
+            if (
+                !transactionResponse.ok
+            ) {
+
+                throw new Error(
+
+                    transactionData.message ||
+                    "Unable to load transactions"
+
+                );
+
+            }
+
+
+            const transactions =
+                transactionData.transactions ||
+                [];
+
+
+            const transactionList =
+                document.getElementById(
+                    "transactionList"
+                );
+
+
+            /*
+            --------------------------------------------------
+            NO TRANSACTIONS
+            --------------------------------------------------
+            */
+
+            if (
+                transactions.length === 0
+            ) {
+
+                transactionList.innerHTML =
+                    `
+                    <p>
+                        No transactions found.
+                    </p>
+                    `;
+
+
+                return;
+
+            }
+
+
+            /*
+            --------------------------------------------------
+            DISPLAY TRANSACTIONS
+            --------------------------------------------------
+            */
+
+            transactionList.innerHTML =
+                transactions.map(
+
+                    function (
+                        transaction
+                    ) {
+
+                        const amount =
+                            Number(
+                                transaction.amount ||
+                                0
+                            );
+
+
+                        const date =
+                            transaction.created_at
+
+                                ?
+
+                                new Date(
+                                    transaction.created_at
+                                )
+                                .toLocaleString()
+
+                                :
+
+                                "Unknown date";
+
+
+                        return `
+
+                            <div class="transaction-card">
+
+                                <div>
+
+                                    <strong>
+
+                                        ${
+                                            transaction.transaction_type ||
+                                            "Transaction"
+                                        }
+
+                                    </strong>
+
+
+                                    <p>
+
+                                        ${
+                                            transaction.description ||
+                                            "Wallet transaction"
+                                        }
+
+                                    </p>
+
+
+                                    <small>
+
+                                        ${date}
+
+                                    </small>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+
+                                        ${
+                                            transaction.currency ||
+                                            currency
+                                        }
+
+                                        ${amount.toFixed(2)}
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    }
+
+                )
+                .join(
+                    ""
+                );
+
+
+        } catch (
+            error
+        ) {
+
+            console.error(
+                "WALLET PAGE ERROR:",
+                error
+            );
+
+
+            document.getElementById(
+                "walletBalance"
+            ).textContent =
+                "Unable to load";
+
+
+            document.getElementById(
+                "pendingBalance"
+            ).textContent =
+                "Unable to load";
+
+
+            document.getElementById(
+                "transactionList"
+            ).innerHTML =
+                `
+                <p>
+                    Unable to load transactions.
+                </p>
+                `;
+
+        }
+
+    }
+);
+
+</script>

@@ -19,28 +19,23 @@ const depositService =
 
 /*
 |--------------------------------------------------------------------------
-| MIDDLEWARE
+| AUTH + ADMIN MIDDLEWARE
 |--------------------------------------------------------------------------
 |
-| IMPORTANT:
-| इन require paths को अपने existing middleware file names के अनुसार
-| same रखें। नीचे common structure दिया गया है।
+| Your project exports both requireAuth and requireAdmin
+| from auth.middleware.js
 |
 */
 
 const {
-    requireAuth
+
+    requireAuth,
+
+    requireAdmin
+
 } =
     require(
         "../middleware/auth.middleware"
-    );
-
-
-const {
-    requireAdmin
-} =
-    require(
-        "../middleware/admin.middleware"
     );
 
 
@@ -73,7 +68,10 @@ router.get(
                     .getPendingDeposits();
 
 
-            return res.status(200).json({
+            return res.status(
+                200
+            )
+            .json({
 
                 success:
                     true,
@@ -88,23 +86,18 @@ router.get(
         ) {
 
             console.error(
+
                 "GET PENDING DEPOSITS ERROR:",
-                {
 
-                    message:
-                        error.message,
+                error
 
-                    code:
-                        error.code,
-
-                    detail:
-                        error.detail
-
-                }
             );
 
 
-            return res.status(500).json({
+            return res.status(
+                500
+            )
+            .json({
 
                 success:
                     false,
@@ -116,6 +109,7 @@ router.get(
                     "LOAD_DEPOSITS_FAILED",
 
                 message:
+
                     error.message ||
 
                     "Unable to load deposits."
@@ -165,7 +159,10 @@ router.post(
                 !depositId
             ) {
 
-                return res.status(400).json({
+                return res.status(
+                    400
+                )
+                .json({
 
                     success:
                         false,
@@ -185,7 +182,10 @@ router.post(
                 !adminUserId
             ) {
 
-                return res.status(401).json({
+                return res.status(
+                    401
+                )
+                .json({
 
                     success:
                         false,
@@ -212,7 +212,10 @@ router.post(
                     });
 
 
-            return res.status(200).json({
+            return res.status(
+                200
+            )
+            .json({
 
                 success:
                     true,
@@ -230,7 +233,9 @@ router.post(
         ) {
 
             console.error(
+
                 "ADMIN APPROVE DEPOSIT ERROR:",
+
                 {
 
                     message:
@@ -252,6 +257,7 @@ router.post(
                         error.constraint
 
                 }
+
             );
 
 
@@ -364,7 +370,10 @@ router.post(
                 !depositId
             ) {
 
-                return res.status(400).json({
+                return res.status(
+                    400
+                )
+                .json({
 
                     success:
                         false,
@@ -384,7 +393,10 @@ router.post(
                 !adminUserId
             ) {
 
-                return res.status(401).json({
+                return res.status(
+                    401
+                )
+                .json({
 
                     success:
                         false,
@@ -413,7 +425,10 @@ router.post(
                     });
 
 
-            return res.status(200).json({
+            return res.status(
+                200
+            )
+            .json({
 
                 success:
                     true,
@@ -431,7 +446,9 @@ router.post(
         ) {
 
             console.error(
+
                 "ADMIN REJECT DEPOSIT ERROR:",
+
                 {
 
                     message:
@@ -444,10 +461,14 @@ router.post(
                         error.detail
 
                 }
+
             );
 
 
-            return res.status(400).json({
+            return res.status(
+                400
+            )
+            .json({
 
                 success:
                     false,

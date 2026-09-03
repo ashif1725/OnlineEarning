@@ -1,799 +1,625 @@
-"use strict";
+document.addEventListener("DOMContentLoaded", function () {
 
 
-/* =========================================================
-   ELEMENT
-========================================================= */
+    /* =========================================
+       ELEMENTS
+    ========================================= */
 
-function adminElement(
-    id
-) {
-
-    return document.getElementById(
-        id
+    const sidebar = document.getElementById(
+        "dashboardSidebar"
     );
 
-}
+
+    const overlay = document.getElementById(
+        "sidebarOverlay"
+    );
 
 
-
-/* =========================================================
-   SET TEXT
-========================================================= */
-
-function setAdminText(
-    id,
-    value
-) {
-
-    const element =
-        adminElement(
-            id
-        );
+    const mobileMenuButton = document.getElementById(
+        "mobileMenuButton"
+    );
 
 
-    if (!element) {
+    const navItems = document.querySelectorAll(
+        ".nav-item[data-section]"
+    );
 
-        return;
+
+    const sections = document.querySelectorAll(
+        ".dashboard-section"
+    );
+
+
+    const quickActionButtons = document.querySelectorAll(
+        "[data-open-section]"
+    );
+
+
+    /* =========================================
+       MOBILE MENU
+    ========================================= */
+
+    function openSidebar() {
+
+        if (sidebar) {
+
+            sidebar.classList.add("open");
+
+        }
+
+
+        if (overlay) {
+
+            overlay.classList.add("visible");
+
+        }
 
     }
 
 
-    element.textContent =
 
-        value !== undefined &&
-        value !== null &&
-        String(
-            value
-        ).trim()
+    function closeSidebar() {
 
-            ? value
+        if (sidebar) {
 
-            : "—";
+            sidebar.classList.remove("open");
 
-}
+        }
 
 
+        if (overlay) {
 
-/* =========================================================
-   REDIRECT LOGIN
-========================================================= */
+            overlay.classList.remove("visible");
 
-function redirectToLogin() {
-
-    window.location.assign(
-        "../login.html"
-    );
-
-}
-
-
-
-/* =========================================================
-   GET SAVED ADMIN
-========================================================= */
-
-function getSavedAdmin() {
-
-    if (
-
-        typeof window.getSavedUser !==
-        "function"
-
-    ) {
-
-        return null;
+        }
 
     }
 
 
-    const user =
-        window.getSavedUser();
 
+    if (mobileMenuButton) {
 
-    if (!user) {
+        mobileMenuButton.addEventListener(
+            "click",
+            function () {
 
-        return null;
+                if (
+                    sidebar &&
+                    sidebar.classList.contains("open")
+                ) {
 
-    }
+                    closeSidebar();
 
+                } else {
 
-    const role =
-        String(
+                    openSidebar();
 
-            user.role ||
-            ""
-
-        )
-        .trim()
-        .toLowerCase();
-
-
-    if (
-
-        role === "admin" ||
-
-        role === "administrator"
-
-    ) {
-
-        return user;
-
-    }
-
-
-    return null;
-
-}
-
-
-
-/* =========================================================
-   RENDER ADMIN
-========================================================= */
-
-function renderAdmin(
-    user
-) {
-
-    if (!user) {
-
-        return;
-
-    }
-
-
-    const name =
-
-        user.fullName ||
-
-        user.full_name ||
-
-        "Admin";
-
-
-    const email =
-
-        user.email ||
-
-        "—";
-
-
-    const role =
-
-        user.role ||
-
-        "admin";
-
-
-    setAdminText(
-        "adminName",
-        name
-    );
-
-
-    setAdminText(
-        "adminEmail",
-        email
-    );
-
-
-    setAdminText(
-        "adminWelcomeName",
-        name
-    );
-
-
-    setAdminText(
-        "adminProfileEmail",
-        email
-    );
-
-
-    setAdminText(
-        "adminRole",
-        role
-    );
-
-
-    const avatar =
-        adminElement(
-            "adminAvatar"
-        );
-
-
-    if (avatar) {
-
-        avatar.textContent =
-            String(
-                name
-            )
-            .charAt(0)
-            .toUpperCase();
-
-    }
-
-}
-
-
-
-/* =========================================================
-   LOAD ADMIN
-========================================================= */
-
-async function loadAdminDashboard() {
-
-    const savedAdmin =
-        getSavedAdmin();
-
-
-    if (savedAdmin) {
-
-        renderAdmin(
-            savedAdmin
-        );
-
-    }
-
-
-    try {
-
-        const result =
-            await window.apiRequest(
-
-                "/api/auth/me",
-
-                {
-                    method:
-                        "GET"
                 }
 
-            );
-
-
-        const user =
-            window.extractUser(
-                result
-            );
-
-
-        if (!user) {
-
-            throw new Error(
-                "Unable to load administrator account."
-            );
-
-        }
-
-
-        const role =
-            String(
-
-                user.role ||
-
-                ""
-
-            )
-            .trim()
-            .toLowerCase();
-
-
-        if (
-
-            role !== "admin" &&
-
-            role !== "administrator"
-
-        ) {
-
-            window.location.assign(
-                "../user/dashboard.html"
-            );
-
-            return;
-
-        }
-
-
-        window.setSavedUser(
-            user
-        );
-
-
-        renderAdmin(
-            user
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "ADMIN DASHBOARD ERROR:",
-            error
-        );
-
-
-        if (
-
-            error?.status === 401 ||
-
-            error?.status === 403
-
-        ) {
-
-            window.clearAuthData();
-
-            redirectToLogin();
-
-            return;
-
-        }
-
-
-        if (!savedAdmin) {
-
-            redirectToLogin();
-
-        }
-
-    }
-
-}
-
-
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-function setupMobileMenu() {
-
-    const button =
-        adminElement(
-            "mobileMenuButton"
-        );
-
-
-    const sidebar =
-        adminElement(
-            "dashboardSidebar"
-        );
-
-
-    const overlay =
-        adminElement(
-            "sidebarOverlay"
-        );
-
-
-    if (
-
-        !button ||
-
-        !sidebar ||
-
-        !overlay
-
-    ) {
-
-        return;
-
-    }
-
-
-    function openMenu() {
-
-        sidebar.classList.add(
-            "open"
-        );
-
-
-        overlay.classList.add(
-            "visible"
+            }
         );
 
     }
 
 
-    function closeMenu() {
 
-        sidebar.classList.remove(
-            "open"
-        );
+    if (overlay) {
 
-
-        overlay.classList.remove(
-            "visible"
+        overlay.addEventListener(
+            "click",
+            closeSidebar
         );
 
     }
 
 
-    button.addEventListener(
 
-        "click",
+    /* =========================================
+       SECTION NAVIGATION
+    ========================================= */
 
-        function () {
+    function showSection(sectionId) {
 
-            if (
 
-                sidebar.classList.contains(
-                    "open"
-                )
+        sections.forEach(
+            function (section) {
 
-            ) {
-
-                closeMenu();
-
-            } else {
-
-                openMenu();
+                section.classList.remove(
+                    "active-section"
+                );
 
             }
-
-        }
-
-    );
-
-
-    overlay.addEventListener(
-
-        "click",
-
-        closeMenu
-
-    );
-
-
-    return {
-
-        closeMenu
-
-    };
-
-}
-
-
-
-/* =========================================================
-   SHOW SECTION
-========================================================= */
-
-function showAdminSection(
-    targetId
-) {
-
-    const sections =
-        document.querySelectorAll(
-            ".dashboard-section"
         );
 
 
-    sections.forEach(
+        const targetSection = document.getElementById(
+            sectionId
+        );
 
-        function (
-            section
-        ) {
 
-            section.classList.remove(
+        if (targetSection) {
+
+            targetSection.classList.add(
                 "active-section"
             );
 
         }
 
-    );
 
 
-    const target =
-        document.getElementById(
-            targetId
-        );
-
-
-    if (target) {
-
-        target.classList.add(
-            "active-section"
-        );
-
-    }
-
-
-    const items =
-        document.querySelectorAll(
-            ".dashboard-nav a[href^='#']"
-        );
-
-
-    items.forEach(
-
-        function (
-            item
-        ) {
-
-            const href =
-                item.getAttribute(
-                    "href"
-                );
-
-
-            if (
-
-                href ===
-                "#" + targetId
-
-            ) {
-
-                item.classList.add(
-                    "active"
-                );
-
-            } else {
+        navItems.forEach(
+            function (item) {
 
                 item.classList.remove(
                     "active"
                 );
 
+
+                if (
+                    item.dataset.section ===
+                    sectionId
+                ) {
+
+                    item.classList.add(
+                        "active"
+                    );
+
+                }
+
             }
-
-        }
-
-    );
-
-
-    history.replaceState(
-
-        null,
-
-        "",
-
-        "#" +
-        targetId
-
-    );
-
-
-    if (
-
-        targetId ===
-        "users"
-
-    ) {
-
-        loadUsers();
-
-    }
-
-}
-
-
-
-/* =========================================================
-   ADMIN NAVIGATION
-========================================================= */
-
-function setupAdminNavigation(
-    mobileMenu
-) {
-
-    const items =
-        document.querySelectorAll(
-            ".dashboard-nav a[href^='#']"
         );
 
 
-    items.forEach(
+        closeSidebar();
 
-        function (
-            item
-        ) {
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+
+        if (sectionId === "users") {
+
+            loadUsers();
+
+        }
+
+
+        if (sectionId === "deposits") {
+
+            loadDeposits();
+
+        }
+
+    }
+
+
+
+    navItems.forEach(
+        function (item) {
+
 
             item.addEventListener(
-
                 "click",
+                function (event) {
 
-                function (
-                    event
-                ) {
 
                     event.preventDefault();
 
 
-                    const targetId =
-                        item
-                            .getAttribute(
-                                "href"
-                            )
-                            .replace(
-                                "#",
-                                ""
-                            );
+                    const sectionId =
+                        item.dataset.section;
 
 
-                    showAdminSection(
-                        targetId
+                    showSection(
+                        sectionId
                     );
 
 
-                    if (
-
-                        mobileMenu &&
-                        typeof mobileMenu.closeMenu ===
-                        "function"
-
-                    ) {
-
-                        mobileMenu.closeMenu();
-
-                    }
+                    window.history.replaceState(
+                        null,
+                        "",
+                        "#" + sectionId
+                    );
 
                 }
+            );
 
+
+        }
+    );
+
+
+
+    /* =========================================
+       QUICK ACTION BUTTONS
+    ========================================= */
+
+    quickActionButtons.forEach(
+        function (button) {
+
+
+            button.addEventListener(
+                "click",
+                function () {
+
+
+                    const sectionId =
+                        button.dataset.openSection;
+
+
+                    showSection(
+                        sectionId
+                    );
+
+                }
+            );
+
+
+        }
+    );
+
+
+
+    /* =========================================
+       LOAD ADMIN PROFILE
+    ========================================= */
+
+    function loadAdminProfile() {
+
+
+        try {
+
+
+            const storedUser =
+                localStorage.getItem(
+                    "skilllearn_user"
+                );
+
+
+            if (!storedUser) {
+
+                return;
+
+            }
+
+
+            const user =
+                JSON.parse(
+                    storedUser
+                );
+
+
+            const name =
+                user.full_name ||
+                user.fullName ||
+                user.name ||
+                "Admin";
+
+
+            const email =
+                user.email ||
+                "—";
+
+
+            const role =
+                user.role ||
+                "admin";
+
+
+            setText(
+                "adminName",
+                name
+            );
+
+
+            setText(
+                "adminEmail",
+                email
+            );
+
+
+            setText(
+                "adminWelcomeName",
+                name
+            );
+
+
+            setText(
+                "adminProfileName",
+                name
+            );
+
+
+            setText(
+                "adminProfileEmail",
+                email
+            );
+
+
+            setText(
+                "adminRole",
+                role
+            );
+
+
+            setText(
+                "topbarName",
+                name
+            );
+
+
+            setText(
+                "adminAvatar",
+                getInitial(
+                    name
+                )
+            );
+
+
+            setText(
+                "topbarAvatar",
+                getInitial(
+                    name
+                )
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Admin profile error:",
+                error
             );
 
         }
 
-    );
+    }
 
 
-    const hash =
-        window.location.hash
-            .replace(
-                "#",
-                ""
+
+    /* =========================================
+       HELPERS
+    ========================================= */
+
+    function setText(
+        id,
+        value
+    ) {
+
+
+        const element =
+            document.getElementById(
+                id
             );
 
 
-    if (
+        if (element) {
 
-        hash === "users" ||
+            element.textContent =
+                value;
 
-        hash === "deposits" ||
+        }
 
-        hash === "overview"
+    }
 
+
+
+    function getInitial(
+        name
     ) {
 
-        showAdminSection(
-            hash
-        );
 
-    }
+        if (!name) {
 
-}
+            return "A";
 
+        }
 
 
-/* =========================================================
-   USERS MESSAGE
-========================================================= */
-
-function showUsersMessage(
-    message
-) {
-
-    const element =
-        adminElement(
-            "usersMessage"
-        );
-
-
-    if (!element) {
-
-        return;
+        return name
+            .trim()
+            .charAt(0)
+            .toUpperCase();
 
     }
 
 
-    if (!message) {
 
-        element.style.display =
-            "none";
+    /* =========================================
+       USERS
+    ========================================= */
 
-        element.textContent =
-            "";
-
-        return;
-
-    }
+    async function loadUsers() {
 
 
-    element.style.display =
-        "block";
+        const usersList =
+            document.getElementById(
+                "usersList"
+            );
 
 
-    element.textContent =
-        message;
-
-}
-
-
-
-/* =========================================================
-   LOAD USERS
-========================================================= */
-
-async function loadUsers() {
-
-    const usersList =
-        adminElement(
-            "usersList"
-        );
+        const usersMessage =
+            document.getElementById(
+                "usersMessage"
+            );
 
 
-    if (!usersList) {
+        if (!usersList) {
 
-        return;
+            return;
 
-    }
+        }
 
 
-    usersList.innerHTML =
+        usersList.innerHTML = `
 
-        `
-        <div class="empty-state">
+            <div class="empty-state">
 
-            <strong>
-                Loading users...
-            </strong>
+                <div class="empty-icon">
+                    ⏳
+                </div>
 
-            <p>
-                Please wait.
-            </p>
+                <strong>
+                    Loading users...
+                </strong>
 
-        </div>
+            </div>
+
         `;
 
 
-    showUsersMessage(
-        ""
-    );
+        try {
 
 
-    try {
+            const apiUrl =
+                window.API_URL ||
+                "";
 
-        const result =
-            await window.apiRequest(
 
-                "/api/admin/users",
+            if (!apiUrl) {
 
-                {
-                    method:
-                        "GET"
-                }
+                throw new Error(
+                    "API URL not configured"
+                );
 
+            }
+
+
+            const response =
+                await fetch(
+                    apiUrl + "/admin/users",
+                    {
+
+                        headers: getHeaders()
+
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Unable to load users"
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            const users =
+                data.users ||
+                data ||
+                [];
+
+
+            setText(
+                "totalUsers",
+                users.length
             );
 
 
-        const users =
-            Array.isArray(
-                result?.users
-            )
+            renderUsers(
+                users
+            );
 
-                ? result.users
 
-                : [];
+        } catch (error) {
+
+
+            console.error(
+                error
+            );
+
+
+            usersList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ⚠️
+                    </div>
+
+                    <strong>
+                        Unable to load users
+                    </strong>
+
+                    <p>
+                        Check backend API connection.
+                    </p>
+
+                </div>
+
+            `;
+
+
+            if (usersMessage) {
+
+                usersMessage.style.display =
+                    "block";
+
+
+                usersMessage.textContent =
+                    error.message;
+
+            }
+
+        }
+
+    }
+
+
+
+    function renderUsers(
+        users
+    ) {
+
+
+        const usersList =
+            document.getElementById(
+                "usersList"
+            );
+
+
+        if (!usersList) {
+
+            return;
+
+        }
 
 
         if (
+            !Array.isArray(users) ||
             users.length === 0
         ) {
 
-            usersList.innerHTML =
 
-                `
+            usersList.innerHTML = `
+
                 <div class="empty-state">
+
+                    <div class="empty-icon">
+                        👥
+                    </div>
 
                     <strong>
                         No users found
                     </strong>
 
                     <p>
-                        There are currently no users.
+                        Registered users will appear here.
                     </p>
 
                 </div>
-                `;
+
+            `;
 
 
             return;
@@ -802,296 +628,461 @@ async function loadUsers() {
 
 
         usersList.innerHTML =
-            "";
+            users.map(
+                function (user) {
 
 
-        users.forEach(
+                    return `
 
-            function (
-                user
-            ) {
+                        <div
+                            class="content-card"
+                            style="margin-bottom: 12px;"
+                        >
 
-                const card =
-                    document.createElement(
-                        "div"
-                    );
+                            <strong>
+                                ${
+                                    escapeHtml(
+                                        user.full_name ||
+                                        user.name ||
+                                        "User"
+                                    )
+                                }
+                            </strong>
 
+                            <p>
+                                ${
+                                    escapeHtml(
+                                        user.email ||
+                                        ""
+                                    )
+                                }
+                            </p>
 
-                card.className =
-                    "content-card";
+                        </div>
 
-
-                const name =
-
-                    user.full_name ||
-
-                    user.fullName ||
-
-                    "Unknown User";
-
-
-                const email =
-
-                    user.email ||
-
-                    "—";
-
-
-                const publicUserId =
-
-                    user.public_user_id ||
-
-                    user.publicUserId ||
-
-                    "—";
-
-
-                const status =
-
-                    user.account_status ||
-
-                    "unknown";
-
-
-                card.innerHTML =
-
-                    `
-                    <strong>
-                        ${escapeHtml(name)}
-                    </strong>
-
-                    <p>
-                        ${escapeHtml(email)}
-                    </p>
-
-                    <p>
-                        User ID:
-                        ${escapeHtml(publicUserId)}
-                    </p>
-
-                    <p>
-                        Status:
-                        ${escapeHtml(status)}
-                    </p>
                     `;
 
 
-                usersList.appendChild(
-                    card
+                }
+            ).join("");
+
+    }
+
+
+
+    /* =========================================
+       DEPOSITS
+    ========================================= */
+
+    async function loadDeposits() {
+
+
+        const depositsList =
+            document.getElementById(
+                "depositsList"
+            );
+
+
+        if (!depositsList) {
+
+            return;
+
+        }
+
+
+        depositsList.innerHTML = `
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    ⏳
+                </div>
+
+                <strong>
+                    Loading deposits...
+                </strong>
+
+            </div>
+
+        `;
+
+
+        try {
+
+
+            const apiUrl =
+                window.API_URL ||
+                "";
+
+
+            if (!apiUrl) {
+
+                throw new Error(
+                    "API URL not configured"
                 );
 
             }
 
-        );
+
+            const response =
+                await fetch(
+                    apiUrl + "/admin/deposits",
+                    {
+
+                        headers: getHeaders()
+
+                    }
+                );
 
 
-    } catch (error) {
+            if (!response.ok) {
 
-        console.error(
-            "LOAD USERS ERROR:",
-            error
-        );
+                throw new Error(
+                    "Unable to load deposits"
+                );
 
-
-        usersList.innerHTML =
-
-            `
-            <div class="empty-state">
-
-                <strong>
-                    Unable to load users
-                </strong>
-
-                <p>
-                    Please try again.
-                </p>
-
-            </div>
-            `;
+            }
 
 
-        showUsersMessage(
-            error?.message ||
-            "Users could not be loaded."
-        );
-
-    }
-
-}
+            const data =
+                await response.json();
 
 
-
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-function escapeHtml(
-    value
-) {
-
-    const div =
-        document.createElement(
-            "div"
-        );
+            const deposits =
+                data.deposits ||
+                data ||
+                [];
 
 
-    div.textContent =
-        value === undefined ||
-        value === null
-
-            ? ""
-
-            : String(
-                value
+            setText(
+                "pendingDeposits",
+                deposits.length
             );
 
 
-    return div.innerHTML;
+            setText(
+                "totalDeposits",
+                deposits.length
+            );
 
-}
+
+            renderDeposits(
+                deposits
+            );
+
+
+        } catch (error) {
+
+
+            console.error(
+                error
+            );
+
+
+            depositsList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        ⚠️
+                    </div>
+
+                    <strong>
+                        Unable to load deposits
+                    </strong>
+
+                    <p>
+                        Check backend API connection.
+                    </p>
+
+                </div>
+
+            `;
+
+        }
+
+    }
 
 
 
-/* =========================================================
-   REFRESH USERS
-========================================================= */
+    function renderDeposits(
+        deposits
+    ) {
 
-function setupUsersRefresh() {
 
-    const button =
-        adminElement(
+        const depositsList =
+            document.getElementById(
+                "depositsList"
+            );
+
+
+        if (!depositsList) {
+
+            return;
+
+        }
+
+
+        if (
+            !Array.isArray(deposits) ||
+            deposits.length === 0
+        ) {
+
+
+            depositsList.innerHTML = `
+
+                <div class="empty-state">
+
+                    <div class="empty-icon">
+                        💳
+                    </div>
+
+                    <strong>
+                        No deposit requests
+                    </strong>
+
+                    <p>
+                        New deposit requests will appear here.
+                    </p>
+
+                </div>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        depositsList.innerHTML =
+            deposits.map(
+                function (deposit) {
+
+
+                    return `
+
+                        <div
+                            class="content-card"
+                            style="margin-bottom: 12px;"
+                        >
+
+                            <strong>
+                                ${
+                                    escapeHtml(
+                                        deposit.user_name ||
+                                        deposit.name ||
+                                        "User"
+                                    )
+                                }
+                            </strong>
+
+                            <p>
+                                Amount:
+                                ${
+                                    escapeHtml(
+                                        String(
+                                            deposit.amount ||
+                                            0
+                                        )
+                                    )
+                                }
+                            </p>
+
+                            <p>
+                                Status:
+                                ${
+                                    escapeHtml(
+                                        deposit.status ||
+                                        "pending"
+                                    )
+                                }
+                            </p>
+
+                        </div>
+
+                    `;
+
+
+                }
+            ).join("");
+
+    }
+
+
+
+    /* =========================================
+       REFRESH BUTTONS
+    ========================================= */
+
+    const refreshUsersButton =
+        document.getElementById(
             "refreshUsersButton"
         );
 
 
-    if (!button) {
+    if (refreshUsersButton) {
 
-        return;
+        refreshUsersButton.addEventListener(
+            "click",
+            loadUsers
+        );
 
     }
 
 
-    button.addEventListener(
 
-        "click",
-
-        async function () {
-
-            button.disabled =
-                true;
+    const refreshDepositsButton =
+        document.getElementById(
+            "refreshDepositsButton"
+        );
 
 
-            try {
+    if (refreshDepositsButton) {
 
-                await loadUsers();
+        refreshDepositsButton.addEventListener(
+            "click",
+            loadDeposits
+        );
 
-            } finally {
-
-                button.disabled =
-                    false;
-
-            }
-
-        }
-
-    );
-
-}
+    }
 
 
 
-/* =========================================================
-   LOGOUT
-========================================================= */
+    /* =========================================
+       LOGOUT
+    ========================================= */
 
-function setupAdminLogout() {
-
-    const button =
-        adminElement(
+    const logoutButton =
+        document.getElementById(
             "logoutButton"
         );
 
 
-    if (!button) {
-
-        return;
-
-    }
+    if (logoutButton) {
 
 
-    button.addEventListener(
-
-        "click",
-
-        async function () {
-
-            button.disabled =
-                true;
+        logoutButton.addEventListener(
+            "click",
+            function () {
 
 
-            try {
-
-                await window.apiRequest(
-
-                    "/api/auth/logout",
-
-                    {
-                        method:
-                            "POST"
-                    }
-
+                localStorage.removeItem(
+                    "skilllearn_user"
                 );
 
-            } catch (error) {
 
-                console.warn(
-                    "ADMIN LOGOUT ERROR:",
-                    error
+                localStorage.removeItem(
+                    "skilllearn_token"
                 );
 
-            } finally {
 
-                window.clearAuthData();
+                localStorage.removeItem(
+                    "token"
+                );
 
-                redirectToLogin();
+
+                window.location.href =
+                    "../login.html";
+
 
             }
-
-        }
-
-    );
-
-}
-
-
-
-/* =========================================================
-   INITIALIZE
-========================================================= */
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    async function () {
-
-        const mobileMenu =
-            setupMobileMenu();
-
-
-        setupAdminNavigation(
-            mobileMenu
         );
 
 
-        setupAdminLogout();
+    }
 
 
-        setupUsersRefresh();
+
+    /* =========================================
+       AUTHORIZATION HEADERS
+    ========================================= */
+
+    function getHeaders() {
 
 
-        await loadAdminDashboard();
+        const token =
+            localStorage.getItem(
+                "skilllearn_token"
+            ) ||
+            localStorage.getItem(
+                "token"
+            );
+
+
+        const headers = {
+
+            "Content-Type":
+                "application/json"
+
+        };
+
+
+        if (token) {
+
+            headers.Authorization =
+                "Bearer " + token;
+
+        }
+
+
+        return headers;
 
     }
 
-);
+
+
+    /* =========================================
+       HTML ESCAPE
+    ========================================= */
+
+    function escapeHtml(
+        value
+    ) {
+
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+
+        div.textContent =
+            value;
+
+
+        return div.innerHTML;
+
+    }
+
+
+
+    /* =========================================
+       INITIALIZE
+    ========================================= */
+
+    loadAdminProfile();
+
+
+    const hash =
+        window.location.hash.replace(
+            "#",
+            ""
+        );
+
+
+    if (
+        hash &&
+        document.getElementById(
+            hash
+        )
+    ) {
+
+        showSection(
+            hash
+        );
+
+    }
+
+
+});

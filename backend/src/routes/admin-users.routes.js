@@ -1,12 +1,6 @@
 "use strict";
 
 
-/*
-|--------------------------------------------------------------------------
-| EXPRESS
-|--------------------------------------------------------------------------
-*/
-
 const express =
     require(
         "express"
@@ -16,12 +10,6 @@ const express =
 const router =
     express.Router();
 
-
-/*
-|--------------------------------------------------------------------------
-| AUTH MIDDLEWARE
-|--------------------------------------------------------------------------
-*/
 
 const {
 
@@ -34,12 +22,6 @@ const {
         "../middleware/auth.middleware"
     );
 
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN USERS SERVICE
-|--------------------------------------------------------------------------
-*/
 
 const {
 
@@ -59,9 +41,6 @@ const {
 |--------------------------------------------------------------------------
 | GET USERS
 |--------------------------------------------------------------------------
-|
-| GET /api/admin/users
-|
 */
 
 router.get(
@@ -133,7 +112,7 @@ router.get(
                 });
 
 
-            return res.json({
+            return res.status(200).json({
 
                 success:
                     true,
@@ -141,6 +120,7 @@ router.get(
                 users
 
             });
+
 
         } catch (error) {
 
@@ -156,7 +136,10 @@ router.get(
                     false,
 
                 error:
-                    "GET_USERS_FAILED"
+                    "GET_USERS_FAILED",
+
+                message:
+                    "Unable to load users."
 
             });
 
@@ -171,9 +154,6 @@ router.get(
 |--------------------------------------------------------------------------
 | GET USER DETAILS
 |--------------------------------------------------------------------------
-|
-| GET /api/admin/users/:userId
-|
 */
 
 router.get(
@@ -193,9 +173,7 @@ router.get(
 
             const user =
                 await getUserDetails(
-
                     req.params.userId
-
                 );
 
 
@@ -214,7 +192,7 @@ router.get(
             }
 
 
-            return res.json({
+            return res.status(200).json({
 
                 success:
                     true,
@@ -222,6 +200,7 @@ router.get(
                 user
 
             });
+
 
         } catch (error) {
 
@@ -252,9 +231,6 @@ router.get(
 |--------------------------------------------------------------------------
 | UPDATE USER STATUS
 |--------------------------------------------------------------------------
-|
-| PATCH /api/admin/users/:userId/status
-|
 */
 
 router.patch(
@@ -278,18 +254,14 @@ router.patch(
                     userId:
                         req.params.userId,
 
-
                     status:
                         req.body.status,
-
 
                     adminUserId:
                         req.user.id,
 
-
                     ipAddress:
                         req.ip,
-
 
                     userAgent:
                         req.get(
@@ -299,7 +271,7 @@ router.patch(
                 });
 
 
-            return res.json({
+            return res.status(200).json({
 
                 success:
                     true,
@@ -309,6 +281,7 @@ router.patch(
 
             });
 
+
         } catch (error) {
 
             console.error(
@@ -317,15 +290,18 @@ router.patch(
             );
 
 
+            const errorCode =
+                error.code ||
+                error.message;
+
+
             const statusMap = {
 
                 USER_NOT_FOUND:
                     404,
 
-
                 INVALID_ACCOUNT_STATUS:
                     400,
-
 
                 STATUS_ALREADY_SET:
                     409
@@ -335,10 +311,8 @@ router.patch(
 
             const statusCode =
                 statusMap[
-                    error.message
-                ]
-                ||
-                500;
+                    errorCode
+                ] || 500;
 
 
             return res
@@ -350,14 +324,13 @@ router.patch(
                     success:
                         false,
 
-
                     error:
 
                         statusCode === 500
 
                             ? "STATUS_UPDATE_FAILED"
 
-                            : error.message
+                            : errorCode
 
                 });
 
@@ -367,17 +340,6 @@ router.patch(
 
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| EXPORT
-|--------------------------------------------------------------------------
-|
-| IMPORTANT:
-| Express Router directly export होना चाहिए.
-| Object export नहीं होना चाहिए.
-|
-*/
 
 module.exports =
     router;

@@ -15,11 +15,15 @@
     </title>
 
 
+    <!-- Main CSS -->
+
     <link
         rel="stylesheet"
         href="../assets/css/app.css"
     >
 
+
+    <!-- Dashboard CSS -->
 
     <link
         rel="stylesheet"
@@ -32,11 +36,20 @@
 <body class="dashboard-page">
 
 
+<!-- =========================================
+     MOBILE SIDEBAR OVERLAY
+========================================= -->
+
 <div
     class="sidebar-overlay"
     id="sidebarOverlay"
 ></div>
 
+
+
+<!-- =========================================
+     DASHBOARD SHELL
+========================================= -->
 
 <div class="dashboard-shell">
 
@@ -50,6 +63,8 @@
         id="dashboardSidebar"
     >
 
+
+        <!-- BRAND -->
 
         <div class="sidebar-brand">
 
@@ -90,6 +105,7 @@
 
             <div class="profile-info">
 
+
                 <strong
                     id="adminName"
                 >
@@ -100,10 +116,12 @@
                 <span
                     id="adminEmail"
                 >
-                    —
+                    Loading...
                 </span>
 
+
             </div>
+
 
         </div>
 
@@ -116,40 +134,98 @@
         <nav class="dashboard-nav">
 
 
+            <!-- OVERVIEW -->
+
             <a
                 href="#overview"
                 class="nav-item active"
+                data-section="overview"
             >
-                Overview
+
+                <span class="nav-icon">
+                    📊
+                </span>
+
+
+                <span>
+                    Overview
+                </span>
+
             </a>
 
+
+
+            <!-- USERS -->
 
             <a
                 href="#users"
                 class="nav-item"
+                data-section="users"
             >
-                Users
+
+                <span class="nav-icon">
+                    👥
+                </span>
+
+
+                <span>
+                    Users
+                </span>
+
             </a>
 
+
+
+            <!-- DEPOSITS -->
 
             <a
                 href="#deposits"
                 class="nav-item"
+                data-section="deposits"
             >
-                Deposits
+
+                <span class="nav-icon">
+                    💳
+                </span>
+
+
+                <span>
+                    Deposits
+                </span>
+
             </a>
+
+
+        </nav>
+
+
+
+        <!-- =====================================
+             SIDEBAR FOOTER
+        ====================================== -->
+
+        <div class="sidebar-footer">
 
 
             <button
                 id="logoutButton"
-                class="nav-item"
+                class="logout-button"
                 type="button"
             >
-                Logout
+
+                <span>
+                    🚪
+                </span>
+
+
+                <span>
+                    Logout
+                </span>
+
             </button>
 
 
-        </nav>
+        </div>
 
 
     </aside>
@@ -157,7 +233,7 @@
 
 
     <!-- =========================================
-         MAIN
+         MAIN AREA
     ========================================== -->
 
     <main class="dashboard-main">
@@ -170,6 +246,8 @@
         <header class="dashboard-topbar">
 
 
+            <!-- MOBILE MENU BUTTON -->
+
             <button
                 class="mobile-menu-button"
                 id="mobileMenuButton"
@@ -180,7 +258,11 @@
             </button>
 
 
+
+            <!-- TITLE -->
+
             <div class="topbar-title">
+
 
                 <span class="eyebrow">
                     ADMINISTRATION
@@ -190,6 +272,65 @@
                 <h1>
                     Admin Dashboard
                 </h1>
+
+
+            </div>
+
+
+
+            <!-- ACTIONS -->
+
+            <div class="topbar-actions">
+
+
+                <button
+                    class="notification-button"
+                    type="button"
+                    aria-label="Notifications"
+                >
+
+                    🔔
+
+
+                    <span class="notification-dot">
+                    </span>
+
+
+                </button>
+
+
+
+                <div class="topbar-user">
+
+
+                    <div
+                        class="topbar-avatar"
+                        id="topbarAvatar"
+                    >
+                        A
+                    </div>
+
+
+                    <div>
+
+
+                        <strong
+                            id="topbarName"
+                        >
+                            Admin
+                        </strong>
+
+
+                        <span>
+                            Administrator
+                        </span>
+
+
+                    </div>
+
+
+                </div>
+
 
             </div>
 
@@ -207,7 +348,7 @@
 
 
             <!-- =================================
-                 OVERVIEW
+                 OVERVIEW SECTION
             ================================== -->
 
             <section
@@ -216,78 +357,412 @@
             >
 
 
-                <div class="page-heading">
+                <!-- PAGE HEADING -->
+
+                <div class="welcome-row">
 
 
-                    <span class="section-kicker">
-                        ADMINISTRATION
-                    </span>
+                    <div>
 
 
-                    <h2>
-
-                        Welcome,
-
-                        <span id="adminWelcomeName">
-                            Admin
+                        <span class="section-kicker">
+                            ADMINISTRATION
                         </span>
 
-                    </h2>
+
+                        <h2>
+
+                            Welcome,
+
+                            <span
+                                id="adminWelcomeName"
+                            >
+                                Admin
+                            </span>
+
+                        </h2>
 
 
-                    <p>
-                        SkillEarn Hub administration panel.
-                    </p>
+                        <p>
+                            SkillEarn Hub administration panel.
+                        </p>
+
+
+                    </div>
+
+
+
+                    <div class="account-status-pill">
+
+
+                        <span class="status-dot">
+                        </span>
+
+
+                        Admin Account
+
+
+                    </div>
 
 
                 </div>
 
 
 
+                <!-- =================================
+                     ADMIN STATS
+                ================================== -->
+
+                <div class="stats-grid">
+
+
+                    <!-- TOTAL USERS -->
+
+                    <div class="stat-card">
+
+
+                        <div class="stat-card-top">
+
+
+                            <span>
+                                Total Users
+                            </span>
+
+
+                            <span class="stat-icon">
+                                👥
+                            </span>
+
+
+                        </div>
+
+
+                        <strong
+                            id="totalUsers"
+                        >
+                            0
+                        </strong>
+
+
+                        <small>
+                            Registered users
+                        </small>
+
+
+                    </div>
+
+
+
+                    <!-- PENDING DEPOSITS -->
+
+                    <div class="stat-card">
+
+
+                        <div class="stat-card-top">
+
+
+                            <span>
+                                Pending Deposits
+                            </span>
+
+
+                            <span class="stat-icon">
+                                ⏳
+                            </span>
+
+
+                        </div>
+
+
+                        <strong
+                            id="pendingDeposits"
+                        >
+                            0
+                        </strong>
+
+
+                        <small>
+                            Awaiting review
+                        </small>
+
+
+                    </div>
+
+
+
+                    <!-- TOTAL DEPOSITS -->
+
+                    <div class="stat-card">
+
+
+                        <div class="stat-card-top">
+
+
+                            <span>
+                                Total Deposits
+                            </span>
+
+
+                            <span class="stat-icon">
+                                💳
+                            </span>
+
+
+                        </div>
+
+
+                        <strong
+                            id="totalDeposits"
+                        >
+                            0
+                        </strong>
+
+
+                        <small>
+                            Deposit records
+                        </small>
+
+
+                    </div>
+
+
+
+                    <!-- ADMIN -->
+
+                    <div class="stat-card wallet-card">
+
+
+                        <div class="stat-card-top">
+
+
+                            <span>
+                                Administrator
+                            </span>
+
+
+                            <span class="stat-icon">
+                                🛡️
+                            </span>
+
+
+                        </div>
+
+
+                        <strong>
+                            Admin
+                        </strong>
+
+
+                        <small>
+                            SkillEarn Hub
+                        </small>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================
+                     ADMIN ACCOUNT
+                ================================== -->
+
                 <div class="content-card">
 
 
-                    <h3>
-                        Administrator Account
-                    </h3>
+                    <div class="card-heading">
 
 
-                    <br>
+                        <div>
 
 
-                    <p>
-
-                        <strong>
-                            Email:
-                        </strong>
+                            <span class="section-kicker">
+                                ACCOUNT
+                            </span>
 
 
-                        <span
-                            id="adminProfileEmail"
+                            <h3>
+                                Administrator Account
+                            </h3>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <div class="profile-details">
+
+
+                        <div>
+
+
+                            <span>
+                                Full Name
+                            </span>
+
+
+                            <strong
+                                id="adminProfileName"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+
+                        <div>
+
+
+                            <span>
+                                Email
+                            </span>
+
+
+                            <strong
+                                id="adminProfileEmail"
+                            >
+                                —
+                            </strong>
+
+
+                        </div>
+
+
+
+                        <div>
+
+
+                            <span>
+                                Role
+                            </span>
+
+
+                            <strong
+                                id="adminRole"
+                            >
+                                admin
+                            </strong>
+
+
+                        </div>
+
+
+
+                        <div>
+
+
+                            <span>
+                                Account Status
+                            </span>
+
+
+                            <strong>
+                                Active
+                            </strong>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- =================================
+                     QUICK ACTIONS
+                ================================== -->
+
+                <div class="content-card">
+
+
+                    <div class="card-heading">
+
+
+                        <div>
+
+
+                            <span class="section-kicker">
+                                MANAGEMENT
+                            </span>
+
+
+                            <h3>
+                                Quick Actions
+                            </h3>
+
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <div class="quick-actions-grid">
+
+
+                        <button
+                            class="action-card"
+                            type="button"
+                            data-open-section="users"
                         >
-                            —
-                        </span>
-
-                    </p>
 
 
-                    <br>
+                            <span class="action-icon">
+                                👥
+                            </span>
 
 
-                    <p>
-
-                        <strong>
-                            Role:
-                        </strong>
+                            <strong>
+                                Manage Users
+                            </strong>
 
 
-                        <span
-                            id="adminRole"
+                            <small>
+                                View registered users
+                            </small>
+
+
+                        </button>
+
+
+
+                        <button
+                            class="action-card"
+                            type="button"
+                            data-open-section="deposits"
                         >
-                            —
-                        </span>
 
-                    </p>
+
+                            <span class="action-icon">
+                                💳
+                            </span>
+
+
+                            <strong>
+                                Manage Deposits
+                            </strong>
+
+
+                            <small>
+                                Review deposit requests
+                            </small>
+
+
+                        </button>
+
+
+                    </div>
 
 
                 </div>
@@ -298,7 +773,7 @@
 
 
             <!-- =================================
-                 USERS
+                 USERS SECTION
             ================================== -->
 
             <section
@@ -342,9 +817,22 @@
 
                     <div class="card-heading">
 
-                        <h3>
-                            Registered Users
-                        </h3>
+
+                        <div>
+
+
+                            <span class="section-kicker">
+                                DATABASE
+                            </span>
+
+
+                            <h3>
+                                Registered Users
+                            </h3>
+
+
+                        </div>
+
 
 
                         <button
@@ -365,7 +853,14 @@
                         class="transactions-list"
                     >
 
+
                         <div class="empty-state">
+
+
+                            <div class="empty-icon">
+                                👥
+                            </div>
+
 
                             <strong>
                                 Users not loaded yet
@@ -373,10 +868,12 @@
 
 
                             <p>
-                                Open this section to load users.
+                                Click Refresh to load users.
                             </p>
 
+
                         </div>
+
 
                     </div>
 
@@ -389,7 +886,7 @@
 
 
             <!-- =================================
-                 DEPOSITS
+                 DEPOSITS SECTION
             ================================== -->
 
             <section
@@ -412,7 +909,7 @@
 
 
                     <p>
-                        Deposit requests and payment activity.
+                        Review and manage deposit requests.
                     </p>
 
 
@@ -423,9 +920,37 @@
                 <div class="content-card">
 
 
-                    <h3>
-                        Deposit Requests
-                    </h3>
+                    <div class="card-heading">
+
+
+                        <div>
+
+
+                            <span class="section-kicker">
+                                PAYMENTS
+                            </span>
+
+
+                            <h3>
+                                Deposit Requests
+                            </h3>
+
+
+                        </div>
+
+
+
+                        <button
+                            id="refreshDepositsButton"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            Refresh
+                        </button>
+
+
+                    </div>
+
 
 
                     <div
@@ -433,18 +958,27 @@
                         class="transactions-list"
                     >
 
+
                         <div class="empty-state">
 
+
+                            <div class="empty-icon">
+                                💳
+                            </div>
+
+
                             <strong>
-                                Deposit data
+                                No deposits loaded
                             </strong>
 
 
                             <p>
-                                Deposit API integration will appear here.
+                                Deposit requests will appear here.
                             </p>
 
+
                         </div>
+
 
                     </div>
 

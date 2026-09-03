@@ -189,17 +189,14 @@ function getDashboardUrl(user) {
         );
 
 
-    if (
+if (
+    role === "admin" ||
+    role === "administrator"
+) {
 
-        role === "admin" ||
+    return "admin/admin-dashboard.html";
 
-        role === "administrator"
-
-    ) {
-
-        return "admin/dashboard.html";
-
-    }
+}
 
 
     return "user/dashboard.html";

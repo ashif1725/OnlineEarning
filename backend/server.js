@@ -10,26 +10,50 @@ const cookieParser = require("cookie-parser");
 
 /*
 |--------------------------------------------------------------------------
-| EXPRESS APP
+| APP
 |--------------------------------------------------------------------------
 */
 
 const app = express();
 
-const PORT = Number(
-    process.env.PORT || 8080
+const PORT =
+    Number(process.env.PORT) || 10000;
+
+
+/*
+|--------------------------------------------------------------------------
+| TRUST PROXY
+|--------------------------------------------------------------------------
+|
+| Render जैसे hosted environment के लिए
+| proxy headers को correctly handle करने के लिए.
+|
+*/
+
+app.set(
+    "trust proxy",
+    1
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| MIDDLEWARE
+| SECURITY HEADERS
 |--------------------------------------------------------------------------
 */
 
 app.use(
-    helmet()
+    helmet({
+        crossOriginResourcePolicy: false
+    })
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| CORS
+|--------------------------------------------------------------------------
+*/
 
 app.use(
     cors({
@@ -38,15 +62,32 @@ app.use(
     })
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| BODY PARSERS
+|--------------------------------------------------------------------------
+*/
+
 app.use(
-    express.json()
+    express.json({
+        limit: "2mb"
+    })
 );
 
 app.use(
     express.urlencoded({
-        extended: true
+        extended: true,
+        limit: "2mb"
     })
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| COOKIES
+|--------------------------------------------------------------------------
+*/
 
 app.use(
     cookieParser()
@@ -55,48 +96,235 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| ROUTES
+| HEALTH CHECK
+|--------------------------------------------------------------------------
+|
+| GET /api/health
+|
+*/
+
+app.get(
+    "/api/health",
+    function (req, res) {
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "SkillEarn Hub API is running"
+        });
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ROOT API
+|--------------------------------------------------------------------------
+|
+| GET /
+|
+*/
+
+app.get(
+    "/",
+    function (req, res) {
+
+        return res.status(200).json({
+            success: true,
+            name: "SkillEarn Hub API",
+            status: "running"
+        });
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE IMPORTS
+|--------------------------------------------------------------------------
+*/
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH
 |--------------------------------------------------------------------------
 */
 
 const authRoutes =
-    require("./src/routes/auth.routes");
+    require(
+        "./src/routes/auth.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE
+|--------------------------------------------------------------------------
+*/
 
 const profileRoutes =
-    require("./src/routes/profile.routes");
+    require(
+        "./src/routes/profile.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ACCOUNT
+|--------------------------------------------------------------------------
+*/
+
+const accountRoutes =
+    require(
+        "./src/routes/account.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| WALLET
+|--------------------------------------------------------------------------
+*/
 
 const walletRoutes =
-    require("./src/routes/wallet.routes");
+    require(
+        "./src/routes/wallet.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| TRANSFER
+|--------------------------------------------------------------------------
+*/
 
 const transferRoutes =
-    require("./src/routes/transfer.routes");
+    require(
+        "./src/routes/transfer.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| RECIPIENT
+|--------------------------------------------------------------------------
+*/
 
 const recipientRoutes =
-    require("./src/routes/recipient.routes");
+    require(
+        "./src/routes/recipient.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| TRANSACTIONS
+|--------------------------------------------------------------------------
+*/
 
 const transactionRoutes =
-    require("./src/routes/transaction.routes");
+    require(
+        "./src/routes/transaction.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENT METHODS
+|--------------------------------------------------------------------------
+*/
 
 const paymentMethodRoutes =
-    require("./src/routes/payment-method.routes");
+    require(
+        "./src/routes/payment-method.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| DEPOSITS
+|--------------------------------------------------------------------------
+*/
 
 const depositRoutes =
-    require("./src/routes/deposit.routes");
+    require(
+        "./src/routes/deposit.routes"
+    );
 
-const adminDepositRoutes =
-    require("./src/routes/admin-deposit.routes");
+
+/*
+|--------------------------------------------------------------------------
+| BANK ACCOUNTS
+|--------------------------------------------------------------------------
+*/
 
 const bankAccountRoutes =
-    require("./src/routes/bank-account.routes");
+    require(
+        "./src/routes/bank-account.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| KYC
+|--------------------------------------------------------------------------
+*/
 
 const kycRoutes =
-    require("./src/routes/kyc.routes");
+    require(
+        "./src/routes/kyc.routes"
+    );
 
-const adminKycRoutes =
-    require("./src/routes/admin-kyc.routes");
+
+/*
+|--------------------------------------------------------------------------
+| QR
+|--------------------------------------------------------------------------
+*/
+
+const qrRoutes =
+    require(
+        "./src/routes/qr.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN USERS
+|--------------------------------------------------------------------------
+*/
 
 const adminUsersRoutes =
-    require("./src/routes/admin-users.routes");
+    require(
+        "./src/routes/admin-users.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN DEPOSITS
+|--------------------------------------------------------------------------
+*/
+
+const adminDepositRoutes =
+    require(
+        "./src/routes/admin-deposit.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN KYC
+|--------------------------------------------------------------------------
+*/
+
+const adminKycRoutes =
+    require(
+        "./src/routes/admin-kyc.routes"
+    );
 
 
 /*
@@ -105,40 +333,103 @@ const adminUsersRoutes =
 |--------------------------------------------------------------------------
 */
 
+
+/*
+| AUTH
+| /api/auth/register
+| /api/auth/login
+| /api/auth/me
+| /api/auth/logout
+*/
+
 app.use(
     "/api/auth",
     authRoutes
 );
+
+
+/*
+| PROFILE
+| /api/profile/me
+*/
 
 app.use(
     "/api/profile",
     profileRoutes
 );
 
+
+/*
+| ACCOUNT
+| /api/account/change-password
+*/
+
+app.use(
+    "/api/account",
+    accountRoutes
+);
+
+
+/*
+| WALLET
+| /api/wallet
+| /api/wallet/transactions
+*/
+
 app.use(
     "/api/wallet",
     walletRoutes
 );
 
+
+/*
+| TRANSFER
+| /api/transfer/send
+*/
+
 app.use(
-    "/api/transfers",
+    "/api/transfer",
     transferRoutes
 );
+
+
+/*
+| RECIPIENT
+| /api/recipients/:userId
+*/
 
 app.use(
     "/api/recipients",
     recipientRoutes
 );
 
+
+/*
+| TRANSACTIONS
+| /api/transactions
+*/
+
 app.use(
     "/api/transactions",
     transactionRoutes
 );
 
+
+/*
+| PAYMENT METHODS
+| /api/payment-methods/active
+*/
+
 app.use(
     "/api/payment-methods",
     paymentMethodRoutes
 );
+
+
+/*
+| DEPOSITS
+| /api/deposits
+*/
 
 app.use(
     "/api/deposits",
@@ -147,31 +438,8 @@ app.use(
 
 
 /*
-|--------------------------------------------------------------------------
-| ADMIN DEPOSITS
-|--------------------------------------------------------------------------
-|
-| GET
-| /api/admin/deposits
-|
-| POST
-| /api/admin/deposits/:depositId/approve
-|
-| POST
-| /api/admin/deposits/:depositId/reject
-|
-*/
-
-app.use(
-    "/api/admin/deposits",
-    adminDepositRoutes
-);
-
-
-/*
-|--------------------------------------------------------------------------
 | BANK ACCOUNTS
-|--------------------------------------------------------------------------
+| /api/bank-accounts
 */
 
 app.use(
@@ -181,9 +449,9 @@ app.use(
 
 
 /*
-|--------------------------------------------------------------------------
 | KYC
-|--------------------------------------------------------------------------
+| /api/kyc
+| /api/kyc/submit
 */
 
 app.use(
@@ -191,16 +459,21 @@ app.use(
     kycRoutes
 );
 
+
+/*
+| QR
+| /api/qr/my
+*/
+
 app.use(
-    "/api/admin/kyc",
-    adminKycRoutes
+    "/api/qr",
+    qrRoutes
 );
 
 
 /*
-|--------------------------------------------------------------------------
 | ADMIN USERS
-|--------------------------------------------------------------------------
+| /api/admin/users
 */
 
 app.use(
@@ -210,54 +483,32 @@ app.use(
 
 
 /*
-|--------------------------------------------------------------------------
-| HEALTH CHECK
-|--------------------------------------------------------------------------
+| ADMIN DEPOSITS
+| /api/admin/deposits/pending
+| /api/admin/deposits/:depositId/approve
+| /api/admin/deposits/:depositId/reject
 */
 
-app.get(
-    "/api/health",
-    function (req, res) {
+app.use(
+    "/api/admin/deposits",
+    adminDepositRoutes
+);
 
-        return res.status(200).json({
 
-            success: true,
+/*
+| ADMIN KYC
+| /api/admin/kyc/:kycId/review
+*/
 
-            message:
-                "SkillEarn Hub API is running"
-
-        });
-
-    }
+app.use(
+    "/api/admin/kyc",
+    adminKycRoutes
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ROOT
-|--------------------------------------------------------------------------
-*/
-
-app.get(
-    "/",
-    function (req, res) {
-
-        return res.status(200).json({
-
-            success: true,
-
-            message:
-                "SkillEarn Hub Backend API"
-
-        });
-
-    }
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| 404 API HANDLER
+| 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -295,22 +546,22 @@ app.use(
     ) {
 
         console.error(
-            "SERVER ERROR:",
+            "GLOBAL SERVER ERROR:",
             error
         );
 
-        return res.status(
-            error.status || 500
-        ).json({
+        if (res.headersSent) {
+            return next(error);
+        }
+
+        return res.status(500).json({
 
             success: false,
 
             error:
-                error.code ||
                 "INTERNAL_SERVER_ERROR",
 
             message:
-                error.message ||
                 "Internal server error."
 
         });
@@ -331,6 +582,10 @@ app.listen(
 
         console.log(
             `SkillEarn Hub API running on port ${PORT}`
+        );
+
+        console.log(
+            `Health check: /api/health`
         );
 
     }

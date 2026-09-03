@@ -1,1024 +1,337 @@
-<!DOCTYPE html>
-<html lang="en">
+"use strict";
 
-<head>
+require("dotenv").config();
 
-    <meta charset="UTF-8">
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
 
-    <title>
-        Admin Dashboard — SkillEarn Hub
-    </title>
+/*
+|--------------------------------------------------------------------------
+| EXPRESS APP
+|--------------------------------------------------------------------------
+*/
 
+const app = express();
 
-    <!-- Main CSS -->
+const PORT = Number(
+    process.env.PORT || 8080
+);
 
-    <link
-        rel="stylesheet"
-        href="../assets/css/app.css"
-    >
 
+/*
+|--------------------------------------------------------------------------
+| MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
 
-    <!-- Dashboard CSS -->
+app.use(
+    helmet()
+);
 
-    <link
-        rel="stylesheet"
-        href="../assets/css/dashboard.css"
-    >
+app.use(
+    cors({
+        origin: true,
+        credentials: true
+    })
+);
 
-</head>
+app.use(
+    express.json()
+);
 
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
 
-<body class="dashboard-page">
+app.use(
+    cookieParser()
+);
 
 
-<!-- =========================================
-     MOBILE SIDEBAR OVERLAY
-========================================= -->
+/*
+|--------------------------------------------------------------------------
+| ROUTES
+|--------------------------------------------------------------------------
+*/
 
-<div
-    class="sidebar-overlay"
-    id="sidebarOverlay"
-></div>
+const authRoutes =
+    require("./src/routes/auth.routes");
+
+const profileRoutes =
+    require("./src/routes/profile.routes");
+
+const walletRoutes =
+    require("./src/routes/wallet.routes");
+
+const transferRoutes =
+    require("./src/routes/transfer.routes");
 
+const recipientRoutes =
+    require("./src/routes/recipient.routes");
+
+const transactionRoutes =
+    require("./src/routes/transaction.routes");
+
+const paymentMethodRoutes =
+    require("./src/routes/payment-method.routes");
+
+const depositRoutes =
+    require("./src/routes/deposit.routes");
 
+const adminDepositRoutes =
+    require("./src/routes/admin-deposit.routes");
+
+const bankAccountRoutes =
+    require("./src/routes/bank-account.routes");
+
+const kycRoutes =
+    require("./src/routes/kyc.routes");
+
+const adminKycRoutes =
+    require("./src/routes/admin-kyc.routes");
+
+const adminUsersRoutes =
+    require("./src/routes/admin-users.routes");
 
-<!-- =========================================
-     DASHBOARD SHELL
-========================================= -->
 
-<div class="dashboard-shell">
+/*
+|--------------------------------------------------------------------------
+| API ROUTES
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+    "/api/auth",
+    authRoutes
+);
+
+app.use(
+    "/api/profile",
+    profileRoutes
+);
+
+app.use(
+    "/api/wallet",
+    walletRoutes
+);
+
+app.use(
+    "/api/transfers",
+    transferRoutes
+);
+
+app.use(
+    "/api/recipients",
+    recipientRoutes
+);
+
+app.use(
+    "/api/transactions",
+    transactionRoutes
+);
+
+app.use(
+    "/api/payment-methods",
+    paymentMethodRoutes
+);
+
+app.use(
+    "/api/deposits",
+    depositRoutes
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN DEPOSITS
+|--------------------------------------------------------------------------
+|
+| GET
+| /api/admin/deposits
+|
+| POST
+| /api/admin/deposits/:depositId/approve
+|
+| POST
+| /api/admin/deposits/:depositId/reject
+|
+*/
 
+app.use(
+    "/api/admin/deposits",
+    adminDepositRoutes
+);
 
-    <!-- =========================================
-         SIDEBAR
-    ========================================== -->
 
-    <aside
-        class="dashboard-sidebar"
-        id="dashboardSidebar"
-    >
+/*
+|--------------------------------------------------------------------------
+| BANK ACCOUNTS
+|--------------------------------------------------------------------------
+*/
 
+app.use(
+    "/api/bank-accounts",
+    bankAccountRoutes
+);
 
-        <!-- BRAND -->
 
-        <div class="sidebar-brand">
+/*
+|--------------------------------------------------------------------------
+| KYC
+|--------------------------------------------------------------------------
+*/
 
-            <a
-                href="../index.html"
-                class="brand"
-            >
+app.use(
+    "/api/kyc",
+    kycRoutes
+);
 
-                <span class="brand-mark">
-                    S
-                </span>
+app.use(
+    "/api/admin/kyc",
+    adminKycRoutes
+);
 
 
-                <span class="brand-text">
-                    SkillEarn Admin
-                </span>
+/*
+|--------------------------------------------------------------------------
+| ADMIN USERS
+|--------------------------------------------------------------------------
+*/
 
-            </a>
+app.use(
+    "/api/admin/users",
+    adminUsersRoutes
+);
 
-        </div>
 
+/*
+|--------------------------------------------------------------------------
+| HEALTH CHECK
+|--------------------------------------------------------------------------
+*/
 
+app.get(
+    "/api/health",
+    function (req, res) {
 
-        <!-- =====================================
-             ADMIN PROFILE
-        ====================================== -->
+        return res.status(200).json({
 
-        <div class="sidebar-profile">
+            success: true,
 
+            message:
+                "SkillEarn Hub API is running"
 
-            <div
-                class="profile-avatar"
-                id="adminAvatar"
-            >
-                A
-            </div>
+        });
 
+    }
+);
 
-            <div class="profile-info">
 
+/*
+|--------------------------------------------------------------------------
+| ROOT
+|--------------------------------------------------------------------------
+*/
 
-                <strong
-                    id="adminName"
-                >
-                    Admin
-                </strong>
+app.get(
+    "/",
+    function (req, res) {
 
+        return res.status(200).json({
 
-                <span
-                    id="adminEmail"
-                >
-                    Loading...
-                </span>
+            success: true,
 
+            message:
+                "SkillEarn Hub Backend API"
 
-            </div>
+        });
 
+    }
+);
 
-        </div>
 
+/*
+|--------------------------------------------------------------------------
+| 404 API HANDLER
+|--------------------------------------------------------------------------
+*/
 
+app.use(
+    function (req, res) {
 
-        <!-- =====================================
-             NAVIGATION
-        ====================================== -->
+        return res.status(404).json({
 
-        <nav class="dashboard-nav">
+            success: false,
 
+            error:
+                "ROUTE_NOT_FOUND",
 
-            <!-- OVERVIEW -->
+            message:
+                "API route not found."
 
-            <a
-                href="#overview"
-                class="nav-item active"
-                data-section="overview"
-            >
+        });
 
-                <span class="nav-icon">
-                    📊
-                </span>
+    }
+);
 
 
-                <span>
-                    Overview
-                </span>
+/*
+|--------------------------------------------------------------------------
+| GLOBAL ERROR HANDLER
+|--------------------------------------------------------------------------
+*/
 
-            </a>
+app.use(
+    function (
+        error,
+        req,
+        res,
+        next
+    ) {
 
+        console.error(
+            "SERVER ERROR:",
+            error
+        );
 
+        return res.status(
+            error.status || 500
+        ).json({
 
-            <!-- USERS -->
+            success: false,
 
-            <a
-                href="#users"
-                class="nav-item"
-                data-section="users"
-            >
+            error:
+                error.code ||
+                "INTERNAL_SERVER_ERROR",
 
-                <span class="nav-icon">
-                    👥
-                </span>
+            message:
+                error.message ||
+                "Internal server error."
 
+        });
 
-                <span>
-                    Users
-                </span>
+    }
+);
 
-            </a>
 
+/*
+|--------------------------------------------------------------------------
+| START SERVER
+|--------------------------------------------------------------------------
+*/
 
+app.listen(
+    PORT,
+    function () {
 
-            <!-- DEPOSITS -->
+        console.log(
+            `SkillEarn Hub API running on port ${PORT}`
+        );
 
-            <a
-                href="#deposits"
-                class="nav-item"
-                data-section="deposits"
-            >
-
-                <span class="nav-icon">
-                    💳
-                </span>
-
-
-                <span>
-                    Deposits
-                </span>
-
-            </a>
-
-
-        </nav>
-
-
-
-        <!-- =====================================
-             SIDEBAR FOOTER
-        ====================================== -->
-
-        <div class="sidebar-footer">
-
-
-            <button
-                id="logoutButton"
-                class="logout-button"
-                type="button"
-                data-action="logout"
-            >
-
-                <span>
-                    🚪
-                </span>
-
-
-                <span>
-                    Logout
-                </span>
-
-            </button>
-
-
-        </div>
-
-
-    </aside>
-
-
-
-    <!-- =========================================
-         MAIN AREA
-    ========================================== -->
-
-    <main class="dashboard-main">
-
-
-        <!-- =====================================
-             TOPBAR
-        ====================================== -->
-
-        <header class="dashboard-topbar">
-
-
-            <!-- MOBILE MENU BUTTON -->
-
-            <button
-                class="mobile-menu-button"
-                id="mobileMenuButton"
-                type="button"
-                aria-label="Open menu"
-            >
-                ☰
-            </button>
-
-
-
-            <!-- TITLE -->
-
-            <div class="topbar-title">
-
-
-                <span class="eyebrow">
-                    ADMINISTRATION
-                </span>
-
-
-                <h1>
-                    Admin Dashboard
-                </h1>
-
-
-            </div>
-
-
-
-            <!-- ACTIONS -->
-
-            <div class="topbar-actions">
-
-
-                <button
-                    class="notification-button"
-                    type="button"
-                    aria-label="Notifications"
-                >
-
-                    🔔
-
-
-                    <span class="notification-dot">
-                    </span>
-
-
-                </button>
-
-
-
-                <div class="topbar-user">
-
-
-                    <div
-                        class="topbar-avatar"
-                        id="topbarAvatar"
-                    >
-                        A
-                    </div>
-
-
-                    <div>
-
-
-                        <strong
-                            id="topbarName"
-                        >
-                            Admin
-                        </strong>
-
-
-                        <span>
-                            Administrator
-                        </span>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </header>
-
-
-
-        <!-- =====================================
-             CONTENT
-        ====================================== -->
-
-        <div class="dashboard-content">
-
-
-
-            <!-- =================================
-                 OVERVIEW SECTION
-            ================================== -->
-
-            <section
-                id="overview"
-                class="dashboard-section active-section"
-            >
-
-
-                <!-- PAGE HEADING -->
-
-                <div class="welcome-row">
-
-
-                    <div>
-
-
-                        <span class="section-kicker">
-                            ADMINISTRATION
-                        </span>
-
-
-                        <h2>
-
-                            Welcome,
-
-                            <span
-                                id="adminWelcomeName"
-                            >
-                                Admin
-                            </span>
-
-                        </h2>
-
-
-                        <p>
-                            SkillEarn Hub administration panel.
-                        </p>
-
-
-                    </div>
-
-
-
-                    <div class="account-status-pill">
-
-
-                        <span class="status-dot">
-                        </span>
-
-
-                        Admin Account
-
-
-                    </div>
-
-
-                </div>
-
-
-
-                <!-- =================================
-                     ADMIN STATS
-                ================================== -->
-
-                <div class="stats-grid">
-
-
-                    <!-- TOTAL USERS -->
-
-                    <div class="stat-card">
-
-
-                        <div class="stat-card-top">
-
-
-                            <span>
-                                Total Users
-                            </span>
-
-
-                            <span class="stat-icon">
-                                👥
-                            </span>
-
-
-                        </div>
-
-
-                        <strong
-                            id="totalUsers"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Registered users
-                        </small>
-
-
-                    </div>
-
-
-
-                    <!-- PENDING DEPOSITS -->
-
-                    <div class="stat-card">
-
-
-                        <div class="stat-card-top">
-
-
-                            <span>
-                                Pending Deposits
-                            </span>
-
-
-                            <span class="stat-icon">
-                                ⏳
-                            </span>
-
-
-                        </div>
-
-
-                        <strong
-                            id="pendingDeposits"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Awaiting review
-                        </small>
-
-
-                    </div>
-
-
-
-                    <!-- TOTAL DEPOSITS -->
-
-                    <div class="stat-card">
-
-
-                        <div class="stat-card-top">
-
-
-                            <span>
-                                Total Deposits
-                            </span>
-
-
-                            <span class="stat-icon">
-                                💳
-                            </span>
-
-
-                        </div>
-
-
-                        <strong
-                            id="totalDeposits"
-                        >
-                            0
-                        </strong>
-
-
-                        <small>
-                            Deposit records
-                        </small>
-
-
-                    </div>
-
-
-
-                    <!-- ADMIN -->
-
-                    <div class="stat-card wallet-card">
-
-
-                        <div class="stat-card-top">
-
-
-                            <span>
-                                Administrator
-                            </span>
-
-
-                            <span class="stat-icon">
-                                🛡️
-                            </span>
-
-
-                        </div>
-
-
-                        <strong>
-                            Admin
-                        </strong>
-
-
-                        <small>
-                            SkillEarn Hub
-                        </small>
-
-
-                    </div>
-
-
-                </div>
-
-
-
-                <!-- =================================
-                     ADMIN ACCOUNT
-                ================================== -->
-
-                <div class="content-card">
-
-
-                    <div class="card-heading">
-
-
-                        <div>
-
-
-                            <span class="section-kicker">
-                                ACCOUNT
-                            </span>
-
-
-                            <h3>
-                                Administrator Account
-                            </h3>
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-                    <div class="profile-details">
-
-
-                        <div>
-
-
-                            <span>
-                                Full Name
-                            </span>
-
-
-                            <strong
-                                id="adminProfileName"
-                            >
-                                —
-                            </strong>
-
-
-                        </div>
-
-
-
-                        <div>
-
-
-                            <span>
-                                Email
-                            </span>
-
-
-                            <strong
-                                id="adminProfileEmail"
-                            >
-                                —
-                            </strong>
-
-
-                        </div>
-
-
-
-                        <div>
-
-
-                            <span>
-                                Role
-                            </span>
-
-
-                            <strong
-                                id="adminRole"
-                            >
-                                admin
-                            </strong>
-
-
-                        </div>
-
-
-
-                        <div>
-
-
-                            <span>
-                                Account Status
-                            </span>
-
-
-                            <strong>
-                                Active
-                            </strong>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-
-                <!-- =================================
-                     QUICK ACTIONS
-                ================================== -->
-
-                <div class="content-card">
-
-
-                    <div class="card-heading">
-
-
-                        <div>
-
-
-                            <span class="section-kicker">
-                                MANAGEMENT
-                            </span>
-
-
-                            <h3>
-                                Quick Actions
-                            </h3>
-
-
-                        </div>
-
-
-                    </div>
-
-
-
-                    <div class="quick-actions-grid">
-
-
-                        <button
-                            class="action-card"
-                            type="button"
-                            data-open-section="users"
-                        >
-
-
-                            <span class="action-icon">
-                                👥
-                            </span>
-
-
-                            <strong>
-                                Manage Users
-                            </strong>
-
-
-                            <small>
-                                View registered users
-                            </small>
-
-
-                        </button>
-
-
-
-                        <button
-                            class="action-card"
-                            type="button"
-                            data-open-section="deposits"
-                        >
-
-
-                            <span class="action-icon">
-                                💳
-                            </span>
-
-
-                            <strong>
-                                Manage Deposits
-                            </strong>
-
-
-                            <small>
-                                Review deposit requests
-                            </small>
-
-
-                        </button>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </section>
-
-
-
-            <!-- =================================
-                 USERS SECTION
-            ================================== -->
-
-            <section
-                id="users"
-                class="dashboard-section"
-            >
-
-
-                <div class="page-heading">
-
-
-                    <span class="section-kicker">
-                        USER MANAGEMENT
-                    </span>
-
-
-                    <h2>
-                        Users
-                    </h2>
-
-
-                    <p>
-                        View and manage registered users.
-                    </p>
-
-
-                </div>
-
-
-
-                <div
-                    id="usersMessage"
-                    class="dashboard-message"
-                    style="display: none;"
-                ></div>
-
-
-
-                <div class="content-card">
-
-
-                    <div class="card-heading">
-
-
-                        <div>
-
-
-                            <span class="section-kicker">
-                                DATABASE
-                            </span>
-
-
-                            <h3>
-                                Registered Users
-                            </h3>
-
-
-                        </div>
-
-
-
-                        <button
-                            id="refreshUsersButton"
-                            class="secondary-button"
-                            type="button"
-                        >
-                            Refresh
-                        </button>
-
-
-                    </div>
-
-
-
-                    <div
-                        id="usersList"
-                        class="transactions-list"
-                    >
-
-
-                        <div class="empty-state">
-
-
-                            <div class="empty-icon">
-                                👥
-                            </div>
-
-
-                            <strong>
-                                Users not loaded yet
-                            </strong>
-
-
-                            <p>
-                                Click Refresh to load users.
-                            </p>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </section>
-
-
-
-            <!-- =================================
-                 DEPOSITS SECTION
-            ================================== -->
-
-            <section
-                id="deposits"
-                class="dashboard-section"
-            >
-
-
-                <div class="page-heading">
-
-
-                    <span class="section-kicker">
-                        PAYMENT MANAGEMENT
-                    </span>
-
-
-                    <h2>
-                        Deposits
-                    </h2>
-
-
-                    <p>
-                        Review and manage pending deposit requests.
-                    </p>
-
-
-                </div>
-
-
-
-                <div class="content-card">
-
-
-                    <div class="card-heading">
-
-
-                        <div>
-
-
-                            <span class="section-kicker">
-                                PAYMENTS
-                            </span>
-
-
-                            <h3>
-                                Pending Deposit Requests
-                            </h3>
-
-
-                        </div>
-
-
-
-                        <button
-                            id="refreshDepositsButton"
-                            class="secondary-button"
-                            type="button"
-                        >
-                            Refresh
-                        </button>
-
-
-                    </div>
-
-
-
-                    <div
-                        id="depositsList"
-                        class="transactions-list"
-                    >
-
-
-                        <div class="empty-state">
-
-
-                            <div class="empty-icon">
-                                💳
-                            </div>
-
-
-                            <strong>
-                                No deposits loaded
-                            </strong>
-
-
-                            <p>
-                                Pending deposit requests will appear here.
-                            </p>
-
-
-                        </div>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </section>
-
-
-        </div>
-
-
-    </main>
-
-
-</div>
-
-
-
-<!-- =========================================
-     JAVASCRIPT
-========================================= -->
-
-<!-- CONFIG MUST LOAD FIRST -->
-
-<script src="../assets/js/config.js"></script>
-
-
-<!-- AUTH -->
-
-<script src="../assets/js/auth.js"></script>
-
-
-<!-- ADMIN DASHBOARD -->
-
-<script src="../assets/js/admin-dashboard.js"></script>
-
-
-</body>
-
-</html>
+    }
+);

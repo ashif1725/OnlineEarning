@@ -1,29 +1,80 @@
 "use strict";
 
-const express = require("express");
 
-const router = express.Router();
+const express =
+    require(
+        "express"
+    );
+
+
+const router =
+    express.Router();
+
 
 const controller =
-    require("../controllers/wallet.controller");
+    require(
+        "../controllers/wallet.controller"
+    );
+
 
 const {
     requireAuth
-} = require("../middleware/auth.middleware");
+} =
+    require(
+        "../middleware/auth.middleware"
+    );
 
+
+/*
+|--------------------------------------------------------------------------
+| GET WALLET
+|--------------------------------------------------------------------------
+*/
 
 router.get(
+
     "/",
+
     requireAuth,
+
     controller.wallet
+
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| GET TRANSACTION HISTORY
+|--------------------------------------------------------------------------
+*/
 
 router.get(
+
     "/transactions",
+
     requireAuth,
+
     controller.transactions
+
 );
 
 
-module.exports = router;
+/*
+|--------------------------------------------------------------------------
+| SEND MONEY
+|--------------------------------------------------------------------------
+*/
+
+router.post(
+
+    "/send",
+
+    requireAuth,
+
+    controller.send
+
+);
+
+
+module.exports =
+    router;

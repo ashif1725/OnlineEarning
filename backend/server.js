@@ -74,6 +74,18 @@ const adminUsersRoutes =
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN DEPOSIT ROUTES
+|--------------------------------------------------------------------------
+*/
+
+const adminDepositRequestsRoutes =
+    require(
+        "./src/routes/admin-deposit-requests"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
 | APP
 |--------------------------------------------------------------------------
 */
@@ -119,12 +131,14 @@ app.set(
 */
 
 app.use(
+
     helmet({
 
         crossOriginResourcePolicy:
             false
 
     })
+
 );
 
 
@@ -211,6 +225,7 @@ const allowedOrigins =
 
                 ...(
 
+
                     process.env.NODE_ENV !==
                     "production"
 
@@ -237,6 +252,7 @@ function validateCorsOrigin(
     origin,
     callback
 ) {
+
 
     /*
     ---------------------------------------------------------
@@ -337,6 +353,7 @@ function validateCorsOrigin(
 
 const corsOptions = {
 
+
     origin:
         validateCorsOrigin,
 
@@ -399,9 +416,11 @@ const corsOptions = {
 */
 
 app.use(
+
     cors(
         corsOptions
     )
+
 );
 
 
@@ -559,6 +578,9 @@ app.get(
 |--------------------------------------------------------------------------
 | AUTH ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/auth
+|
 */
 
 app.use(
@@ -572,8 +594,11 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| DEPOSIT ROUTES
+| USER DEPOSIT ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/deposits
+|
 */
 
 app.use(
@@ -587,8 +612,11 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| WITHDRAWAL ROUTES
+| USER WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
+|
+| /api/withdrawals
+|
 */
 
 app.use(
@@ -622,6 +650,28 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN DEPOSIT ROUTES
+|--------------------------------------------------------------------------
+|
+| GET  /api/admin/deposits
+|
+| POST /api/admin/deposits/:depositId/approve
+|
+| POST /api/admin/deposits/:depositId/reject
+|
+*/
+
+app.use(
+
+    "/api/admin/deposits",
+
+    adminDepositRequestsRoutes
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
 | API 404 HANDLER
 |--------------------------------------------------------------------------
 */
@@ -638,8 +688,10 @@ app.use(
             success:
                 false,
 
+
             error:
                 "NOT_FOUND",
+
 
             message:
                 `API endpoint not found: ${req.method} ${req.originalUrl}`
@@ -667,13 +719,18 @@ app.use(
     ) {
 
         console.error(
+
             "UNHANDLED SERVER ERROR:",
+
             err
+
         );
 
 
         if (
+
             res.headersSent
+
         ) {
 
             return next(
@@ -701,8 +758,10 @@ app.use(
                 success:
                     false,
 
+
                 error:
                     "CORS_NOT_ALLOWED",
+
 
                 message:
                     "This frontend origin is not allowed to access the API."
@@ -783,6 +842,7 @@ app.listen(
 
     function () {
 
+
         console.log(
             "========================================"
         );
@@ -820,9 +880,26 @@ app.listen(
                 ? allowedOrigins
 
                 : [
+
                     "No production origin configured"
+
                 ]
 
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        console.log(
+            "Admin deposits endpoint:"
+        );
+
+
+        console.log(
+            `GET http://localhost:${PORT}/api/admin/deposits`
         );
 
 

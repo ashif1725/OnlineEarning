@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Admin Dashboard — SkillEarn Hub
+    </title>
+
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/app.css"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/dashboard.css"
+    >
+
+</head>
+
+
+<body class="dashboard-page">
+
+
+<div
+    class="sidebar-overlay"
+    id="sidebarOverlay"
+></div>
+
+
+<div class="dashboard-shell">
+
+
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
+    <aside
+        class="dashboard-sidebar"
+        id="dashboardSidebar"
+    >
+
+
+        <div class="sidebar-brand">
+
+            <a
+                href="../index.html"
+                class="brand"
+            >
+
+                <span class="brand-mark">
+                    S
+                </span>
+
+
+                <span class="brand-text">
+                    SkillEarn Admin
+                </span>
+
+            </a>
+
+        </div>
+
+
+
+        <!-- =====================================
+             ADMIN PROFILE
+        ====================================== -->
+
+        <div class="sidebar-profile">
+
+
+            <div
+                class="profile-avatar"
+                id="adminAvatar"
+            >
+                A
+            </div>
+
+
+            <div class="profile-info">
+
+                <strong
+                    id="adminName"
+                >
+                    Admin
+                </strong>
+
+
+                <span
+                    id="adminEmail"
+                >
+                    —
+                </span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =====================================
+             NAVIGATION
+        ====================================== -->
+
+        <nav class="dashboard-nav">
+
+
+            <a
+                href="#overview"
+                class="nav-item active"
+            >
+                Overview
+            </a>
+
+
+            <a
+                href="#users"
+                class="nav-item"
+            >
+                Users
+            </a>
+
+
+            <a
+                href="#deposits"
+                class="nav-item"
+            >
+                Deposits
+            </a>
+
+
+            <button
+                id="logoutButton"
+                class="nav-item"
+                type="button"
+            >
+                Logout
+            </button>
+
+
+        </nav>
+
+
+    </aside>
+
+
+
+    <!-- =========================================
+         MAIN
+    ========================================== -->
+
+    <main class="dashboard-main">
+
+
+        <!-- =====================================
+             TOPBAR
+        ====================================== -->
+
+        <header class="dashboard-topbar">
+
+
+            <button
+                class="mobile-menu-button"
+                id="mobileMenuButton"
+                type="button"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+
+            <div class="topbar-title">
+
+                <span class="eyebrow">
+                    ADMINISTRATION
+                </span>
+
+
+                <h1>
+                    Admin Dashboard
+                </h1>
+
+            </div>
+
+
+        </header>
+
+
+
+        <!-- =====================================
+             CONTENT
+        ====================================== -->
+
+        <div class="dashboard-content">
+
+
+
+            <!-- =================================
+                 OVERVIEW
+            ================================== -->
+
+            <section
+                id="overview"
+                class="dashboard-section active-section"
+            >
+
+
+                <div class="page-heading">
+
+
+                    <span class="section-kicker">
+                        ADMINISTRATION
+                    </span>
+
+
+                    <h2>
+
+                        Welcome,
+
+                        <span id="adminWelcomeName">
+                            Admin
+                        </span>
+
+                    </h2>
+
+
+                    <p>
+                        SkillEarn Hub administration panel.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="content-card">
+
+
+                    <h3>
+                        Administrator Account
+                    </h3>
+
+
+                    <br>
+
+
+                    <p>
+
+                        <strong>
+                            Email:
+                        </strong>
+
+
+                        <span
+                            id="adminProfileEmail"
+                        >
+                            —
+                        </span>
+
+                    </p>
+
+
+                    <br>
+
+
+                    <p>
+
+                        <strong>
+                            Role:
+                        </strong>
+
+
+                        <span
+                            id="adminRole"
+                        >
+                            —
+                        </span>
+
+                    </p>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================
+                 USERS
+            ================================== -->
+
+            <section
+                id="users"
+                class="dashboard-section"
+            >
+
+
+                <div class="page-heading">
+
+
+                    <span class="section-kicker">
+                        USER MANAGEMENT
+                    </span>
+
+
+                    <h2>
+                        Users
+                    </h2>
+
+
+                    <p>
+                        View and manage registered users.
+                    </p>
+
+
+                </div>
+
+
+
+                <div
+                    id="usersMessage"
+                    class="dashboard-message"
+                    style="display: none;"
+                ></div>
+
+
+
+                <div class="content-card">
+
+
+                    <div class="card-heading">
+
+                        <h3>
+                            Registered Users
+                        </h3>
+
+
+                        <button
+                            id="refreshUsersButton"
+                            class="secondary-button"
+                            type="button"
+                        >
+                            Refresh
+                        </button>
+
+
+                    </div>
+
+
+
+                    <div
+                        id="usersList"
+                        class="transactions-list"
+                    >
+
+                        <div class="empty-state">
+
+                            <strong>
+                                Users not loaded yet
+                            </strong>
+
+
+                            <p>
+                                Open this section to load users.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================
+                 DEPOSITS
+            ================================== -->
+
+            <section
+                id="deposits"
+                class="dashboard-section"
+            >
+
+
+                <div class="page-heading">
+
+
+                    <span class="section-kicker">
+                        PAYMENT MANAGEMENT
+                    </span>
+
+
+                    <h2>
+                        Deposits
+                    </h2>
+
+
+                    <p>
+                        Deposit requests and payment activity.
+                    </p>
+
+
+                </div>
+
+
+
+                <div class="content-card">
+
+
+                    <h3>
+                        Deposit Requests
+                    </h3>
+
+
+                    <div
+                        id="depositsList"
+                        class="transactions-list"
+                    >
+
+                        <div class="empty-state">
+
+                            <strong>
+                                Deposit data
+                            </strong>
+
+
+                            <p>
+                                Deposit API integration will appear here.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            </section>
+
+
+        </div>
+
+
+    </main>
+
+
+</div>
+
+
+
+<!-- =========================================
+     JAVASCRIPT
+========================================= -->
+
+<script src="../assets/js/config.js"></script>
+
+<script src="../assets/js/auth.js"></script>
+
+<script src="../assets/js/admin-dashboard.js"></script>
+
+
+</body>
+
+</html>

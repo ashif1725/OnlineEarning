@@ -1,12 +1,6 @@
 "use strict";
 
 
-/*
-|--------------------------------------------------------------------------
-| SESSION SERVICE
-|--------------------------------------------------------------------------
-*/
-
 const {
     getSession
 } = require(
@@ -16,7 +10,7 @@ const {
 
 /*
 |--------------------------------------------------------------------------
-| EXTRACT AUTH TOKEN
+| GET AUTH TOKEN
 |--------------------------------------------------------------------------
 */
 
@@ -24,63 +18,61 @@ function getAuthToken(
     req
 ) {
 
-    let token =
-        null;
-
-
-    /*
-    ---------------------------------------------------------
-    Authorization Bearer Token
-    ---------------------------------------------------------
-    */
-
     const authorization =
-        req.headers.authorization;
+        String(
+            req.get(
+                "authorization"
+            ) ||
+            ""
+        )
+        .trim();
 
 
     if (
-        authorization &&
-        typeof authorization === "string" &&
-        authorization.startsWith(
-            "Bearer "
-        )
+
+        authorization
+            .toLowerCase()
+            .startsWith(
+                "bearer "
+            )
+
     ) {
 
-        token =
+        const token =
             authorization
                 .slice(7)
                 .trim();
 
-    }
 
+        if (
+            token
+        ) {
 
-    /*
-    ---------------------------------------------------------
-    Cookie Token
-    ---------------------------------------------------------
-    */
+            return token;
 
-    if (
-        !token &&
-        req.cookies
-    ) {
-
-        token =
-            req.cookies.access_token ||
-            req.cookies.token ||
-            null;
+        }
 
     }
 
 
-    return token;
+    return (
+
+        req.cookies?.skillearn_session ||
+
+        req.cookies?.access_token ||
+
+        req.cookies?.token ||
+
+        null
+
+    );
 
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| CREATE AUTHENTICATED USER
+| CREATE AUTH USER
 |--------------------------------------------------------------------------
 */
 
@@ -118,6 +110,9 @@ function createAuthenticatedUser(
         full_name:
             session.full_name,
 
+        name:
+            session.full_name,
+
         email:
             session.email,
 
@@ -125,7 +120,13 @@ function createAuthenticatedUser(
             session.phone,
 
         role:
-            session.role,
+
+            String(
+                session.role ||
+                "user"
+            )
+            .trim()
+            .toLowerCase(),
 
         accountStatus:
             session.account_status,
@@ -158,23 +159,11 @@ async function requireAuth(
 
     try {
 
-        /*
-        -----------------------------------------------------
-        Get token
-        -----------------------------------------------------
-        */
-
         const token =
             getAuthToken(
                 req
             );
 
-
-        /*
-        -----------------------------------------------------
-        Token missing
-        -----------------------------------------------------
-        */
 
         if (!token) {
 
@@ -182,6 +171,9 @@ async function requireAuth(
 
                 success:
                     false,
+
+                error:
+                    "AUTHENTICATION_REQUIRED",
 
                 message:
                     "Authentication required."
@@ -191,23 +183,11 @@ async function requireAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Get session
-        -----------------------------------------------------
-        */
-
         const session =
             await getSession(
                 token
             );
 
-
-        /*
-        -----------------------------------------------------
-        Invalid or expired session
-        -----------------------------------------------------
-        */
 
         if (!session) {
 
@@ -215,6 +195,9 @@ async function requireAuth(
 
                 success:
                     false,
+
+                error:
+                    "INVALID_SESSION",
 
                 message:
                     "Invalid or expired session."
@@ -224,38 +207,11 @@ async function requireAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Create authenticated user
-        -----------------------------------------------------
-        */
-
         const user =
             createAuthenticatedUser(
                 session
             );
 
-
-        if (!user) {
-
-            return res.status(401).json({
-
-                success:
-                    false,
-
-                message:
-                    "User not found."
-
-            });
-
-        }
-
-
-        /*
-        -----------------------------------------------------
-        Attach authentication data
-        -----------------------------------------------------
-        */
 
         req.user =
             user;
@@ -265,11 +221,18 @@ async function requireAuth(
             session;
 
 
-        /*
-        -----------------------------------------------------
-        Continue
-        -----------------------------------------------------
-        */
+        req.auth = {
+
+            sessionId:
+                session.session_id ||
+                null,
+
+            expiresAt:
+                session.expires_at ||
+                null
+
+        };
+
 
         return next();
 
@@ -286,6 +249,9 @@ async function requireAuth(
 
             success:
                 false,
+
+            error:
+                "AUTHENTICATION_FAILED",
 
             message:
                 "Authentication failed."
@@ -309,95 +275,55 @@ function requireAdmin(
     next
 ) {
 
-    try {
+    if (!req.user) {
 
-        /*
-        -----------------------------------------------------
-        Authentication check
-        -----------------------------------------------------
-        */
+        return res.status(401).json({
 
-        if (!req.user) {
+            success:
+                false,
 
-            return res.status(401).json({
+            error:
+                "AUTHENTICATION_REQUIRED"
 
-                success:
-                    false,
+        });
 
-                message:
-                    "Authentication required."
-
-            });
-
-        }
+    }
 
 
-        /*
-        -----------------------------------------------------
-        Get role
-        -----------------------------------------------------
-        */
-
-        const role =
-            String(
-
-                req.user.role ||
-
-                req.user.account_role ||
-
-                ""
-
-            )
-            .trim()
-            .toLowerCase();
+    const role =
+        String(
+            req.user.role ||
+            "user"
+        )
+        .trim()
+        .toLowerCase();
 
 
-        /*
-        -----------------------------------------------------
-        Admin check
-        -----------------------------------------------------
-        */
+    if (
 
-        if (
-            role !== "admin" &&
-            role !== "administrator"
-        ) {
+        role !== "admin" &&
 
-            return res.status(403).json({
+        role !== "administrator"
 
-                success:
-                    false,
-
-                message:
-                    "Admin access required."
-
-            });
-
-        }
-
-
-        return next();
-
-
-    } catch (error) {
-
-        console.error(
-            "ADMIN MIDDLEWARE ERROR:",
-            error
-        );
-
+    ) {
 
         return res.status(403).json({
 
             success:
                 false,
 
+            error:
+                "ADMIN_ACCESS_REQUIRED",
+
             message:
-                "Unable to verify admin access."
+                "Admin access required."
 
         });
 
     }
+
+
+    return next();
 
 }
 
@@ -416,23 +342,11 @@ async function optionalAuth(
 
     try {
 
-        /*
-        -----------------------------------------------------
-        Get token
-        -----------------------------------------------------
-        */
-
         const token =
             getAuthToken(
                 req
             );
 
-
-        /*
-        -----------------------------------------------------
-        Authentication is optional
-        -----------------------------------------------------
-        */
 
         if (!token) {
 
@@ -441,55 +355,46 @@ async function optionalAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Get session
-        -----------------------------------------------------
-        */
-
         const session =
             await getSession(
                 token
             );
 
 
-        /*
-        -----------------------------------------------------
-        Attach user if session is valid
-        -----------------------------------------------------
-        */
+        if (!session) {
 
-        if (session) {
-
-            const user =
-                createAuthenticatedUser(
-                    session
-                );
-
-
-            if (user) {
-
-                req.user =
-                    user;
-
-            }
-
-
-            req.session =
-                session;
+            return next();
 
         }
+
+
+        req.user =
+            createAuthenticatedUser(
+                session
+            );
+
+
+        req.session =
+            session;
+
+
+        req.auth = {
+
+            sessionId:
+                session.session_id ||
+                null,
+
+            expiresAt:
+                session.expires_at ||
+                null
+
+        };
 
 
         return next();
 
 
     } catch (error) {
-
-        /*
-        Optional authentication should not
-        block the request.
-        */
 
         return next();
 
@@ -498,13 +403,11 @@ async function optionalAuth(
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| EXPORTS
-|--------------------------------------------------------------------------
-*/
-
 module.exports = {
+
+    getAuthToken,
+
+    createAuthenticatedUser,
 
     requireAuth,
 

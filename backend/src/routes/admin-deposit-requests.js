@@ -21,18 +21,17 @@ const express =
 
 const {
     requireAuth
-} =
-    require(
-        "../middleware/auth.middleware"
-    );
-
+} = require("../middleware/auth");
 
 const {
     requireAdmin
-} =
-    require(
-        "../middleware/admin"
-    );
+} = require("../middleware/admin");
+
+const {
+    getPendingDeposits,
+    approveDepositRequest,
+    rejectDepositRequest
+} = require("../services/deposit.service");
 
 
 /*

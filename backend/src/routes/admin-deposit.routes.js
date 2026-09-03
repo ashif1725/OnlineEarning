@@ -17,16 +17,6 @@ const depositService =
     );
 
 
-/*
-|--------------------------------------------------------------------------
-| AUTH + ADMIN MIDDLEWARE
-|--------------------------------------------------------------------------
-|
-| Your project exports both requireAuth and requireAdmin
-| from auth.middleware.js
-|
-*/
-
 const {
 
     requireAuth,
@@ -43,9 +33,6 @@ const {
 |--------------------------------------------------------------------------
 | GET PENDING DEPOSITS
 |--------------------------------------------------------------------------
-|
-| GET /api/admin/deposits/pending
-|
 */
 
 router.get(
@@ -80,17 +67,13 @@ router.get(
 
             });
 
-
         } catch (
             error
         ) {
 
             console.error(
-
                 "GET PENDING DEPOSITS ERROR:",
-
                 error
-
             );
 
 
@@ -103,15 +86,11 @@ router.get(
                     false,
 
                 code:
-
                     error.code ||
-
                     "LOAD_DEPOSITS_FAILED",
 
                 message:
-
                     error.message ||
-
                     "Unable to load deposits."
 
             });
@@ -127,9 +106,6 @@ router.get(
 |--------------------------------------------------------------------------
 | APPROVE DEPOSIT
 |--------------------------------------------------------------------------
-|
-| POST /api/admin/deposits/:depositId/approve
-|
 */
 
 router.post(
@@ -227,81 +203,18 @@ router.post(
 
             });
 
-
         } catch (
             error
         ) {
 
             console.error(
-
                 "ADMIN APPROVE DEPOSIT ERROR:",
-
-                {
-
-                    message:
-                        error.message,
-
-                    code:
-                        error.code,
-
-                    detail:
-                        error.detail,
-
-                    table:
-                        error.table,
-
-                    column:
-                        error.column,
-
-                    constraint:
-                        error.constraint
-
-                }
-
+                error
             );
 
 
-            const knownClientErrors =
-                [
-
-                    "DEPOSIT_NOT_FOUND",
-
-                    "DEPOSIT_ALREADY_PROCESSED",
-
-                    "INVALID_DEPOSIT_AMOUNT",
-
-                    "WALLET_NOT_FOUND",
-
-                    "WALLET_USER_MISMATCH",
-
-                    "WALLET_INACTIVE",
-
-                    "WALLET_BALANCE_NOT_FOUND",
-
-                    "INVALID_WALLET_BALANCE",
-
-                    "DEPOSIT_UPDATE_FAILED"
-
-                ];
-
-
-            const statusCode =
-
-                knownClientErrors.includes(
-                    error.code
-                )
-
-                    ?
-
-                    400
-
-                    :
-
-                    500;
-
-
             return res.status(
-                statusCode
+                400
             )
             .json({
 
@@ -309,15 +222,11 @@ router.post(
                     false,
 
                 code:
-
                     error.code ||
-
                     "DEPOSIT_APPROVAL_FAILED",
 
                 message:
-
                     error.message ||
-
                     "Unable to approve deposit."
 
             });
@@ -333,9 +242,6 @@ router.post(
 |--------------------------------------------------------------------------
 | REJECT DEPOSIT
 |--------------------------------------------------------------------------
-|
-| POST /api/admin/deposits/:depositId/reject
-|
 */
 
 router.post(
@@ -440,28 +346,13 @@ router.post(
 
             });
 
-
         } catch (
             error
         ) {
 
             console.error(
-
                 "ADMIN REJECT DEPOSIT ERROR:",
-
-                {
-
-                    message:
-                        error.message,
-
-                    code:
-                        error.code,
-
-                    detail:
-                        error.detail
-
-                }
-
+                error
             );
 
 
@@ -474,15 +365,11 @@ router.post(
                     false,
 
                 code:
-
                     error.code ||
-
                     "DEPOSIT_REJECTION_FAILED",
 
                 message:
-
                     error.message ||
-
                     "Unable to reject deposit."
 
             });
@@ -496,7 +383,7 @@ router.post(
 
 /*
 |--------------------------------------------------------------------------
-| EXPORT
+| EXPORT ROUTER
 |--------------------------------------------------------------------------
 */
 

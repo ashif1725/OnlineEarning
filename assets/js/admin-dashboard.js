@@ -1,314 +1,595 @@
-document.addEventListener("DOMContentLoaded", function () {
+"use strict";
 
 
-    /* =========================================
-       ELEMENTS
-    ========================================= */
-
-    const sidebar = document.getElementById(
-        "dashboardSidebar"
-    );
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
 
 
-    const overlay = document.getElementById(
-        "sidebarOverlay"
-    );
+        /* =========================================
+           ELEMENTS
+        ========================================= */
+
+        const sidebar =
+            document.getElementById(
+                "dashboardSidebar"
+            );
 
 
-    const mobileMenuButton = document.getElementById(
-        "mobileMenuButton"
-    );
+        const overlay =
+            document.getElementById(
+                "sidebarOverlay"
+            );
 
 
-    const navItems = document.querySelectorAll(
-        ".nav-item[data-section]"
-    );
+        const mobileMenuButton =
+            document.getElementById(
+                "mobileMenuButton"
+            );
 
 
-    const sections = document.querySelectorAll(
-        ".dashboard-section"
-    );
+        const navItems =
+            document.querySelectorAll(
+                ".nav-item[data-section]"
+            );
 
 
-    const quickActionButtons = document.querySelectorAll(
-        "[data-open-section]"
-    );
+        const sections =
+            document.querySelectorAll(
+                ".dashboard-section"
+            );
 
 
-    /* =========================================
-       MOBILE MENU
-    ========================================= */
+        const quickActionButtons =
+            document.querySelectorAll(
+                "[data-open-section]"
+            );
 
-    function openSidebar() {
 
-        if (sidebar) {
+        const refreshUsersButton =
+            document.getElementById(
+                "refreshUsersButton"
+            );
 
-            sidebar.classList.add("open");
+
+        const refreshDepositsButton =
+            document.getElementById(
+                "refreshDepositsButton"
+            );
+
+
+        const logoutButton =
+            document.getElementById(
+                "logoutButton"
+            );
+
+
+        /* =========================================
+           HELPERS
+        ========================================= */
+
+        function setText(
+            id,
+            value
+        ) {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+
+            if (element) {
+
+                element.textContent =
+                    value;
+
+            }
 
         }
 
 
-        if (overlay) {
 
-            overlay.classList.add("visible");
+        function getInitial(
+            name
+        ) {
 
-        }
-
-    }
-
-
-
-    function closeSidebar() {
-
-        if (sidebar) {
-
-            sidebar.classList.remove("open");
+            return String(
+                name ||
+                "Admin"
+            )
+            .trim()
+            .charAt(0)
+            .toUpperCase();
 
         }
 
 
-        if (overlay) {
 
-            overlay.classList.remove("visible");
+        function escapeHtml(
+            value
+        ) {
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.textContent =
+                String(
+                    value ??
+                    ""
+                );
+
+
+            return div.innerHTML;
 
         }
 
-    }
+
+
+        function getRole(
+            user
+        ) {
+
+            return String(
+
+                user?.role ||
+
+                user?.userRole ||
+
+                user?.user_role ||
+
+                ""
+
+            )
+            .trim()
+            .toLowerCase();
+
+        }
 
 
 
-    if (mobileMenuButton) {
+        /* =========================================
+           ADMIN AUTH CHECK
+        ========================================= */
 
-        mobileMenuButton.addEventListener(
-            "click",
-            function () {
+        function getAdminUser() {
 
-                if (
-                    sidebar &&
-                    sidebar.classList.contains("open")
-                ) {
+            if (
+                typeof window.getSavedUser !==
+                "function"
+            ) {
 
-                    closeSidebar();
+                return null;
 
-                } else {
+            }
 
-                    openSidebar();
+
+            return window.getSavedUser();
+
+        }
+
+
+
+        function redirectToLogin() {
+
+            if (
+                typeof window.clearAuthData ===
+                "function"
+            ) {
+
+                window.clearAuthData();
+
+            }
+
+
+            window.location.assign(
+                "../login.html"
+            );
+
+        }
+
+
+
+        function validateAdmin() {
+
+            const user =
+                getAdminUser();
+
+
+            const token =
+                typeof window.getAuthToken ===
+                "function"
+
+                    ? window.getAuthToken()
+
+                    : null;
+
+
+            if (
+                !user ||
+                !token
+            ) {
+
+                redirectToLogin();
+
+                return null;
+
+            }
+
+
+            const role =
+                getRole(
+                    user
+                );
+
+
+            if (
+
+                role !== "admin" &&
+
+                role !== "administrator"
+
+            ) {
+
+                window.location.assign(
+                    "../user/dashboard.html"
+                );
+
+                return null;
+
+            }
+
+
+            return user;
+
+        }
+
+
+
+        /* =========================================
+           MOBILE SIDEBAR
+        ========================================= */
+
+        function openSidebar() {
+
+            if (sidebar) {
+
+                sidebar.classList.add(
+                    "open"
+                );
+
+            }
+
+
+            if (overlay) {
+
+                overlay.classList.add(
+                    "visible"
+                );
+
+                overlay.hidden =
+                    false;
+
+            }
+
+        }
+
+
+
+        function closeSidebar() {
+
+            if (sidebar) {
+
+                sidebar.classList.remove(
+                    "open"
+                );
+
+            }
+
+
+            if (overlay) {
+
+                overlay.classList.remove(
+                    "visible"
+                );
+
+                overlay.hidden =
+                    true;
+
+            }
+
+        }
+
+
+
+        if (mobileMenuButton) {
+
+            mobileMenuButton.addEventListener(
+
+                "click",
+
+                function () {
+
+                    if (
+
+                        sidebar &&
+
+                        sidebar.classList.contains(
+                            "open"
+                        )
+
+                    ) {
+
+                        closeSidebar();
+
+                    }
+
+                    else {
+
+                        openSidebar();
+
+                    }
 
                 }
 
-            }
-        );
+            );
 
-    }
-
-
-
-    if (overlay) {
-
-        overlay.addEventListener(
-            "click",
-            closeSidebar
-        );
-
-    }
+        }
 
 
 
-    /* =========================================
-       SECTION NAVIGATION
-    ========================================= */
+        if (overlay) {
 
-    function showSection(sectionId) {
+            overlay.addEventListener(
+
+                "click",
+
+                closeSidebar
+
+            );
+
+        }
 
 
-        sections.forEach(
-            function (section) {
 
-                section.classList.remove(
+        /* =========================================
+           SECTION NAVIGATION
+        ========================================= */
+
+        function showSection(
+            sectionId
+        ) {
+
+            sections.forEach(
+
+                function (
+                    section
+                ) {
+
+                    section.classList.remove(
+                        "active-section"
+                    );
+
+                }
+
+            );
+
+
+            const targetSection =
+                document.getElementById(
+                    sectionId
+                );
+
+
+            if (targetSection) {
+
+                targetSection.classList.add(
                     "active-section"
                 );
 
             }
-        );
 
 
-        const targetSection = document.getElementById(
-            sectionId
-        );
+            navItems.forEach(
+
+                function (
+                    item
+                ) {
+
+                    item.classList.remove(
+                        "active"
+                    );
 
 
-        if (targetSection) {
+                    if (
 
-            targetSection.classList.add(
-                "active-section"
+                        item.dataset.section ===
+                        sectionId
+
+                    ) {
+
+                        item.classList.add(
+                            "active"
+                        );
+
+                    }
+
+                }
+
             );
+
+
+            closeSidebar();
+
+
+            window.scrollTo({
+
+                top:
+                    0,
+
+                behavior:
+                    "smooth"
+
+            });
+
+
+            if (
+                sectionId ===
+                "users"
+            ) {
+
+                loadUsers();
+
+            }
+
+
+            if (
+                sectionId ===
+                "deposits"
+            ) {
+
+                loadDeposits();
+
+            }
 
         }
 
 
 
         navItems.forEach(
-            function (item) {
 
-                item.classList.remove(
-                    "active"
+            function (
+                item
+            ) {
+
+                item.addEventListener(
+
+                    "click",
+
+                    function (
+                        event
+                    ) {
+
+                        event.preventDefault();
+
+
+                        const sectionId =
+                            item.dataset.section;
+
+
+                        showSection(
+                            sectionId
+                        );
+
+
+                        window.history.replaceState(
+
+                            null,
+
+                            "",
+
+                            "#" +
+                            sectionId
+
+                        );
+
+                    }
+
                 );
 
-
-                if (
-                    item.dataset.section ===
-                    sectionId
-                ) {
-
-                    item.classList.add(
-                        "active"
-                    );
-
-                }
-
             }
+
         );
 
 
-        closeSidebar();
+
+        /* =========================================
+           QUICK ACTIONS
+        ========================================= */
+
+        quickActionButtons.forEach(
+
+            function (
+                button
+            ) {
+
+                button.addEventListener(
+
+                    "click",
+
+                    function () {
+
+                        const sectionId =
+                            button.dataset
+                                .openSection;
 
 
-        window.scrollTo({
+                        if (
+                            sectionId
+                        ) {
 
-            top: 0,
+                            showSection(
+                                sectionId
+                            );
 
-            behavior: "smooth"
+                        }
 
-        });
+                    }
 
-
-        if (sectionId === "users") {
-
-            loadUsers();
-
-        }
-
-
-        if (sectionId === "deposits") {
-
-            loadDeposits();
-
-        }
-
-    }
-
-
-
-    navItems.forEach(
-        function (item) {
-
-
-            item.addEventListener(
-                "click",
-                function (event) {
-
-
-                    event.preventDefault();
-
-
-                    const sectionId =
-                        item.dataset.section;
-
-
-                    showSection(
-                        sectionId
-                    );
-
-
-                    window.history.replaceState(
-                        null,
-                        "",
-                        "#" + sectionId
-                    );
-
-                }
-            );
-
-
-        }
-    );
-
-
-
-    /* =========================================
-       QUICK ACTION BUTTONS
-    ========================================= */
-
-    quickActionButtons.forEach(
-        function (button) {
-
-
-            button.addEventListener(
-                "click",
-                function () {
-
-
-                    const sectionId =
-                        button.dataset.openSection;
-
-
-                    showSection(
-                        sectionId
-                    );
-
-                }
-            );
-
-
-        }
-    );
-
-
-
-    /* =========================================
-       LOAD ADMIN PROFILE
-    ========================================= */
-
-    function loadAdminProfile() {
-
-
-        try {
-
-
-            const storedUser =
-                localStorage.getItem(
-                    "skilllearn_user"
                 );
 
+            }
 
-            if (!storedUser) {
+        );
+
+
+
+        /* =========================================
+           LOAD ADMIN PROFILE
+        ========================================= */
+
+        function loadAdminProfile(
+            user
+        ) {
+
+            if (!user) {
 
                 return;
 
             }
 
 
-            const user =
-                JSON.parse(
-                    storedUser
-                );
-
-
             const name =
                 user.full_name ||
+
                 user.fullName ||
+
                 user.name ||
+
                 "Admin";
 
 
             const email =
                 user.email ||
+
                 "—";
 
 
             const role =
-                user.role ||
+                getRole(
+                    user
+                ) ||
+
                 "admin";
+
+
+            const initial =
+                getInitial(
+                    name
+                );
 
 
             setText(
@@ -355,250 +636,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
             setText(
                 "adminAvatar",
-                getInitial(
-                    name
-                )
+                initial
             );
 
 
             setText(
                 "topbarAvatar",
-                getInitial(
-                    name
-                )
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Admin profile error:",
-                error
+                initial
             );
 
         }
 
-    }
 
 
+        /* =========================================
+           USERS
+        ========================================= */
 
-    /* =========================================
-       HELPERS
-    ========================================= */
+        async function loadUsers() {
 
-    function setText(
-        id,
-        value
-    ) {
-
-
-        const element =
-            document.getElementById(
-                id
-            );
-
-
-        if (element) {
-
-            element.textContent =
-                value;
-
-        }
-
-    }
-
-
-
-    function getInitial(
-        name
-    ) {
-
-
-        if (!name) {
-
-            return "A";
-
-        }
-
-
-        return name
-            .trim()
-            .charAt(0)
-            .toUpperCase();
-
-    }
-
-
-
-    /* =========================================
-       USERS
-    ========================================= */
-
-    async function loadUsers() {
-
-
-        const usersList =
-            document.getElementById(
-                "usersList"
-            );
-
-
-        const usersMessage =
-            document.getElementById(
-                "usersMessage"
-            );
-
-
-        if (!usersList) {
-
-            return;
-
-        }
-
-
-        usersList.innerHTML = `
-
-            <div class="empty-state">
-
-                <div class="empty-icon">
-                    ⏳
-                </div>
-
-                <strong>
-                    Loading users...
-                </strong>
-
-            </div>
-
-        `;
-
-
-        try {
-
-
-            const apiUrl =
-                window.API_URL ||
-                "";
-
-
-            if (!apiUrl) {
-
-                throw new Error(
-                    "API URL not configured"
+            const usersList =
+                document.getElementById(
+                    "usersList"
                 );
+
+
+            const usersMessage =
+                document.getElementById(
+                    "usersMessage"
+                );
+
+
+            if (!usersList) {
+
+                return;
 
             }
-
-
-            const response =
-                await fetch(
-                    apiUrl + "/admin/users",
-                    {
-
-                        headers: getHeaders()
-
-                    }
-                );
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "Unable to load users"
-                );
-
-            }
-
-
-            const data =
-                await response.json();
-
-
-            const users =
-                data.users ||
-                data ||
-                [];
-
-
-            setText(
-                "totalUsers",
-                users.length
-            );
-
-
-            renderUsers(
-                users
-            );
-
-
-        } catch (error) {
-
-
-            console.error(
-                error
-            );
-
-
-            usersList.innerHTML = `
-
-                <div class="empty-state">
-
-                    <div class="empty-icon">
-                        ⚠️
-                    </div>
-
-                    <strong>
-                        Unable to load users
-                    </strong>
-
-                    <p>
-                        Check backend API connection.
-                    </p>
-
-                </div>
-
-            `;
 
 
             if (usersMessage) {
 
                 usersMessage.style.display =
-                    "block";
+                    "none";
 
 
                 usersMessage.textContent =
-                    error.message;
+                    "";
 
             }
-
-        }
-
-    }
-
-
-
-    function renderUsers(
-        users
-    ) {
-
-
-        const usersList =
-            document.getElementById(
-                "usersList"
-            );
-
-
-        if (!usersList) {
-
-            return;
-
-        }
-
-
-        if (
-            !Array.isArray(users) ||
-            users.length === 0
-        ) {
 
 
             usersList.innerHTML = `
@@ -606,177 +691,327 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="empty-state">
 
                     <div class="empty-icon">
-                        👥
+                        ⏳
                     </div>
 
                     <strong>
-                        No users found
+                        Loading users...
                     </strong>
-
-                    <p>
-                        Registered users will appear here.
-                    </p>
 
                 </div>
 
             `;
 
 
-            return;
+            try {
 
-        }
+                const data =
+                    await window.apiRequest(
+
+                        "/api/admin/users",
+
+                        {
+
+                            method:
+                                "GET"
+
+                        }
+
+                    );
 
 
-        usersList.innerHTML =
-            users.map(
-                function (user) {
+                const users =
+                    Array.isArray(
+                        data
+                    )
+
+                        ? data
+
+                        : (
+
+                            data?.users ||
+
+                            data?.data?.users ||
+
+                            data?.data ||
+
+                            []
+
+                        );
 
 
-                    return `
+                setText(
+                    "totalUsers",
+                    Array.isArray(
+                        users
+                    )
 
-                        <div
-                            class="content-card"
-                            style="margin-bottom: 12px;"
-                        >
+                        ? users.length
+
+                        : 0
+                );
+
+
+                renderUsers(
+                    users
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "LOAD USERS ERROR:",
+                    error
+                );
+
+
+                if (
+                    error?.status ===
+                    401
+                ) {
+
+                    redirectToLogin();
+
+                    return;
+
+                }
+
+
+                if (
+                    error?.status ===
+                    403
+                ) {
+
+                    usersList.innerHTML = `
+
+                        <div class="empty-state">
+
+                            <div class="empty-icon">
+                                🔒
+                            </div>
 
                             <strong>
-                                ${
-                                    escapeHtml(
-                                        user.full_name ||
-                                        user.name ||
-                                        "User"
-                                    )
-                                }
+                                Admin access denied
                             </strong>
 
                             <p>
-                                ${
-                                    escapeHtml(
-                                        user.email ||
-                                        ""
-                                    )
-                                }
+                                Your account does not have permission
+                                to view users.
                             </p>
 
                         </div>
 
                     `;
 
+                    return;
 
                 }
-            ).join("");
-
-    }
 
 
+                usersList.innerHTML = `
 
-    /* =========================================
-       DEPOSITS
-    ========================================= */
+                    <div class="empty-state">
 
-    async function loadDeposits() {
+                        <div class="empty-icon">
+                            ⚠️
+                        </div>
+
+                        <strong>
+                            Unable to load users
+                        </strong>
+
+                        <p>
+                            ${escapeHtml(
+                                error?.message ||
+                                "Please check the backend API."
+                            )}
+                        </p>
+
+                    </div>
+
+                `;
 
 
-        const depositsList =
-            document.getElementById(
-                "depositsList"
-            );
+                if (
+                    usersMessage
+                ) {
+
+                    usersMessage.style.display =
+                        "block";
 
 
-        if (!depositsList) {
+                    usersMessage.textContent =
+                        error?.message ||
+                        "Unable to load users.";
 
-            return;
+                }
+
+            }
 
         }
 
 
-        depositsList.innerHTML = `
 
-            <div class="empty-state">
+        function renderUsers(
+            users
+        ) {
 
-                <div class="empty-icon">
-                    ⏳
-                </div>
-
-                <strong>
-                    Loading deposits...
-                </strong>
-
-            </div>
-
-        `;
-
-
-        try {
-
-
-            const apiUrl =
-                window.API_URL ||
-                "";
-
-
-            if (!apiUrl) {
-
-                throw new Error(
-                    "API URL not configured"
+            const usersList =
+                document.getElementById(
+                    "usersList"
                 );
+
+
+            if (!usersList) {
+
+                return;
 
             }
 
 
-            const response =
-                await fetch(
-                    apiUrl + "/admin/deposits",
-                    {
+            if (
 
-                        headers: getHeaders()
+                !Array.isArray(
+                    users
+                ) ||
+
+                users.length ===
+                0
+
+            ) {
+
+                usersList.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            👥
+                        </div>
+
+                        <strong>
+                            No users found
+                        </strong>
+
+                        <p>
+                            Registered users will appear here.
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            usersList.innerHTML =
+                users.map(
+
+                    function (
+                        user
+                    ) {
+
+                        const name =
+                            user.full_name ||
+
+                            user.fullName ||
+
+                            user.name ||
+
+                            "User";
+
+
+                        const email =
+                            user.email ||
+                            "—";
+
+
+                        const userId =
+                            user.public_user_id ||
+
+                            user.publicUserId ||
+
+                            user.id ||
+
+                            "—";
+
+
+                        const role =
+                            user.role ||
+                            "user";
+
+
+                        return `
+
+                            <div
+                                class="content-card"
+                                style="margin-bottom: 12px;"
+                            >
+
+                                <strong>
+                                    ${escapeHtml(
+                                        name
+                                    )}
+                                </strong>
+
+                                <p>
+                                    Email:
+                                    ${escapeHtml(
+                                        email
+                                    )}
+                                </p>
+
+                                <p>
+                                    User ID:
+                                    ${escapeHtml(
+                                        userId
+                                    )}
+                                </p>
+
+                                <p>
+                                    Role:
+                                    ${escapeHtml(
+                                        role
+                                    )}
+                                </p>
+
+                            </div>
+
+                        `;
 
                     }
+
+                )
+                .join(
+                    ""
+                );
+
+        }
+
+
+
+        /* =========================================
+           DEPOSITS
+        ========================================= */
+
+        async function loadDeposits() {
+
+            const depositsList =
+                document.getElementById(
+                    "depositsList"
                 );
 
 
-            if (!response.ok) {
+            if (!depositsList) {
 
-                throw new Error(
-                    "Unable to load deposits"
-                );
+                return;
 
             }
-
-
-            const data =
-                await response.json();
-
-
-            const deposits =
-                data.deposits ||
-                data ||
-                [];
-
-
-            setText(
-                "pendingDeposits",
-                deposits.length
-            );
-
-
-            setText(
-                "totalDeposits",
-                deposits.length
-            );
-
-
-            renderDeposits(
-                deposits
-            );
-
-
-        } catch (error) {
-
-
-            console.error(
-                error
-            );
 
 
             depositsList.innerHTML = `
@@ -784,305 +1019,405 @@ document.addEventListener("DOMContentLoaded", function () {
                 <div class="empty-state">
 
                     <div class="empty-icon">
-                        ⚠️
+                        ⏳
                     </div>
 
                     <strong>
-                        Unable to load deposits
+                        Loading deposits...
                     </strong>
-
-                    <p>
-                        Check backend API connection.
-                    </p>
 
                 </div>
 
             `;
 
+
+            try {
+
+                const data =
+                    await window.apiRequest(
+
+                        "/api/admin/deposits",
+
+                        {
+
+                            method:
+                                "GET"
+
+                        }
+
+                    );
+
+
+                const deposits =
+                    Array.isArray(
+                        data
+                    )
+
+                        ? data
+
+                        : (
+
+                            data?.deposits ||
+
+                            data?.data?.deposits ||
+
+                            data?.data ||
+
+                            []
+
+                        );
+
+
+                const pending =
+                    Array.isArray(
+                        deposits
+                    )
+
+                        ? deposits.filter(
+
+                            function (
+                                deposit
+                            ) {
+
+                                return String(
+
+                                    deposit.status ||
+                                    ""
+
+                                )
+                                .toLowerCase() ===
+                                "pending";
+
+                            }
+
+                        ).length
+
+                        : 0;
+
+
+                setText(
+                    "pendingDeposits",
+                    pending
+                );
+
+
+                setText(
+                    "totalDeposits",
+
+                    Array.isArray(
+                        deposits
+                    )
+
+                        ? deposits.length
+
+                        : 0
+
+                );
+
+
+                renderDeposits(
+                    deposits
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.error(
+                    "LOAD DEPOSITS ERROR:",
+                    error
+                );
+
+
+                if (
+                    error?.status ===
+                    401
+                ) {
+
+                    redirectToLogin();
+
+                    return;
+
+                }
+
+
+                depositsList.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            ⚠️
+                        </div>
+
+                        <strong>
+                            Unable to load deposits
+                        </strong>
+
+                        <p>
+                            ${escapeHtml(
+
+                                error?.message ||
+
+                                "Please check the backend API."
+
+                            )}
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
         }
 
-    }
+
+
+        function renderDeposits(
+            deposits
+        ) {
+
+            const depositsList =
+                document.getElementById(
+                    "depositsList"
+                );
+
+
+            if (!depositsList) {
+
+                return;
+
+            }
+
+
+            if (
+
+                !Array.isArray(
+                    deposits
+                ) ||
+
+                deposits.length ===
+                0
+
+            ) {
+
+                depositsList.innerHTML = `
+
+                    <div class="empty-state">
+
+                        <div class="empty-icon">
+                            💳
+                        </div>
+
+                        <strong>
+                            No deposit requests
+                        </strong>
+
+                        <p>
+                            New deposit requests will appear here.
+                        </p>
+
+                    </div>
+
+                `;
+
+
+                return;
+
+            }
+
+
+            depositsList.innerHTML =
+                deposits.map(
+
+                    function (
+                        deposit
+                    ) {
+
+                        const name =
+                            deposit.user_name ||
+
+                            deposit.userName ||
+
+                            deposit.full_name ||
+
+                            deposit.name ||
+
+                            "User";
+
+
+                        const amount =
+                            deposit.amount ??
+                            0;
+
+
+                        const status =
+                            deposit.status ||
+                            "pending";
+
+
+                        return `
+
+                            <div
+                                class="content-card"
+                                style="margin-bottom: 12px;"
+                            >
+
+                                <strong>
+                                    ${escapeHtml(
+                                        name
+                                    )}
+                                </strong>
+
+                                <p>
+                                    Amount:
+                                    ₹${escapeHtml(
+                                        amount
+                                    )}
+                                </p>
+
+                                <p>
+                                    Status:
+                                    ${escapeHtml(
+                                        status
+                                    )}
+                                </p>
+
+                            </div>
+
+                        `;
+
+                    }
+
+                )
+                .join(
+                    ""
+                );
+
+        }
 
 
 
-    function renderDeposits(
-        deposits
-    ) {
+        /* =========================================
+           REFRESH
+        ========================================= */
 
+        if (
+            refreshUsersButton
+        ) {
 
-        const depositsList =
-            document.getElementById(
-                "depositsList"
+            refreshUsersButton.addEventListener(
+
+                "click",
+
+                loadUsers
+
             );
-
-
-        if (!depositsList) {
-
-            return;
 
         }
 
 
         if (
-            !Array.isArray(deposits) ||
-            deposits.length === 0
+            refreshDepositsButton
         ) {
 
+            refreshDepositsButton.addEventListener(
 
-            depositsList.innerHTML = `
+                "click",
 
-                <div class="empty-state">
+                loadDeposits
 
-                    <div class="empty-icon">
-                        💳
-                    </div>
+            );
 
-                    <strong>
-                        No deposit requests
-                    </strong>
+        }
 
-                    <p>
-                        New deposit requests will appear here.
-                    </p>
 
-                </div>
 
-            `;
+        /* =========================================
+           LOGOUT
+        ========================================= */
 
+        if (
+            logoutButton
+        ) {
+
+            logoutButton.addEventListener(
+
+                "click",
+
+                async function () {
+
+                    if (
+
+                        window.SkillEarnAuth &&
+
+                        typeof window.SkillEarnAuth.logout ===
+                        "function"
+
+                    ) {
+
+                        await window.SkillEarnAuth.logout();
+
+                        return;
+
+                    }
+
+
+                    redirectToLogin();
+
+                }
+
+            );
+
+        }
+
+
+
+        /* =========================================
+           INITIALIZE
+        ========================================= */
+
+        const admin =
+            validateAdmin();
+
+
+        if (!admin) {
 
             return;
 
         }
 
 
-        depositsList.innerHTML =
-            deposits.map(
-                function (deposit) {
-
-
-                    return `
-
-                        <div
-                            class="content-card"
-                            style="margin-bottom: 12px;"
-                        >
-
-                            <strong>
-                                ${
-                                    escapeHtml(
-                                        deposit.user_name ||
-                                        deposit.name ||
-                                        "User"
-                                    )
-                                }
-                            </strong>
-
-                            <p>
-                                Amount:
-                                ${
-                                    escapeHtml(
-                                        String(
-                                            deposit.amount ||
-                                            0
-                                        )
-                                    )
-                                }
-                            </p>
-
-                            <p>
-                                Status:
-                                ${
-                                    escapeHtml(
-                                        deposit.status ||
-                                        "pending"
-                                    )
-                                }
-                            </p>
-
-                        </div>
-
-                    `;
-
-
-                }
-            ).join("");
-
-    }
-
-
-
-    /* =========================================
-       REFRESH BUTTONS
-    ========================================= */
-
-    const refreshUsersButton =
-        document.getElementById(
-            "refreshUsersButton"
+        loadAdminProfile(
+            admin
         );
 
 
-    if (refreshUsersButton) {
-
-        refreshUsersButton.addEventListener(
-            "click",
-            loadUsers
-        );
-
-    }
-
-
-
-    const refreshDepositsButton =
-        document.getElementById(
-            "refreshDepositsButton"
-        );
-
-
-    if (refreshDepositsButton) {
-
-        refreshDepositsButton.addEventListener(
-            "click",
-            loadDeposits
-        );
-
-    }
-
-
-
-    /* =========================================
-       LOGOUT
-    ========================================= */
-
-    const logoutButton =
-        document.getElementById(
-            "logoutButton"
-        );
-
-
-    if (logoutButton) {
-
-
-        logoutButton.addEventListener(
-            "click",
-            function () {
-
-
-                localStorage.removeItem(
-                    "skilllearn_user"
+        const hash =
+            window.location.hash
+                .replace(
+                    "#",
+                    ""
                 );
 
 
-                localStorage.removeItem(
-                    "skilllearn_token"
-                );
+        if (
 
+            hash &&
 
-                localStorage.removeItem(
-                    "token"
-                );
+            document.getElementById(
+                hash
+            )
 
+        ) {
 
-                window.location.href =
-                    "../login.html";
-
-
-            }
-        );
-
-
-    }
-
-
-
-    /* =========================================
-       AUTHORIZATION HEADERS
-    ========================================= */
-
-    function getHeaders() {
-
-
-        const token =
-            localStorage.getItem(
-                "skilllearn_token"
-            ) ||
-            localStorage.getItem(
-                "token"
+            showSection(
+                hash
             );
-
-
-        const headers = {
-
-            "Content-Type":
-                "application/json"
-
-        };
-
-
-        if (token) {
-
-            headers.Authorization =
-                "Bearer " + token;
 
         }
 
-
-        return headers;
-
     }
-
-
-
-    /* =========================================
-       HTML ESCAPE
-    ========================================= */
-
-    function escapeHtml(
-        value
-    ) {
-
-
-        const div =
-            document.createElement(
-                "div"
-            );
-
-
-        div.textContent =
-            value;
-
-
-        return div.innerHTML;
-
-    }
-
-
-
-    /* =========================================
-       INITIALIZE
-    ========================================= */
-
-    loadAdminProfile();
-
-
-    const hash =
-        window.location.hash.replace(
-            "#",
-            ""
-        );
-
-
-    if (
-        hash &&
-        document.getElementById(
-            hash
-        )
-    ) {
-
-        showSection(
-            hash
-        );
-
-    }
-
-
-});
+);

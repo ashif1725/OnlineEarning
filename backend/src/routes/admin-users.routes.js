@@ -3,506 +3,45 @@
 
 /*
 |--------------------------------------------------------------------------
-| DATABASE
+| EXPRESS
 |--------------------------------------------------------------------------
 */
 
-const pool =
+const express =
     require(
-        "../config/db"
+        "express"
+    );
+
+
+const router =
+    express.Router();
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTH MIDDLEWARE
+|--------------------------------------------------------------------------
+*/
+
+const {
+
+    requireAuth,
+
+    requireAdmin
+
+} =
+    require(
+        "../middleware/auth.middleware"
     );
 
 
 /*
 |--------------------------------------------------------------------------
-| GET USERS
+| ADMIN USERS SERVICE
 |--------------------------------------------------------------------------
 */
 
-async function getUsers({
-
-    search,
-
-    status,
-
-    limit = 25,
-
-    offset = 0
-
-}) {
-
-    const values =
-        [];
-
-
-    const conditions =
-        [];
-
-
-    /*
-    ---------------------------------------------------------
-    Search
-    ---------------------------------------------------------
-    */
-
-    if (search) {
-
-        values.push(
-            `%${search}%`
-        );
-
-
-        conditions.push(
-            `
-            (
-                u.public_user_id ILIKE $${values.length}
-
-                OR
-
-                u.full_name ILIKE $${values.length}
-
-                OR
-
-                u.email ILIKE $${values.length}
-            )
-            `
-        );
-
-    }
-
-
-    /*
-    ---------------------------------------------------------
-    Status filter
-    ---------------------------------------------------------
-    */
-
-    if (status) {
-
-        values.push(
-            String(status)
-                .trim()
-                .toLowerCase()
-        );
-
-
-        conditions.push(
-            `u.account_status = $${values.length}`
-        );
-
-    }
-
-
-    const whereClause =
-        conditions.length > 0
-
-            ? `WHERE ${conditions.join(" AND ")}`
-
-            : "";
-
-
-    /*
-    ---------------------------------------------------------
-    Pagination
-    ---------------------------------------------------------
-    */
-
-    values.push(
-        limit
-    );
-
-
-    const limitIndex =
-        values.length;
-
-
-    values.push(
-        offset
-    );
-
-
-    const offsetIndex =
-        values.length;
-
-
-    /*
-    ---------------------------------------------------------
-    Query
-    ---------------------------------------------------------
-    */
-
-    const result =
-        await pool.query(
-
-            `
-            SELECT
-
-                u.id,
-
-                u.public_user_id,
-
-                u.full_name,
-
-                u.email,
-
-                u.role,
-
-                u.account_status,
-
-                u.last_login_at,
-
-                u.created_at,
-
-
-                COALESCE(
-                    wb.available_balance,
-                    0
-                ) AS available_balance,
-
-
-                COALESCE(
-                    wb.pending_balance,
-                    0
-                ) AS pending_balance,
-
-
-                wb.currency
-
-
-            FROM users u
-
-
-            LEFT JOIN wallets w
-                ON w.user_id = u.id
-
-
-            LEFT JOIN wallet_balances wb
-                ON wb.wallet_id = w.id
-
-
-            ${whereClause}
-
-
-            ORDER BY
-                u.created_at DESC
-
-
-            LIMIT $${limitIndex}
-
-            OFFSET $${offsetIndex}
-            `,
-
-            values
-
-        );
-
-
-    return result.rows;
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| GET USER DETAILS
-|--------------------------------------------------------------------------
-*/
-
-async function getUserDetails(
-    userId
-) {
-
-    const result =
-        await pool.query(
-
-            `
-            SELECT
-
-                u.id,
-
-                u.public_user_id,
-
-                u.full_name,
-
-                u.email,
-
-                u.role,
-
-                u.account_status,
-
-                u.last_login_at,
-
-                u.created_at,
-
-
-                COALESCE(
-                    wb.available_balance,
-                    0
-                ) AS available_balance,
-
-
-                COALESCE(
-                    wb.pending_balance,
-                    0
-                ) AS pending_balance,
-
-
-                wb.currency
-
-
-            FROM users u
-
-
-            LEFT JOIN wallets w
-                ON w.user_id = u.id
-
-
-            LEFT JOIN wallet_balances wb
-                ON wb.wallet_id = w.id
-
-
-            WHERE
-                u.id = $1
-
-
-            LIMIT 1
-            `,
-
-            [
-                userId
-            ]
-
-        );
-
-
-    if (
-        result.rowCount === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    return result.rows[0];
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| UPDATE USER STATUS
-|--------------------------------------------------------------------------
-*/
-
-async function updateUserStatus({
-
-    userId,
-
-    status,
-
-    adminUserId,
-
-    ipAddress,
-
-    userAgent
-
-}) {
-
-    /*
-    ---------------------------------------------------------
-    Validate user ID
-    ---------------------------------------------------------
-    */
-
-    if (!userId) {
-
-        throw new Error(
-            "USER_NOT_FOUND"
-        );
-
-    }
-
-
-    /*
-    ---------------------------------------------------------
-    Normalize status
-    ---------------------------------------------------------
-    */
-
-    const normalizedStatus =
-        String(
-            status ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    /*
-    ---------------------------------------------------------
-    Allowed statuses
-    ---------------------------------------------------------
-    */
-
-    const allowedStatuses = [
-
-        "active",
-
-        "inactive",
-
-        "disabled",
-
-        "suspended"
-
-    ];
-
-
-    if (
-        !allowedStatuses.includes(
-            normalizedStatus
-        )
-    ) {
-
-        throw new Error(
-            "INVALID_ACCOUNT_STATUS"
-        );
-
-    }
-
-
-    /*
-    ---------------------------------------------------------
-    Get current user
-    ---------------------------------------------------------
-    */
-
-    const existingResult =
-        await pool.query(
-
-            `
-            SELECT
-
-                id,
-
-                account_status
-
-            FROM users
-
-            WHERE id = $1
-
-            LIMIT 1
-            `,
-
-            [
-                userId
-            ]
-
-        );
-
-
-    if (
-        existingResult.rowCount === 0
-    ) {
-
-        throw new Error(
-            "USER_NOT_FOUND"
-        );
-
-    }
-
-
-    const existingUser =
-        existingResult.rows[0];
-
-
-    /*
-    ---------------------------------------------------------
-    Prevent duplicate status
-    ---------------------------------------------------------
-    */
-
-    const currentStatus =
-        String(
-            existingUser.account_status ||
-            ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-    if (
-        currentStatus ===
-        normalizedStatus
-    ) {
-
-        throw new Error(
-            "STATUS_ALREADY_SET"
-        );
-
-    }
-
-
-    /*
-    ---------------------------------------------------------
-    Update user
-    ---------------------------------------------------------
-    */
-
-    const result =
-        await pool.query(
-
-            `
-            UPDATE users
-
-            SET
-                account_status = $1
-
-            WHERE
-                id = $2
-
-            RETURNING
-
-                id,
-
-                public_user_id,
-
-                full_name,
-
-                email,
-
-                role,
-
-                account_status,
-
-                last_login_at,
-
-                created_at
-            `,
-
-            [
-
-                normalizedStatus,
-
-                userId
-
-            ]
-
-        );
-
-
-    return result.rows[0];
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| EXPORTS
-|--------------------------------------------------------------------------
-*/
-
-module.exports = {
+const {
 
     getUsers,
 
@@ -510,4 +49,335 @@ module.exports = {
 
     updateUserStatus
 
-};
+} =
+    require(
+        "../services/admin-users.service"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| GET USERS
+|--------------------------------------------------------------------------
+|
+| GET /api/admin/users
+|
+*/
+
+router.get(
+
+    "/",
+
+    requireAuth,
+
+    requireAdmin,
+
+    async function (
+        req,
+        res
+    ) {
+
+        try {
+
+            const search =
+                req.query.search ||
+                null;
+
+
+            const status =
+                req.query.status ||
+                null;
+
+
+            const limit =
+                Math.min(
+
+                    Math.max(
+
+                        Number(
+                            req.query.limit
+                        ) || 25,
+
+                        1
+
+                    ),
+
+                    100
+
+                );
+
+
+            const offset =
+                Math.max(
+
+                    Number(
+                        req.query.offset
+                    ) || 0,
+
+                    0
+
+                );
+
+
+            const users =
+                await getUsers({
+
+                    search,
+
+                    status,
+
+                    limit,
+
+                    offset
+
+                });
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                users
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET USERS ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    "GET_USERS_FAILED"
+
+            });
+
+        }
+
+    }
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| GET USER DETAILS
+|--------------------------------------------------------------------------
+|
+| GET /api/admin/users/:userId
+|
+*/
+
+router.get(
+
+    "/:userId",
+
+    requireAuth,
+
+    requireAdmin,
+
+    async function (
+        req,
+        res
+    ) {
+
+        try {
+
+            const user =
+                await getUserDetails(
+
+                    req.params.userId
+
+                );
+
+
+            if (!user) {
+
+                return res.status(404).json({
+
+                    success:
+                        false,
+
+                    error:
+                        "USER_NOT_FOUND"
+
+                });
+
+            }
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                user
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "GET USER DETAILS ERROR:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success:
+                    false,
+
+                error:
+                    "GET_USER_DETAILS_FAILED"
+
+            });
+
+        }
+
+    }
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| UPDATE USER STATUS
+|--------------------------------------------------------------------------
+|
+| PATCH /api/admin/users/:userId/status
+|
+*/
+
+router.patch(
+
+    "/:userId/status",
+
+    requireAuth,
+
+    requireAdmin,
+
+    async function (
+        req,
+        res
+    ) {
+
+        try {
+
+            const result =
+                await updateUserStatus({
+
+                    userId:
+                        req.params.userId,
+
+
+                    status:
+                        req.body.status,
+
+
+                    adminUserId:
+                        req.user.id,
+
+
+                    ipAddress:
+                        req.ip,
+
+
+                    userAgent:
+                        req.get(
+                            "user-agent"
+                        )
+
+                });
+
+
+            return res.json({
+
+                success:
+                    true,
+
+                user:
+                    result
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "UPDATE USER STATUS ERROR:",
+                error
+            );
+
+
+            const statusMap = {
+
+                USER_NOT_FOUND:
+                    404,
+
+
+                INVALID_ACCOUNT_STATUS:
+                    400,
+
+
+                STATUS_ALREADY_SET:
+                    409
+
+            };
+
+
+            const statusCode =
+                statusMap[
+                    error.message
+                ]
+                ||
+                500;
+
+
+            return res
+                .status(
+                    statusCode
+                )
+                .json({
+
+                    success:
+                        false,
+
+
+                    error:
+
+                        statusCode === 500
+
+                            ? "STATUS_UPDATE_FAILED"
+
+                            : error.message
+
+                });
+
+        }
+
+    }
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| EXPORT
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| Express Router directly export होना चाहिए.
+| Object export नहीं होना चाहिए.
+|
+*/
+
+module.exports =
+    router;

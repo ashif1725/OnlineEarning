@@ -13,7 +13,6 @@ const pool =
 |--------------------------------------------------------------------------
 */
 
-
 function createServiceError(
     code,
     message,
@@ -40,15 +39,31 @@ function createServiceError(
 }
 
 
-
 /*
 |--------------------------------------------------------------------------
-| GET WALLET
+| GET PRIMARY WALLET
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+|
+| A user should normally have one wallet.
+|
+| However, if duplicate wallets exist,
+| we must not use an unordered LIMIT 1.
+|
+| Priority:
+|
+| 1. Wallet with a balance record
+| 2. Active wallet
+| 3. Most recently updated/created wallet
+|
 |--------------------------------------------------------------------------
 */
 
-async function getWallet(
-    userId
+async function getUserWalletRecord(
+    executor,
+    userId,
+    options = {}
 ) {
 
     if (
@@ -68,23 +83,20 @@ async function getWallet(
     }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | IMPORTANT
-    |
-    | This query uses the CURRENT wallet architecture:
-    |
-    | users
-    |   ->
-    | wallets
-    |   ->
-    | wallet_balances
-    |--------------------------------------------------------------------------
-    */
+    const lockClause =
+        options.forUpdate
+
+            ?
+
+            "FOR UPDATE OF w, wb"
+
+            :
+
+            "";
 
 
     const result =
-        await pool.query(
+        await executor.query(
 
             `
             SELECT
@@ -94,27 +106,19 @@ async function getWallet(
 
                 w.user_id,
 
-                w.currency,
+                w.currency
+                    AS wallet_currency,
 
                 w.status,
 
-                COALESCE(
-                    wb.available_balance,
-                    0
-                )
-                    AS available_balance,
+                wb.wallet_id
+                    AS balance_wallet_id,
 
-                COALESCE(
-                    wb.pending_balance,
-                    0
-                )
-                    AS pending_balance,
+                wb.available_balance,
 
-                COALESCE(
-                    wb.currency,
-                    w.currency,
-                    'INR'
-                )
+                wb.pending_balance,
+
+                wb.currency
                     AS balance_currency,
 
                 wb.updated_at
@@ -124,13 +128,46 @@ async function getWallet(
 
             LEFT JOIN wallet_balances wb
 
-                ON wb.wallet_id =
-                    w.id
+                ON wb.wallet_id = w.id
 
             WHERE
                 w.user_id = $1
 
+            ORDER BY
+
+                CASE
+
+                    WHEN wb.wallet_id IS NOT NULL
+                    THEN 0
+
+                    ELSE 1
+
+                END ASC,
+
+
+                CASE
+
+                    WHEN LOWER(
+                        COALESCE(
+                            w.status,
+                            ''
+                        )
+                    ) = 'active'
+
+                    THEN 0
+
+                    ELSE 1
+
+                END ASC,
+
+
+                wb.updated_at DESC NULLS LAST,
+
+                w.id DESC
+
             LIMIT 1
+
+            ${lockClause}
             `,
 
             [
@@ -157,15 +194,58 @@ async function getWallet(
     }
 
 
+    return result.rows[0];
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| GET WALLET
+|--------------------------------------------------------------------------
+*/
+
+async function getWallet(
+    userId
+) {
+
     const wallet =
-        result.rows[0];
+        await getUserWalletRecord(
+
+            pool,
+
+            userId
+
+        );
 
 
     /*
-    |--------------------------------------------------------------------------
-    | NORMALIZE NUMERIC VALUES
-    |--------------------------------------------------------------------------
+    ----------------------------------------------------------
+    DO NOT SILENTLY RETURN ZERO
+    ----------------------------------------------------------
+
+    If wallet_balances row is missing,
+    that is a database consistency problem.
+
+    Returning 0 would hide the real issue.
     */
+
+    if (
+        !wallet.balance_wallet_id
+    ) {
+
+        throw createServiceError(
+
+            "WALLET_BALANCE_NOT_FOUND",
+
+            "Wallet balance record not found for this wallet.",
+
+            404
+
+        );
+
+    }
+
 
     const availableBalance =
         Number(
@@ -179,61 +259,73 @@ async function getWallet(
         );
 
 
+    if (
+
+        !Number.isFinite(
+            availableBalance
+        )
+
+        ||
+
+        !Number.isFinite(
+            pendingBalance
+        )
+
+    ) {
+
+        throw createServiceError(
+
+            "INVALID_WALLET_BALANCE",
+
+            "Wallet balance data is invalid.",
+
+            500
+
+        );
+
+    }
+
+
     return {
 
         wallet_id:
             wallet.wallet_id,
 
+
         user_id:
             wallet.user_id,
+
 
         currency:
 
             wallet.balance_currency ||
 
-            wallet.currency ||
+            wallet.wallet_currency ||
 
             "INR",
+
 
         status:
             wallet.status,
 
+
         available_balance:
+            availableBalance,
 
-            Number.isFinite(
-                availableBalance
-            )
-
-                ?
-
-                availableBalance
-
-                :
-
-                0,
 
         pending_balance:
+            pendingBalance,
 
-            Number.isFinite(
-                pendingBalance
-            )
-
-                ?
-
-                pendingBalance
-
-                :
-
-                0,
 
         updated_at:
+
             wallet.balance_updated_at ||
+
             null
 
     };
 
 }
-
 
 
 /*
@@ -298,6 +390,22 @@ async function getTransactions(
     }
 
 
+    /*
+    ----------------------------------------------------------
+    Get the same wallet that getWallet() selects.
+    ----------------------------------------------------------
+    */
+
+    const wallet =
+        await getUserWalletRecord(
+
+            pool,
+
+            userId
+
+        );
+
+
     const result =
         await pool.query(
 
@@ -326,13 +434,8 @@ async function getTransactions(
 
             FROM wallet_transactions wt
 
-            INNER JOIN wallets w
-
-                ON w.id =
-                    wt.wallet_id
-
             WHERE
-                w.user_id = $1
+                wt.wallet_id = $1
 
             ORDER BY
                 wt.created_at DESC
@@ -342,7 +445,7 @@ async function getTransactions(
 
             [
 
-                userId,
+                wallet.wallet_id,
 
                 safeLimit
 
@@ -367,6 +470,7 @@ async function getTransactions(
 
                 ...transaction,
 
+
                 amount:
 
                     Number.isFinite(
@@ -390,6 +494,82 @@ async function getTransactions(
 }
 
 
+/*
+|--------------------------------------------------------------------------
+| GET WALLET FOR TRANSFER
+|--------------------------------------------------------------------------
+*/
+
+async function getTransferWallet(
+    client,
+    userId
+) {
+
+    const wallet =
+        await getUserWalletRecord(
+
+            client,
+
+            userId,
+
+            {
+
+                forUpdate:
+                    true
+
+            }
+
+        );
+
+
+    if (
+
+        String(
+            wallet.status ||
+            ""
+        )
+        .toLowerCase()
+
+        !==
+
+        "active"
+
+    ) {
+
+        throw createServiceError(
+
+            "WALLET_NOT_ACTIVE",
+
+            "Wallet is not active.",
+
+            403
+
+        );
+
+    }
+
+
+    if (
+        !wallet.balance_wallet_id
+    ) {
+
+        throw createServiceError(
+
+            "WALLET_BALANCE_NOT_FOUND",
+
+            "Wallet balance record not found.",
+
+            404
+
+        );
+
+    }
+
+
+    return wallet;
+
+}
+
 
 /*
 |--------------------------------------------------------------------------
@@ -410,7 +590,6 @@ async function sendMoney({
     idempotencyKey
 
 }) {
-
 
     if (
         !senderUserId
@@ -452,12 +631,6 @@ async function sendMoney({
         );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | VALIDATE AMOUNT
-    |--------------------------------------------------------------------------
-    */
-
     if (
 
         !Number.isFinite(
@@ -482,12 +655,6 @@ async function sendMoney({
 
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | PREVENT SELF TRANSFER
-    |--------------------------------------------------------------------------
-    */
 
     if (
 
@@ -522,60 +689,61 @@ async function sendMoney({
 
     try {
 
-
         await client.query(
             "BEGIN"
         );
 
 
         /*
-        |--------------------------------------------------------------------------
-        | FIND SENDER WALLET
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        Lock wallets in deterministic user-ID order.
+        This reduces deadlock risk.
+        ------------------------------------------------------
         */
 
-        const senderWalletResult =
-            await client.query(
+        const orderedUserIds =
+            [
 
-                `
-                SELECT
-
-                    id,
-
-                    user_id,
-
-                    currency,
-
-                    status
-
-                FROM wallets
-
-                WHERE
-                    user_id = $1
-
-                LIMIT 1
-
-                FOR UPDATE
-                `,
-
-                [
+                String(
                     senderUserId
-                ]
+                ),
 
-            );
+                String(
+                    receiverUserId
+                )
+
+            ]
+            .sort();
 
 
-        if (
-            senderWalletResult.rowCount === 0
+        const lockedWallets =
+            new Map();
+
+
+        for (
+
+            const userId of
+            orderedUserIds
+
         ) {
 
-            throw createServiceError(
+            const wallet =
+                await getTransferWallet(
 
-                "WALLET_NOT_FOUND",
+                    client,
 
-                "Sender wallet not found.",
+                    userId
 
-                404
+                );
+
+
+            lockedWallets.set(
+
+                String(
+                    userId
+                ),
+
+                wallet
 
             );
 
@@ -583,87 +751,38 @@ async function sendMoney({
 
 
         const senderWallet =
-            senderWalletResult.rows[0];
+            lockedWallets.get(
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK SENDER STATUS
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-
-            String(
-                senderWallet.status
-            )
-            .toLowerCase()
-
-            !==
-
-            "active"
-
-        ) {
-
-            throw createServiceError(
-
-                "WALLET_NOT_ACTIVE",
-
-                "Sender wallet is not active.",
-
-                403
+                String(
+                    senderUserId
+                )
 
             );
 
-        }
 
+        const receiverWallet =
+            lockedWallets.get(
 
-        /*
-        |--------------------------------------------------------------------------
-        | FIND RECEIVER WALLET
-        |--------------------------------------------------------------------------
-        */
-
-        const receiverWalletResult =
-            await client.query(
-
-                `
-                SELECT
-
-                    id,
-
-                    user_id,
-
-                    currency,
-
-                    status
-
-                FROM wallets
-
-                WHERE
-                    user_id = $1
-
-                LIMIT 1
-
-                FOR UPDATE
-                `,
-
-                [
+                String(
                     receiverUserId
-                ]
+                )
 
             );
 
 
         if (
-            receiverWalletResult.rowCount === 0
+
+            !senderWallet ||
+
+            !receiverWallet
+
         ) {
 
             throw createServiceError(
 
-                "RECEIVER_WALLET_NOT_FOUND",
+                "WALLET_NOT_FOUND",
 
-                "Receiver wallet not found.",
+                "Unable to locate sender or receiver wallet.",
 
                 404
 
@@ -672,58 +791,38 @@ async function sendMoney({
         }
 
 
-        const receiverWallet =
-            receiverWalletResult.rows[0];
-
-
         /*
-        |--------------------------------------------------------------------------
-        | CHECK RECEIVER STATUS
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        CHECK CURRENCY
+        ------------------------------------------------------
         */
+
+        const senderCurrency =
+            senderWallet.balance_currency ||
+
+            senderWallet.wallet_currency ||
+
+            "INR";
+
+
+        const receiverCurrency =
+            receiverWallet.balance_currency ||
+
+            receiverWallet.wallet_currency ||
+
+            "INR";
+
 
         if (
 
             String(
-                receiverWallet.status
-            )
-            .toLowerCase()
-
-            !==
-
-            "active"
-
-        ) {
-
-            throw createServiceError(
-
-                "RECEIVER_WALLET_NOT_ACTIVE",
-
-                "Receiver wallet is not active.",
-
-                403
-
-            );
-
-        }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK CURRENCY
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-
-            String(
-                senderWallet.currency
+                senderCurrency
             )
 
             !==
 
             String(
-                receiverWallet.currency
+                receiverCurrency
             )
 
         ) {
@@ -741,135 +840,17 @@ async function sendMoney({
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOCK SENDER BALANCE
-        |--------------------------------------------------------------------------
-        */
-
-        const senderBalanceResult =
-            await client.query(
-
-                `
-                SELECT
-
-                    wallet_id,
-
-                    available_balance,
-
-                    pending_balance,
-
-                    currency
-
-                FROM wallet_balances
-
-                WHERE
-                    wallet_id = $1
-
-                FOR UPDATE
-                `,
-
-                [
-                    senderWallet.id
-                ]
-
-            );
-
-
-        if (
-            senderBalanceResult.rowCount === 0
-        ) {
-
-            throw createServiceError(
-
-                "WALLET_BALANCE_NOT_FOUND",
-
-                "Sender wallet balance not found.",
-
-                404
-
-            );
-
-        }
-
-
-        const senderBalance =
-            senderBalanceResult.rows[0];
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | LOCK RECEIVER BALANCE
-        |--------------------------------------------------------------------------
-        */
-
-        const receiverBalanceResult =
-            await client.query(
-
-                `
-                SELECT
-
-                    wallet_id,
-
-                    available_balance,
-
-                    pending_balance,
-
-                    currency
-
-                FROM wallet_balances
-
-                WHERE
-                    wallet_id = $1
-
-                FOR UPDATE
-                `,
-
-                [
-                    receiverWallet.id
-                ]
-
-            );
-
-
-        if (
-            receiverBalanceResult.rowCount === 0
-        ) {
-
-            throw createServiceError(
-
-                "WALLET_BALANCE_NOT_FOUND",
-
-                "Receiver wallet balance not found.",
-
-                404
-
-            );
-
-        }
-
-
-        const receiverBalance =
-            receiverBalanceResult.rows[0];
-
-
         const senderAvailable =
             Number(
-                senderBalance.available_balance
+                senderWallet.available_balance
             );
 
 
         const receiverAvailable =
             Number(
-                receiverBalance.available_balance
+                receiverWallet.available_balance
             );
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATE DATABASE BALANCES
-        |--------------------------------------------------------------------------
-        */
 
         if (
 
@@ -898,15 +879,11 @@ async function sendMoney({
         }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | CHECK SENDER BALANCE
-        |--------------------------------------------------------------------------
-        */
-
         if (
+
             senderAvailable <
             numericAmount
+
         ) {
 
             throw createServiceError(
@@ -933,9 +910,9 @@ async function sendMoney({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | UPDATE SENDER BALANCE
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        UPDATE SENDER
+        ------------------------------------------------------
         */
 
         await client.query(
@@ -944,10 +921,7 @@ async function sendMoney({
             UPDATE wallet_balances
 
             SET
-
-                available_balance = $1,
-
-                updated_at = NOW()
+                available_balance = $1
 
             WHERE
                 wallet_id = $2
@@ -957,7 +931,7 @@ async function sendMoney({
 
                 senderNewBalance,
 
-                senderWallet.id
+                senderWallet.wallet_id
 
             ]
 
@@ -965,9 +939,9 @@ async function sendMoney({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | UPDATE RECEIVER BALANCE
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        UPDATE RECEIVER
+        ------------------------------------------------------
         */
 
         await client.query(
@@ -976,10 +950,7 @@ async function sendMoney({
             UPDATE wallet_balances
 
             SET
-
-                available_balance = $1,
-
-                updated_at = NOW()
+                available_balance = $1
 
             WHERE
                 wallet_id = $2
@@ -989,7 +960,7 @@ async function sendMoney({
 
                 receiverNewBalance,
 
-                receiverWallet.id
+                receiverWallet.wallet_id
 
             ]
 
@@ -997,9 +968,9 @@ async function sendMoney({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | CREATE SENDER TRANSACTION
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        CREATE SENDER TRANSACTION
+        ------------------------------------------------------
         */
 
         const senderTransactionResult =
@@ -1047,16 +1018,35 @@ async function sendMoney({
                 )
 
                 RETURNING
-                    *
+
+                    id,
+
+                    wallet_id,
+
+                    transaction_type,
+
+                    amount,
+
+                    currency,
+
+                    status,
+
+                    reference_type,
+
+                    reference_id,
+
+                    description,
+
+                    created_at
                 `,
 
                 [
 
-                    senderWallet.id,
+                    senderWallet.wallet_id,
 
                     numericAmount,
 
-                    senderWallet.currency,
+                    senderCurrency,
 
                     description ||
                     "Money sent"
@@ -1067,9 +1057,9 @@ async function sendMoney({
 
 
         /*
-        |--------------------------------------------------------------------------
-        | CREATE RECEIVER TRANSACTION
-        |--------------------------------------------------------------------------
+        ------------------------------------------------------
+        CREATE RECEIVER TRANSACTION
+        ------------------------------------------------------
         */
 
         const receiverTransactionResult =
@@ -1117,16 +1107,35 @@ async function sendMoney({
                 )
 
                 RETURNING
-                    *
+
+                    id,
+
+                    wallet_id,
+
+                    transaction_type,
+
+                    amount,
+
+                    currency,
+
+                    status,
+
+                    reference_type,
+
+                    reference_id,
+
+                    description,
+
+                    created_at
                 `,
 
                 [
 
-                    receiverWallet.id,
+                    receiverWallet.wallet_id,
 
                     numericAmount,
 
-                    receiverWallet.currency,
+                    receiverCurrency,
 
                     description ||
                     "Money received"
@@ -1146,21 +1155,22 @@ async function sendMoney({
             success:
                 true,
 
+
             duplicate:
                 false,
 
-            senderTransaction:
 
-                senderTransactionResult
-                    .rows[0],
+            senderTransaction:
+                senderTransactionResult.rows[0],
+
 
             receiverTransaction:
+                receiverTransactionResult.rows[0],
 
-                receiverTransactionResult
-                    .rows[0],
 
             senderBalance:
                 senderNewBalance,
+
 
             receiverBalance:
                 receiverNewBalance
@@ -1171,7 +1181,6 @@ async function sendMoney({
     } catch (
         error
     ) {
-
 
         try {
 
@@ -1198,24 +1207,7 @@ async function sendMoney({
 
             "SEND MONEY SERVICE ERROR:",
 
-            {
-
-                message:
-                    error.message,
-
-                code:
-                    error.code,
-
-                detail:
-                    error.detail,
-
-                table:
-                    error.table,
-
-                column:
-                    error.column
-
-            }
+            error
 
         );
 
@@ -1230,7 +1222,6 @@ async function sendMoney({
     }
 
 }
-
 
 
 /*

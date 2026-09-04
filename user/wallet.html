@@ -10,37 +10,148 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Wallet — SkillEarn Hub</title>
+    <title>
+        Wallet — SkillEarn Hub
+    </title>
+
 
     <link
         rel="stylesheet"
         href="../assets/css/dashboard.css"
     >
 
+
     <style>
 
-        .wallet-summary-grid {
+        /*
+        =====================================================
+        WALLET BALANCE
+        =====================================================
+        */
 
-            display: grid;
+        .wallet-balance-card {
 
-            grid-template-columns:
-                repeat(
-                    auto-fit,
-                    minmax(220px, 1fr)
+            margin-top:
+                24px;
+
+            padding:
+                28px;
+
+            border-radius:
+                16px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.06
                 );
 
-            gap: 20px;
-
-            margin-top: 20px;
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
 
         }
 
 
-        .wallet-summary-card {
+        .wallet-balance-label {
 
-            padding: 24px;
+            margin:
+                0;
 
-            border-radius: 16px;
+            font-size:
+                12px;
+
+            font-weight:
+                700;
+
+            letter-spacing:
+                1px;
+
+            opacity:
+                0.7;
+
+        }
+
+
+        .wallet-balance {
+
+            margin:
+                12px 0 4px;
+
+            font-size:
+                38px;
+
+            font-weight:
+                800;
+
+        }
+
+
+        .wallet-currency {
+
+            margin:
+                0;
+
+            opacity:
+                0.7;
+
+        }
+
+
+        /*
+        =====================================================
+        TRANSACTIONS
+        =====================================================
+        */
+
+        .transactions-section {
+
+            margin-top:
+                40px;
+
+        }
+
+
+        .transaction-list {
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            gap:
+                12px;
+
+        }
+
+
+        .transaction-item {
+
+            display:
+                flex;
+
+            justify-content:
+                space-between;
+
+            align-items:
+                center;
+
+            gap:
+                20px;
+
+            padding:
+                18px;
+
+            border-radius:
+                12px;
 
             background:
                 rgba(
@@ -56,83 +167,7 @@
                     255,
                     255,
                     255,
-                    0.1
-                );
-
-        }
-
-
-        .wallet-summary-card p {
-
-            margin: 0 0 10px;
-
-            font-size: 13px;
-
-            opacity: 0.7;
-
-            text-transform:
-                uppercase;
-
-            letter-spacing:
-                1px;
-
-        }
-
-
-        .wallet-summary-card h3 {
-
-            margin: 0;
-
-            font-size: 30px;
-
-        }
-
-
-        .transaction-list {
-
-            display: flex;
-
-            flex-direction:
-                column;
-
-            gap: 12px;
-
-            margin-top: 20px;
-
-        }
-
-
-        .transaction-item {
-
-            display: flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                center;
-
-            gap: 20px;
-
-            padding: 18px;
-
-            border-radius: 12px;
-
-            background:
-                rgba(
-                    255,
-                    255,
-                    255,
-                    0.04
-                );
-
-            border:
-                1px solid
-                rgba(
-                    255,
-                    255,
-                    255,
-                    0.08
+                    0.06
                 );
 
         }
@@ -140,31 +175,39 @@
 
         .transaction-left {
 
-            display: flex;
-
-            flex-direction:
-                column;
-
-            gap: 5px;
+            min-width:
+                0;
 
         }
 
 
-        .transaction-type {
+        .transaction-title {
+
+            margin:
+                0;
+
+            font-size:
+                16px;
 
             font-weight:
                 700;
+
+            text-transform:
+                capitalize;
 
         }
 
 
         .transaction-description {
 
-            font-size:
-                13px;
+            margin:
+                6px 0;
 
             opacity:
                 0.7;
+
+            word-break:
+                break-word;
 
         }
 
@@ -175,18 +218,15 @@
                 12px;
 
             opacity:
-                0.6;
+                0.55;
 
         }
 
 
-        .transaction-amount {
+        .transaction-right {
 
-            font-size:
-                18px;
-
-            font-weight:
-                700;
+            text-align:
+                right;
 
             white-space:
                 nowrap;
@@ -194,50 +234,83 @@
         }
 
 
-        .transaction-credit {
+        .transaction-amount {
 
-            color:
-                #22c55e;
+            margin:
+                0;
 
-        }
+            font-size:
+                17px;
 
-
-        .transaction-debit {
-
-            color:
-                #ef4444;
+            font-weight:
+                700;
 
         }
 
 
-        .empty-state {
+        .transaction-status {
 
-            padding: 30px;
+            display:
+                inline-block;
+
+            margin-top:
+                6px;
+
+            font-size:
+                12px;
+
+            opacity:
+                0.65;
+
+            text-transform:
+                capitalize;
+
+        }
+
+
+        .wallet-message {
+
+            padding:
+                20px;
 
             text-align:
                 center;
 
+            border-radius:
+                12px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.04
+                );
+
             opacity:
-                0.7;
+                0.75;
 
         }
 
 
-        .wallet-error {
+        @media (
+            max-width: 600px
+        ) {
 
-            padding: 15px;
+            .transaction-item {
 
-            border-radius: 10px;
+                align-items:
+                    flex-start;
 
-            margin-top: 20px;
+            }
 
-            background:
-                rgba(
-                    239,
-                    68,
-                    68,
-                    0.15
-                );
+
+            .wallet-balance {
+
+                font-size:
+                    30px;
+
+            }
 
         }
 
@@ -245,12 +318,14 @@
 
 </head>
 
+
 <body>
 
 
 <header class="dashboard-header">
 
     <div class="header-inner">
+
 
         <a
             href="dashboard.html"
@@ -260,6 +335,7 @@
             <span class="brand-icon">
                 S
             </span>
+
 
             <span class="brand-name">
                 SkillEarn
@@ -275,226 +351,104 @@
             Logout
         </button>
 
+
     </div>
 
 </header>
 
 
+
 <main class="dashboard-main">
 
-<section class="wallet-balance-section">
 
-    <div class="section-heading">
-
-        <p>
-            CURRENT BALANCE
-        </p>
-
-        <h2>
-            Wallet Balance
-        </h2>
-
-    </div>
-
-
-    <div class="wallet-balance-card">
-
-        <p class="balance-label">
-            Available Balance
-        </p>
-
-        <h2
-            id="walletBalance"
-        >
-            Loading...
-        </h2>
-
-
-        <p>
-
-            Pending:
-
-            <span
-                id="pendingBalance"
-            >
-                Loading...
-            </span>
-
-        </p>
-
-    </div>
-
-</section>
-
-
-<section class="transactions-section">
-
-    <div class="section-heading">
-
-        <p>
-            PAYMENT HISTORY
-        </p>
-
-        <h2>
-            Recent Transactions
-        </h2>
-
-    </div>
-
-
-    <div
-        id="transactionList"
-    >
-
-        <p>
-            Loading transactions...
-        </p>
-
-    </div>
-
-</section>
-
-    
-    <!-- HERO -->
+    <!-- ==================================================
+         HERO
+    =================================================== -->
 
     <section class="hero-card">
+
 
         <p class="eyebrow">
             WALLET
         </p>
 
+
         <h1>
             My Wallet
         </h1>
 
+
         <p class="hero-description">
-            View your available balance and
-            transaction history.
+
+            Manage your wallet balance,
+            payments and transactions.
+
         </p>
 
-    </section>
+
+        <!-- ==============================================
+             WALLET BALANCE
+        =============================================== -->
+
+        <div class="wallet-balance-card">
 
 
-    <!-- WALLET BALANCE -->
-
-    <section>
-
-        <div class="section-heading">
-
-            <p>
-                WALLET BALANCE
+            <p class="wallet-balance-label">
+                AVAILABLE BALANCE
             </p>
 
-            <h2>
-                Your Balance
+
+            <h2
+                id="walletBalance"
+                class="wallet-balance"
+            >
+                Loading...
             </h2>
 
-        </div>
 
-
-        <div
-            class="wallet-summary-grid"
-        >
-
-            <div
-                class="wallet-summary-card"
+            <p
+                id="walletCurrency"
+                class="wallet-currency"
             >
+                --
+            </p>
 
-                <p>
-                    Available Balance
-                </p>
-
-                <h3
-                    id="availableBalance"
-                >
-                    Loading...
-                </h3>
-
-            </div>
-
-
-            <div
-                class="wallet-summary-card"
-            >
-
-                <p>
-                    Pending Balance
-                </p>
-
-                <h3
-                    id="pendingBalance"
-                >
-                    Loading...
-                </h3>
-
-            </div>
-
-
-            <div
-                class="wallet-summary-card"
-            >
-
-                <p>
-                    Currency
-                </p>
-
-                <h3
-                    id="walletCurrency"
-                >
-                    -
-                </h3>
-
-            </div>
-
-
-            <div
-                class="wallet-summary-card"
-            >
-
-                <p>
-                    Wallet Status
-                </p>
-
-                <h3
-                    id="walletStatus"
-                >
-                    -
-                </h3>
-
-            </div>
 
         </div>
 
-
-        <div
-            id="walletError"
-            class="wallet-error"
-            style="display: none;"
-        >
-        </div>
 
     </section>
 
 
-    <!-- WALLET ACTIONS -->
+
+    <!-- ==================================================
+         WALLET ACTIONS
+    =================================================== -->
 
     <section>
 
+
         <div class="section-heading">
+
 
             <p>
                 WALLET ACTIONS
             </p>
 
+
             <h2>
                 Manage Wallet
             </h2>
 
+
         </div>
+
 
 
         <div class="action-grid">
 
+
+            <!-- SEND MONEY -->
 
             <a
                 href="send-money.html"
@@ -505,24 +459,33 @@
                     💸
                 </span>
 
+
                 <span class="action-content">
+
 
                     <strong>
                         Send Money
                     </strong>
 
+
                     <small>
                         Send funds to another user
                     </small>
 
+
                 </span>
+
 
                 <span class="arrow">
                     →
                 </span>
 
+
             </a>
 
+
+
+            <!-- RECEIVE MONEY -->
 
             <a
                 href="receive-money.html"
@@ -533,24 +496,33 @@
                     📥
                 </span>
 
+
                 <span class="action-content">
+
 
                     <strong>
                         Receive Money
                     </strong>
 
+
                     <small>
                         Receive funds securely
                     </small>
 
+
                 </span>
+
 
                 <span class="arrow">
                     →
                 </span>
 
+
             </a>
 
+
+
+            <!-- ADD MONEY -->
 
             <a
                 href="deposit.html"
@@ -561,24 +533,33 @@
                     ➕
                 </span>
 
+
                 <span class="action-content">
+
 
                     <strong>
                         Add Money
                     </strong>
 
+
                     <small>
                         Create a deposit request
                     </small>
 
+
                 </span>
+
 
                 <span class="arrow">
                     →
                 </span>
 
+
             </a>
 
+
+
+            <!-- WITHDRAW -->
 
             <a
                 href="withdraw.html"
@@ -589,44 +570,60 @@
                     📤
                 </span>
 
+
                 <span class="action-content">
+
 
                     <strong>
                         Withdraw
                     </strong>
 
+
                     <small>
                         Request a withdrawal
                     </small>
 
+
                 </span>
+
 
                 <span class="arrow">
                     →
                 </span>
 
+
             </a>
 
+
         </div>
+
 
     </section>
 
 
-    <!-- TRANSACTION HISTORY -->
 
-    <section>
+    <!-- ==================================================
+         TRANSACTION HISTORY
+    =================================================== -->
+
+    <section class="transactions-section">
+
 
         <div class="section-heading">
+
 
             <p>
                 TRANSACTION HISTORY
             </p>
 
+
             <h2>
                 Recent Transactions
             </h2>
 
+
         </div>
+
 
 
         <div
@@ -634,37 +631,51 @@
             class="transaction-list"
         >
 
-            <div
-                class="empty-state"
-            >
+            <div class="wallet-message">
+
                 Loading transactions...
+
             </div>
 
         </div>
 
+
     </section>
 
 
-    <!-- SECURITY NOTICE -->
+
+    <!-- ==================================================
+         SECURITY NOTICE
+    =================================================== -->
 
     <section class="security-notice">
+
 
         <div class="notice-icon">
             🛡️
         </div>
 
+
         <div>
+
 
             <h3>
                 Server-side wallet protection
             </h3>
 
+
             <p>
-                Wallet balances are calculated and
-                updated securely by the backend.
+
+                Wallet balances are calculated
+                and updated securely by the backend.
+                The browser cannot directly
+                create or modify wallet balances.
+
             </p>
 
+
         </div>
+
 
     </section>
 
@@ -672,145 +683,30 @@
 </main>
 
 
+
+<!-- ======================================================
+     CONFIG
+====================================================== -->
+
 <script src="../assets/js/config.js"></script>
+
+
+
+<!-- ======================================================
+     AUTH
+====================================================== -->
 
 <script src="../assets/js/auth.js"></script>
 
 
+
+<!-- ======================================================
+     WALLET JAVASCRIPT
+====================================================== -->
+
 <script>
 
 "use strict";
-
-
-/*
-|--------------------------------------------------------------------------
-| API BASE URL
-|--------------------------------------------------------------------------
-*/
-
-const API_BASE_URL =
-
-    window.API_BASE_URL ||
-
-    window.API_URL ||
-
-    window.CONFIG?.API_BASE_URL ||
-
-    "";
-
-
-/*
-|--------------------------------------------------------------------------
-| GET AUTH TOKEN
-|--------------------------------------------------------------------------
-*/
-
-function getAuthToken() {
-
-    return (
-
-        localStorage.getItem(
-            "accessToken"
-        )
-
-        ||
-
-        localStorage.getItem(
-            "token"
-        )
-
-        ||
-
-        localStorage.getItem(
-            "authToken"
-        )
-
-        ||
-
-        ""
-
-    );
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| API REQUEST
-|--------------------------------------------------------------------------
-*/
-
-async function apiRequest(
-    endpoint
-) {
-
-    const token =
-        getAuthToken();
-
-
-    const headers =
-        {
-
-            "Content-Type":
-                "application/json"
-
-        };
-
-
-    if (
-        token
-    ) {
-
-        headers.Authorization =
-            `Bearer ${token}`;
-
-    }
-
-
-    const response =
-        await fetch(
-
-            `${API_BASE_URL}${endpoint}`,
-
-            {
-
-                method:
-                    "GET",
-
-                headers:
-
-                    headers,
-
-                credentials:
-                    "include"
-
-            }
-
-        );
-
-
-    const data =
-        await response.json();
-
-
-    if (
-        !response.ok
-    ) {
-
-        throw new Error(
-
-            data.message ||
-
-            "Request failed"
-
-        );
-
-    }
-
-
-    return data;
-
-}
 
 
 /*
@@ -827,163 +723,44 @@ function formatMoney(
     const numericAmount =
         Number(
             amount
-        ) || 0;
+        );
 
 
-    try {
-
-        return new Intl.NumberFormat(
-
-            "en-IN",
-
-            {
-
-                style:
-                    "currency",
-
-                currency:
-                    currency ||
-                    "INR"
-
-            }
-
-        )
-        .format(
+    const safeAmount =
+        Number.isFinite(
             numericAmount
-        );
+        )
 
-    } catch (
+            ?
 
-        error
+            numericAmount
 
-    ) {
+            :
 
-        return (
-            `${numericAmount} ` +
-            `${currency || ""}`
-        );
+            0;
 
-    }
+
+    return (
+
+        String(
+            currency ||
+            "INR"
+        )
+
+        +
+
+        " "
+
+        +
+
+        safeAmount.toFixed(
+            2
+        )
+
+    );
 
 }
 
-
-/*
-|--------------------------------------------------------------------------
-| SHOW ERROR
-|--------------------------------------------------------------------------
-*/
-
-function showWalletError(
-    message
-) {
-
-    const element =
-        document.getElementById(
-            "walletError"
-        );
-
-
-    element.textContent =
-        message;
-
-
-    element.style.display =
-        "block";
-
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| LOAD WALLET
-|--------------------------------------------------------------------------
-*/
-
-async function loadWallet() {
-
-    try {
-
-        const data =
-            await apiRequest(
-                "/api/wallet"
-            );
-
-
-        const wallet =
-            data.wallet;
-
-
-        document.getElementById(
-            "availableBalance"
-        )
-        .textContent =
-            formatMoney(
-
-                wallet.available_balance,
-
-                wallet.currency
-
-            );
-
-
-        document.getElementById(
-            "pendingBalance"
-        )
-        .textContent =
-            formatMoney(
-
-                wallet.pending_balance,
-
-                wallet.currency
-
-            );
-
-
-        document.getElementById(
-            "walletCurrency"
-        )
-        .textContent =
-            wallet.currency ||
-            "-";
-
-
-        document.getElementById(
-            "walletStatus"
-        )
-        .textContent =
-            wallet.status ||
-            "-";
-
-
-    } catch (
-        error
-    ) {
-
-        console.error(
-            "LOAD WALLET ERROR:",
-            error
-        );
-
-
-        showWalletError(
-
-            error.message ||
-
-            "Unable to load wallet."
-
-        );
-
-
-        document.getElementById(
-            "availableBalance"
-        )
-        .textContent =
-            "Error";
-
-    }
-
-}
 
 
 /*
@@ -996,18 +773,23 @@ function formatTransactionType(
     type
 ) {
 
-    return String(
-        type ||
-        ""
-    )
+    if (
+        !type
+    ) {
 
+        return "Transaction";
+
+    }
+
+
+    return String(
+        type
+    )
     .replace(
         /_/g,
         " "
     )
-
     .replace(
-
         /\b\w/g,
 
         function (
@@ -1023,6 +805,156 @@ function formatTransactionType(
 }
 
 
+
+/*
+|--------------------------------------------------------------------------
+| FORMAT DATE
+|--------------------------------------------------------------------------
+*/
+
+function formatTransactionDate(
+    value
+) {
+
+    if (
+        !value
+    ) {
+
+        return "";
+
+    }
+
+
+    try {
+
+        return new Date(
+            value
+        )
+        .toLocaleString();
+
+    } catch (
+        error
+    ) {
+
+        return "";
+
+    }
+
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| LOAD WALLET
+|--------------------------------------------------------------------------
+*/
+
+async function loadWallet() {
+
+
+    const balanceElement =
+        document.getElementById(
+            "walletBalance"
+        );
+
+
+    const currencyElement =
+        document.getElementById(
+            "walletCurrency"
+        );
+
+
+    try {
+
+
+        /*
+        ------------------------------------------------------
+        BACKEND:
+        GET /api/wallet
+        ------------------------------------------------------
+        */
+
+        const data =
+            await apiRequest(
+                "/api/wallet"
+            );
+
+
+        console.log(
+            "WALLET API RESPONSE:",
+            data
+        );
+
+
+        if (
+
+            !data ||
+
+            !data.success ||
+
+            !data.wallet
+
+        ) {
+
+            throw new Error(
+                "Wallet data not available."
+            );
+
+        }
+
+
+        const wallet =
+            data.wallet;
+
+
+        const balance =
+            Number(
+                wallet.available_balance || 0
+            );
+
+
+        const currency =
+            wallet.currency ||
+            "INR";
+
+
+        balanceElement.textContent =
+            formatMoney(
+                balance,
+                currency
+            );
+
+
+        currencyElement.textContent =
+            "Available balance";
+
+
+    } catch (
+        error
+    ) {
+
+
+        console.error(
+            "LOAD WALLET ERROR:",
+            error
+        );
+
+
+        balanceElement.textContent =
+            "Unable to load balance";
+
+
+        currencyElement.textContent =
+            error.message ||
+            "Please try again.";
+
+    }
+
+}
+
+
+
 /*
 |--------------------------------------------------------------------------
 | LOAD TRANSACTIONS
@@ -1030,6 +962,7 @@ function formatTransactionType(
 */
 
 async function loadTransactions() {
+
 
     const list =
         document.getElementById(
@@ -1039,20 +972,60 @@ async function loadTransactions() {
 
     try {
 
+
+        /*
+        ------------------------------------------------------
+        BACKEND:
+        GET /api/wallet/transactions
+        ------------------------------------------------------
+        */
+
         const data =
             await apiRequest(
                 "/api/wallet/transactions"
             );
 
 
+        console.log(
+            "TRANSACTION API RESPONSE:",
+            data
+        );
+
+
+        if (
+
+            !data ||
+
+            !data.success
+
+        ) {
+
+            throw new Error(
+                "Transaction data not available."
+            );
+
+        }
+
+
         const transactions =
-            data.transactions ||
-            [];
+            Array.isArray(
+                data.transactions
+            )
+
+                ?
+
+                data.transactions
+
+                :
+
+                [];
 
 
-        list.innerHTML =
-            "";
-
+        /*
+        ------------------------------------------------------
+        EMPTY TRANSACTIONS
+        ------------------------------------------------------
+        */
 
         if (
             transactions.length === 0
@@ -1060,8 +1033,10 @@ async function loadTransactions() {
 
             list.innerHTML =
                 `
-                <div class="empty-state">
+                <div class="wallet-message">
+
                     No transactions found.
+
                 </div>
                 `;
 
@@ -1071,82 +1046,27 @@ async function loadTransactions() {
         }
 
 
+        /*
+        ------------------------------------------------------
+        CLEAR LOADING
+        ------------------------------------------------------
+        */
+
+        list.innerHTML =
+            "";
+
+
+        /*
+        ------------------------------------------------------
+        CREATE TRANSACTION ITEMS
+        ------------------------------------------------------
+        */
+
         transactions.forEach(
 
             function (
                 transaction
             ) {
-
-                const isCredit =
-
-                    [
-
-                        "deposit",
-
-                        "transfer_in",
-
-                        "credit"
-
-                    ]
-                    .includes(
-
-                        String(
-                            transaction.transaction_type
-                        )
-                        .toLowerCase()
-
-                    );
-
-
-                const amountClass =
-
-                    isCredit
-
-                        ?
-
-                        "transaction-credit"
-
-                        :
-
-                        "transaction-debit";
-
-
-                const sign =
-
-                    isCredit
-
-                        ?
-
-                        "+"
-
-                        :
-
-                        "-";
-
-
-                const date =
-
-                    transaction.created_at
-
-                        ?
-
-                        new Date(
-                            transaction.created_at
-                        )
-                        .toLocaleString()
-
-                        :
-
-                        "-";
-
-
-                const description =
-
-                    transaction.description ||
-
-                    formatTransactionType(
-                        transaction.transaction_type
-                    );
 
 
                 const item =
@@ -1159,64 +1079,177 @@ async function loadTransactions() {
                     "transaction-item";
 
 
-                item.innerHTML =
-                    `
+                const type =
+                    formatTransactionType(
 
-                    <div
-                        class="transaction-left"
-                    >
+                        transaction.transaction_type
 
-                        <span
-                            class="transaction-type"
-                        >
-
-                            ${formatTransactionType(
-                                transaction.transaction_type
-                            )}
-
-                        </span>
+                    );
 
 
-                        <span
-                            class="transaction-description"
-                        >
+                const amount =
+                    formatMoney(
 
-                            ${description}
+                        transaction.amount,
 
-                        </span>
+                        transaction.currency
 
-
-                        <span
-                            class="transaction-date"
-                        >
-
-                            ${date}
-
-                        </span>
-
-                    </div>
+                    );
 
 
-                    <div
-                        class="transaction-amount ${amountClass}"
-                    >
+                const date =
+                    formatTransactionDate(
 
-                        ${sign}${formatMoney(
+                        transaction.created_at
 
-                            transaction.amount,
+                    );
 
-                            transaction.currency
 
-                        )}
+                const description =
+                    transaction.description ||
+                    "Wallet transaction";
 
-                    </div>
 
-                    `;
+                const status =
+                    transaction.status ||
+                    "completed";
+
+
+                /*
+                ------------------------------------------------
+                SAFE TEXT INSERTION
+                ------------------------------------------------
+                */
+
+                const left =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                left.className =
+                    "transaction-left";
+
+
+                const title =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                title.className =
+                    "transaction-title";
+
+
+                title.textContent =
+                    type;
+
+
+                const descriptionElement =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                descriptionElement.className =
+                    "transaction-description";
+
+
+                descriptionElement.textContent =
+                    description;
+
+
+                const dateElement =
+                    document.createElement(
+                        "small"
+                    );
+
+
+                dateElement.className =
+                    "transaction-date";
+
+
+                dateElement.textContent =
+                    date;
+
+
+                left.appendChild(
+                    title
+                );
+
+
+                left.appendChild(
+                    descriptionElement
+                );
+
+
+                left.appendChild(
+                    dateElement
+                );
+
+
+                const right =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                right.className =
+                    "transaction-right";
+
+
+                const amountElement =
+                    document.createElement(
+                        "p"
+                    );
+
+
+                amountElement.className =
+                    "transaction-amount";
+
+
+                amountElement.textContent =
+                    amount;
+
+
+                const statusElement =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                statusElement.className =
+                    "transaction-status";
+
+
+                statusElement.textContent =
+                    status;
+
+
+                right.appendChild(
+                    amountElement
+                );
+
+
+                right.appendChild(
+                    statusElement
+                );
+
+
+                item.appendChild(
+                    left
+                );
+
+
+                item.appendChild(
+                    right
+                );
 
 
                 list.appendChild(
                     item
                 );
+
 
             }
 
@@ -1227,6 +1260,7 @@ async function loadTransactions() {
         error
     ) {
 
+
         console.error(
             "LOAD TRANSACTIONS ERROR:",
             error
@@ -1235,8 +1269,10 @@ async function loadTransactions() {
 
         list.innerHTML =
             `
-            <div class="empty-state">
-                Unable to load transactions.
+            <div class="wallet-message">
+
+                Unable to load transaction history.
+
             </div>
             `;
 
@@ -1245,9 +1281,10 @@ async function loadTransactions() {
 }
 
 
+
 /*
 |--------------------------------------------------------------------------
-| INITIAL LOAD
+| PAGE LOAD
 |--------------------------------------------------------------------------
 */
 
@@ -1257,17 +1294,24 @@ document.addEventListener(
 
     async function () {
 
-        await Promise.all(
 
-            [
+        /*
+        ------------------------------------------------------
+        LOAD BALANCE
+        ------------------------------------------------------
+        */
 
-                loadWallet(),
+        await loadWallet();
 
-                loadTransactions()
 
-            ]
+        /*
+        ------------------------------------------------------
+        LOAD TRANSACTIONS
+        ------------------------------------------------------
+        */
 
-        );
+        await loadTransactions();
+
 
     }
 
@@ -1279,370 +1323,3 @@ document.addEventListener(
 </body>
 
 </html>
-
-
-<script src="../assets/js/config.js"></script>
-
-<script src="../assets/js/auth.js"></script>
-
-<script>
-
-document.addEventListener(
-    "DOMContentLoaded",
-    async function () {
-
-        try {
-
-            /*
-            --------------------------------------------------
-            API BASE URL
-            --------------------------------------------------
-            */
-
-            const API_BASE_URL =
-                window.API_BASE_URL ||
-                window.API_URL ||
-                "http://localhost:8080";
-
-
-            /*
-            --------------------------------------------------
-            GET TOKEN
-            --------------------------------------------------
-            */
-
-            const token =
-                localStorage.getItem(
-                    "accessToken"
-                ) ||
-                localStorage.getItem(
-                    "token"
-                );
-
-
-            /*
-            --------------------------------------------------
-            AUTH HEADERS
-            --------------------------------------------------
-            */
-
-            const headers =
-                {
-
-                    "Content-Type":
-                        "application/json"
-
-                };
-
-
-            if (
-                token
-            ) {
-
-                headers.Authorization =
-                    `Bearer ${token}`;
-
-            }
-
-
-            /*
-            --------------------------------------------------
-            LOAD WALLET
-            --------------------------------------------------
-            */
-
-            const walletResponse =
-                await fetch(
-
-                    `${API_BASE_URL}/api/wallet`,
-
-                    {
-
-                        method:
-                            "GET",
-
-                        headers:
-                            headers,
-
-                        credentials:
-                            "include"
-
-                    }
-
-                );
-
-
-            const walletData =
-                await walletResponse.json();
-
-
-            if (
-                !walletResponse.ok
-            ) {
-
-                throw new Error(
-
-                    walletData.message ||
-                    "Unable to load wallet"
-
-                );
-
-            }
-
-
-            /*
-            --------------------------------------------------
-            DISPLAY WALLET BALANCE
-            --------------------------------------------------
-            */
-
-            const wallet =
-                walletData.wallet;
-
-
-            const currency =
-                wallet.currency ||
-                "INR";
-
-
-            const availableBalance =
-                Number(
-                    wallet.available_balance ||
-                    0
-                );
-
-
-            const pendingBalance =
-                Number(
-                    wallet.pending_balance ||
-                    0
-                );
-
-
-            document.getElementById(
-                "walletBalance"
-            ).textContent =
-
-                `${currency} ${availableBalance.toFixed(2)}`;
-
-
-            document.getElementById(
-                "pendingBalance"
-            ).textContent =
-
-                `${currency} ${pendingBalance.toFixed(2)}`;
-
-
-            /*
-            --------------------------------------------------
-            LOAD TRANSACTIONS
-            --------------------------------------------------
-            */
-
-            const transactionResponse =
-                await fetch(
-
-                    `${API_BASE_URL}/api/wallet/transactions`,
-
-                    {
-
-                        method:
-                            "GET",
-
-                        headers:
-                            headers,
-
-                        credentials:
-                            "include"
-
-                    }
-
-                );
-
-
-            const transactionData =
-                await transactionResponse.json();
-
-
-            if (
-                !transactionResponse.ok
-            ) {
-
-                throw new Error(
-
-                    transactionData.message ||
-                    "Unable to load transactions"
-
-                );
-
-            }
-
-
-            const transactions =
-                transactionData.transactions ||
-                [];
-
-
-            const transactionList =
-                document.getElementById(
-                    "transactionList"
-                );
-
-
-            /*
-            --------------------------------------------------
-            NO TRANSACTIONS
-            --------------------------------------------------
-            */
-
-            if (
-                transactions.length === 0
-            ) {
-
-                transactionList.innerHTML =
-                    `
-                    <p>
-                        No transactions found.
-                    </p>
-                    `;
-
-
-                return;
-
-            }
-
-
-            /*
-            --------------------------------------------------
-            DISPLAY TRANSACTIONS
-            --------------------------------------------------
-            */
-
-            transactionList.innerHTML =
-                transactions.map(
-
-                    function (
-                        transaction
-                    ) {
-
-                        const amount =
-                            Number(
-                                transaction.amount ||
-                                0
-                            );
-
-
-                        const date =
-                            transaction.created_at
-
-                                ?
-
-                                new Date(
-                                    transaction.created_at
-                                )
-                                .toLocaleString()
-
-                                :
-
-                                "Unknown date";
-
-
-                        return `
-
-                            <div class="transaction-card">
-
-                                <div>
-
-                                    <strong>
-
-                                        ${
-                                            transaction.transaction_type ||
-                                            "Transaction"
-                                        }
-
-                                    </strong>
-
-
-                                    <p>
-
-                                        ${
-                                            transaction.description ||
-                                            "Wallet transaction"
-                                        }
-
-                                    </p>
-
-
-                                    <small>
-
-                                        ${date}
-
-                                    </small>
-
-                                </div>
-
-
-                                <div>
-
-                                    <strong>
-
-                                        ${
-                                            transaction.currency ||
-                                            currency
-                                        }
-
-                                        ${amount.toFixed(2)}
-
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                        `;
-
-                    }
-
-                )
-                .join(
-                    ""
-                );
-
-
-        } catch (
-            error
-        ) {
-
-            console.error(
-                "WALLET PAGE ERROR:",
-                error
-            );
-
-
-            document.getElementById(
-                "walletBalance"
-            ).textContent =
-                "Unable to load";
-
-
-            document.getElementById(
-                "pendingBalance"
-            ).textContent =
-                "Unable to load";
-
-
-            document.getElementById(
-                "transactionList"
-            ).innerHTML =
-                `
-                <p>
-                    Unable to load transactions.
-                </p>
-                `;
-
-        }
-
-    }
-);
-
-</script>

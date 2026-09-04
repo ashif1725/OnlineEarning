@@ -105,6 +105,20 @@ const adminDepositRequestsRoutes =
 |--------------------------------------------------------------------------
 | ROUTE MODULE NORMALIZER
 |--------------------------------------------------------------------------
+|
+| Supports:
+|
+| module.exports = router;
+|
+| module.exports = {
+|     router
+| };
+|
+| module.exports = {
+|     default: router
+| };
+|
+|--------------------------------------------------------------------------
 */
 
 function getExpressRouter(
@@ -114,7 +128,7 @@ function getExpressRouter(
 
     /*
     ----------------------------------------------------------
-    Direct Express Router export
+    Direct Router export
     ----------------------------------------------------------
     */
 
@@ -410,9 +424,21 @@ const allowedOrigins =
 
                 ...configuredOrigins,
 
-                ...(process.env.NODE_ENV !== "production"
-                    ? developmentOrigins
-                    : [])
+                ...(
+
+
+                    process.env.NODE_ENV !==
+                    "production"
+
+                        ?
+
+                        developmentOrigins
+
+                        :
+
+                        []
+
+                )
 
             ]
 
@@ -431,6 +457,7 @@ function validateCorsOrigin(
     origin,
     callback
 ) {
+
 
     /*
     ---------------------------------------------------------
@@ -950,6 +977,7 @@ app.use(
                     "CORS_NOT_ALLOWED",
 
                 message:
+
                     "This frontend origin is not allowed to access the API."
 
             });
@@ -1037,6 +1065,7 @@ app.listen(
     "0.0.0.0",
 
     function () {
+
 
         console.log(
             "========================================"
@@ -1129,6 +1158,16 @@ app.listen(
 
         console.log(
             `http://localhost:${PORT}/api/wallet/transactions`
+        );
+
+
+        console.log(
+            "Admin users:"
+        );
+
+
+        console.log(
+            `http://localhost:${PORT}/api/admin/users`
         );
 
 

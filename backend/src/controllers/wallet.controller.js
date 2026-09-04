@@ -5,7 +5,9 @@ const {
     sendMoney,
     getTransactions
 } =
-    require("../services/wallet.service");
+    require(
+        "../services/wallet.service"
+    );
 
 
 /*
@@ -14,14 +16,42 @@ const {
 |--------------------------------------------------------------------------
 */
 
-async function wallet(req, res) {
+async function wallet(
+    req,
+    res
+) {
 
     try {
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "WALLET REQUEST USER:",
+            req.user
+        );
+
+        console.log(
+            "WALLET REQUEST USER ID:",
+            req.user?.id
+        );
+
 
         const data =
             await getWallet(
                 req.user.id
             );
+
+
+        console.log(
+            "WALLET DATABASE RESULT:",
+            data
+        );
+
+        console.log(
+            "================================"
+        );
 
 
         return res.status(200).json({
@@ -35,7 +65,9 @@ async function wallet(req, res) {
         });
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "WALLET ERROR:",
@@ -49,10 +81,15 @@ async function wallet(req, res) {
                 false,
 
             message:
-                "Unable to load wallet"
+                "Unable to load wallet",
+
+            error:
+                error.message
 
         });
+
     }
+
 }
 
 
@@ -93,6 +130,7 @@ async function send(req, res) {
                     "Receiver and amount are required"
 
             });
+
         }
 
 
@@ -133,7 +171,9 @@ async function send(req, res) {
         });
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "SEND MONEY ERROR:",
@@ -155,6 +195,7 @@ async function send(req, res) {
                     "Insufficient wallet balance"
 
             });
+
         }
 
 
@@ -172,6 +213,7 @@ async function send(req, res) {
                     "You cannot send money to yourself"
 
             });
+
         }
 
 
@@ -189,6 +231,7 @@ async function send(req, res) {
                     "Wallet is not active"
 
             });
+
         }
 
 
@@ -206,6 +249,7 @@ async function send(req, res) {
                     "Invalid amount"
 
             });
+
         }
 
 
@@ -218,7 +262,9 @@ async function send(req, res) {
                 "Transfer failed"
 
         });
+
     }
+
 }
 
 
@@ -237,8 +283,11 @@ async function transactions(
 
         const rows =
             await getTransactions(
+
                 req.user.id,
+
                 req.query.limit
+
             );
 
 
@@ -253,7 +302,9 @@ async function transactions(
         });
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "TRANSACTION HISTORY ERROR:",
@@ -270,7 +321,9 @@ async function transactions(
                 "Unable to load transactions"
 
         });
+
     }
+
 }
 
 

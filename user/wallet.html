@@ -23,22 +23,16 @@
 
     <style>
 
-        /*
-        =====================================================
-        WALLET BALANCE
-        =====================================================
-        */
+        /* =====================================================
+           WALLET BALANCE
+        ===================================================== */
 
         .wallet-balance-card {
 
-            margin-top:
-                24px;
+            margin-top: 24px;
+            padding: 28px;
 
-            padding:
-                28px;
-
-            border-radius:
-                16px;
+            border-radius: 16px;
 
             background:
                 rgba(
@@ -62,96 +56,76 @@
 
         .wallet-balance-label {
 
-            margin:
-                0;
+            margin: 0;
 
-            font-size:
-                12px;
+            font-size: 12px;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
-            letter-spacing:
-                1px;
+            letter-spacing: 1px;
 
-            opacity:
-                0.7;
+            opacity: 0.7;
 
         }
 
 
         .wallet-balance {
 
-            margin:
-                12px 0 4px;
+            margin: 12px 0 4px;
 
-            font-size:
-                38px;
+            font-size: 38px;
 
-            font-weight:
-                800;
+            font-weight: 800;
+
+            word-break: break-word;
 
         }
 
 
         .wallet-currency {
 
-            margin:
-                0;
+            margin: 0;
 
-            opacity:
-                0.7;
+            opacity: 0.7;
 
         }
 
 
-        /*
-        =====================================================
-        TRANSACTIONS
-        =====================================================
-        */
+        /* =====================================================
+           TRANSACTIONS
+        ===================================================== */
 
         .transactions-section {
 
-            margin-top:
-                40px;
+            margin-top: 40px;
 
         }
 
 
         .transaction-list {
 
-            display:
-                flex;
+            display: flex;
 
-            flex-direction:
-                column;
+            flex-direction: column;
 
-            gap:
-                12px;
+            gap: 12px;
 
         }
 
 
         .transaction-item {
 
-            display:
-                flex;
+            display: flex;
 
-            justify-content:
-                space-between;
+            justify-content: space-between;
 
-            align-items:
-                center;
+            align-items: center;
 
-            gap:
-                20px;
+            gap: 20px;
 
-            padding:
-                18px;
+            padding: 18px;
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
             background:
                 rgba(
@@ -175,109 +149,86 @@
 
         .transaction-left {
 
-            min-width:
-                0;
+            min-width: 0;
 
         }
 
 
         .transaction-title {
 
-            margin:
-                0;
+            margin: 0;
 
-            font-size:
-                16px;
+            font-size: 16px;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
-            text-transform:
-                capitalize;
+            text-transform: capitalize;
 
         }
 
 
         .transaction-description {
 
-            margin:
-                6px 0;
+            margin: 6px 0;
 
-            opacity:
-                0.7;
+            opacity: 0.7;
 
-            word-break:
-                break-word;
+            word-break: break-word;
 
         }
 
 
         .transaction-date {
 
-            font-size:
-                12px;
+            font-size: 12px;
 
-            opacity:
-                0.55;
+            opacity: 0.55;
 
         }
 
 
         .transaction-right {
 
-            text-align:
-                right;
+            text-align: right;
 
-            white-space:
-                nowrap;
+            white-space: nowrap;
 
         }
 
 
         .transaction-amount {
 
-            margin:
-                0;
+            margin: 0;
 
-            font-size:
-                17px;
+            font-size: 17px;
 
-            font-weight:
-                700;
+            font-weight: 700;
 
         }
 
 
         .transaction-status {
 
-            display:
-                inline-block;
+            display: inline-block;
 
-            margin-top:
-                6px;
+            margin-top: 6px;
 
-            font-size:
-                12px;
+            font-size: 12px;
 
-            opacity:
-                0.65;
+            opacity: 0.65;
 
-            text-transform:
-                capitalize;
+            text-transform: capitalize;
 
         }
 
 
         .wallet-message {
 
-            padding:
-                20px;
+            padding: 20px;
 
-            text-align:
-                center;
+            text-align: center;
 
-            border-radius:
-                12px;
+            border-radius: 12px;
 
             background:
                 rgba(
@@ -287,8 +238,7 @@
                     0.04
                 );
 
-            opacity:
-                0.75;
+            opacity: 0.75;
 
         }
 
@@ -299,16 +249,14 @@
 
             .transaction-item {
 
-                align-items:
-                    flex-start;
+                align-items: flex-start;
 
             }
 
 
             .wallet-balance {
 
-                font-size:
-                    30px;
+                font-size: 30px;
 
             }
 
@@ -386,9 +334,9 @@
         </p>
 
 
-        <!-- ==============================================
+        <!-- ==================================================
              WALLET BALANCE
-        =============================================== -->
+        =================================================== -->
 
         <div class="wallet-balance-card">
 
@@ -410,7 +358,7 @@
                 id="walletCurrency"
                 class="wallet-currency"
             >
-                --
+                Loading wallet...
             </p>
 
 
@@ -462,7 +410,6 @@
 
                 <span class="action-content">
 
-
                     <strong>
                         Send Money
                     </strong>
@@ -471,7 +418,6 @@
                     <small>
                         Send funds to another user
                     </small>
-
 
                 </span>
 
@@ -499,7 +445,6 @@
 
                 <span class="action-content">
 
-
                     <strong>
                         Receive Money
                     </strong>
@@ -508,7 +453,6 @@
                     <small>
                         Receive funds securely
                     </small>
-
 
                 </span>
 
@@ -536,7 +480,6 @@
 
                 <span class="action-content">
 
-
                     <strong>
                         Add Money
                     </strong>
@@ -545,7 +488,6 @@
                     <small>
                         Create a deposit request
                     </small>
-
 
                 </span>
 
@@ -573,7 +515,6 @@
 
                 <span class="action-content">
 
-
                     <strong>
                         Withdraw
                     </strong>
@@ -582,7 +523,6 @@
                     <small>
                         Request a withdrawal
                     </small>
-
 
                 </span>
 
@@ -709,11 +649,9 @@
 "use strict";
 
 
-/*
-|--------------------------------------------------------------------------
-| FORMAT MONEY
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   FORMAT MONEY
+========================================================= */
 
 function formatMoney(
     amount,
@@ -721,23 +659,18 @@ function formatMoney(
 ) {
 
     const numericAmount =
-        Number(
-            amount
-        );
+        Number(amount);
 
 
-    const safeAmount =
-        Number.isFinite(
+    if (
+        !Number.isFinite(
             numericAmount
         )
+    ) {
 
-            ?
+        return null;
 
-            numericAmount
-
-            :
-
-            0;
+    }
 
 
     return (
@@ -753,7 +686,7 @@ function formatMoney(
 
         +
 
-        safeAmount.toFixed(
+        numericAmount.toFixed(
             2
         )
 
@@ -763,11 +696,224 @@ function formatMoney(
 
 
 
-/*
-|--------------------------------------------------------------------------
-| FORMAT TRANSACTION TYPE
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   EXTRACT WALLET OBJECT
+========================================================= */
+
+function extractWalletObject(
+    data
+) {
+
+    if (
+        !data
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Standard backend response
+    ---------------------------------------------------------
+    */
+
+    if (
+
+        data.wallet &&
+
+        typeof data.wallet ===
+        "object"
+
+    ) {
+
+        return data.wallet;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Nested response
+    ---------------------------------------------------------
+    */
+
+    if (
+
+        data.data?.wallet &&
+
+        typeof data.data.wallet ===
+        "object"
+
+    ) {
+
+        return data.data.wallet;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Direct wallet object
+    ---------------------------------------------------------
+    */
+
+    if (
+
+        typeof data ===
+        "object"
+
+        &&
+
+        (
+            data.available_balance !== undefined ||
+            data.availableBalance !== undefined ||
+            data.balance !== undefined ||
+            data.current_balance !== undefined ||
+            data.currentBalance !== undefined
+        )
+
+    ) {
+
+        return data;
+
+    }
+
+
+    return null;
+
+}
+
+
+
+/* =========================================================
+   EXTRACT BALANCE
+========================================================= */
+
+function extractWalletBalance(
+    wallet
+) {
+
+    if (
+        !wallet ||
+        typeof wallet !==
+        "object"
+    ) {
+
+        return null;
+
+    }
+
+
+    /*
+    ---------------------------------------------------------
+    Check possible backend field names.
+
+    IMPORTANT:
+    We do NOT use || 0 here.
+
+    If the backend sends no balance,
+    we return null instead of silently
+    showing ₹0.
+    ---------------------------------------------------------
+    */
+
+    const possibleValues = [
+
+        wallet.available_balance,
+
+        wallet.availableBalance,
+
+        wallet.balance,
+
+        wallet.current_balance,
+
+        wallet.currentBalance
+
+    ];
+
+
+    for (
+
+        const value of
+        possibleValues
+
+    ) {
+
+        if (
+
+            value !== undefined &&
+
+            value !== null &&
+
+            value !== ""
+
+        ) {
+
+            const numericValue =
+                Number(
+                    value
+                );
+
+
+            if (
+                Number.isFinite(
+                    numericValue
+                )
+            ) {
+
+                return numericValue;
+
+            }
+
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+
+/* =========================================================
+   EXTRACT CURRENCY
+========================================================= */
+
+function extractWalletCurrency(
+    wallet
+) {
+
+    if (
+        !wallet
+    ) {
+
+        return "INR";
+
+    }
+
+
+    return (
+
+        wallet.currency ||
+
+        wallet.currency_code ||
+
+        wallet.currencyCode ||
+
+        "INR"
+
+    );
+
+}
+
+
+
+/* =========================================================
+   FORMAT TRANSACTION TYPE
+========================================================= */
 
 function formatTransactionType(
     type
@@ -806,11 +952,9 @@ function formatTransactionType(
 
 
 
-/*
-|--------------------------------------------------------------------------
-| FORMAT DATE
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   FORMAT TRANSACTION DATE
+========================================================= */
 
 function formatTransactionDate(
     value
@@ -825,30 +969,32 @@ function formatTransactionDate(
     }
 
 
-    try {
-
-        return new Date(
+    const date =
+        new Date(
             value
-        )
-        .toLocaleString();
+        );
 
-    } catch (
-        error
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
     ) {
 
         return "";
 
     }
 
+
+    return date.toLocaleString();
+
 }
 
 
 
-/*
-|--------------------------------------------------------------------------
-| LOAD WALLET
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   LOAD WALLET
+========================================================= */
 
 async function loadWallet() {
 
@@ -865,18 +1011,55 @@ async function loadWallet() {
         );
 
 
+    if (
+        !balanceElement ||
+        !currencyElement
+    ) {
+
+        return;
+
+    }
+
+
+    balanceElement.textContent =
+        "Loading...";
+
+
+    currencyElement.textContent =
+        "Loading wallet...";
+
+
     try {
 
 
         /*
         ------------------------------------------------------
-        BACKEND:
-        GET /api/wallet
+        CHECK API FUNCTION
+        ------------------------------------------------------
+        */
+
+        if (
+
+            typeof window.apiRequest !==
+            "function"
+
+        ) {
+
+            throw new Error(
+                "API configuration was not loaded."
+            );
+
+        }
+
+
+        /*
+        ------------------------------------------------------
+        GET WALLET
         ------------------------------------------------------
         */
 
         const data =
-            await apiRequest(
+            await window.apiRequest(
                 "/api/wallet"
             );
 
@@ -887,47 +1070,139 @@ async function loadWallet() {
         );
 
 
+        /*
+        ------------------------------------------------------
+        EXTRACT WALLET
+        ------------------------------------------------------
+        */
+
+        const wallet =
+            extractWalletObject(
+                data
+            );
+
+
         if (
-
-            !data ||
-
-            !data.success ||
-
-            !data.wallet
-
+            !wallet
         ) {
 
+            console.error(
+                "UNEXPECTED WALLET RESPONSE:",
+                data
+            );
+
+
             throw new Error(
-                "Wallet data not available."
+                "Wallet object was not found in the API response."
             );
 
         }
 
 
-        const wallet =
-            data.wallet;
-
+        /*
+        ------------------------------------------------------
+        EXTRACT BALANCE
+        ------------------------------------------------------
+        */
 
         const balance =
-            Number(
-                wallet.available_balance || 0
+            extractWalletBalance(
+                wallet
             );
 
 
+        /*
+        ------------------------------------------------------
+        IMPORTANT
+
+        Do not display 0 if
+        the balance property is missing.
+        ------------------------------------------------------
+        */
+
+        if (
+            balance === null
+        ) {
+
+            console.error(
+                "BALANCE FIELD NOT FOUND:",
+                wallet
+            );
+
+
+            throw new Error(
+                "Balance field was not found in the wallet response."
+            );
+
+        }
+
+
+        /*
+        ------------------------------------------------------
+        CURRENCY
+        ------------------------------------------------------
+        */
+
         const currency =
-            wallet.currency ||
-            "INR";
+            extractWalletCurrency(
+                wallet
+            );
 
 
-        balanceElement.textContent =
+        /*
+        ------------------------------------------------------
+        DISPLAY
+        ------------------------------------------------------
+        */
+
+        const formattedBalance =
             formatMoney(
                 balance,
                 currency
             );
 
 
+        if (
+            !formattedBalance
+        ) {
+
+            throw new Error(
+                "Wallet balance is invalid."
+            );
+
+        }
+
+
+        balanceElement.textContent =
+            formattedBalance;
+
+
         currencyElement.textContent =
             "Available balance";
+
+
+        /*
+        ------------------------------------------------------
+        DEBUG
+        ------------------------------------------------------
+        */
+
+        console.log(
+            "WALLET OBJECT:",
+            wallet
+        );
+
+
+        console.log(
+            "EXTRACTED BALANCE:",
+            balance
+        );
+
+
+        console.log(
+            "EXTRACTED CURRENCY:",
+            currency
+        );
 
 
     } catch (
@@ -946,7 +1221,7 @@ async function loadWallet() {
 
 
         currencyElement.textContent =
-            error.message ||
+            error?.message ||
             "Please try again.";
 
     }
@@ -955,11 +1230,127 @@ async function loadWallet() {
 
 
 
-/*
-|--------------------------------------------------------------------------
-| LOAD TRANSACTIONS
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   EXTRACT TRANSACTIONS
+========================================================= */
+
+function extractTransactions(
+    data
+) {
+
+    if (
+        Array.isArray(
+            data?.transactions
+        )
+    ) {
+
+        return data.transactions;
+
+    }
+
+
+    if (
+        Array.isArray(
+            data?.data?.transactions
+        )
+    ) {
+
+        return data.data.transactions;
+
+    }
+
+
+    if (
+        Array.isArray(
+            data?.data
+        )
+    ) {
+
+        return data.data;
+
+    }
+
+
+    if (
+        Array.isArray(
+            data
+        )
+    ) {
+
+        return data;
+
+    }
+
+
+    return [];
+
+}
+
+
+
+/* =========================================================
+   GET TRANSACTION AMOUNT
+========================================================= */
+
+function getTransactionAmount(
+    transaction
+) {
+
+    const values = [
+
+        transaction?.amount,
+
+        transaction?.transaction_amount,
+
+        transaction?.transactionAmount
+
+    ];
+
+
+    for (
+        const value of values
+    ) {
+
+        if (
+
+            value !== undefined &&
+
+            value !== null &&
+
+            value !== ""
+
+        ) {
+
+            const amount =
+                Number(
+                    value
+                );
+
+
+            if (
+                Number.isFinite(
+                    amount
+                )
+            ) {
+
+                return amount;
+
+            }
+
+        }
+
+    }
+
+
+    return 0;
+
+}
+
+
+
+/* =========================================================
+   LOAD TRANSACTIONS
+========================================================= */
 
 async function loadTransactions() {
 
@@ -970,18 +1361,34 @@ async function loadTransactions() {
         );
 
 
+    if (
+        !list
+    ) {
+
+        return;
+
+    }
+
+
     try {
 
 
-        /*
-        ------------------------------------------------------
-        BACKEND:
-        GET /api/wallet/transactions
-        ------------------------------------------------------
-        */
+        if (
+
+            typeof window.apiRequest !==
+            "function"
+
+        ) {
+
+            throw new Error(
+                "API configuration was not loaded."
+            );
+
+        }
+
 
         const data =
-            await apiRequest(
+            await window.apiRequest(
                 "/api/wallet/transactions"
             );
 
@@ -992,38 +1399,15 @@ async function loadTransactions() {
         );
 
 
-        if (
-
-            !data ||
-
-            !data.success
-
-        ) {
-
-            throw new Error(
-                "Transaction data not available."
-            );
-
-        }
-
-
         const transactions =
-            Array.isArray(
-                data.transactions
-            )
-
-                ?
-
-                data.transactions
-
-                :
-
-                [];
+            extractTransactions(
+                data
+            );
 
 
         /*
         ------------------------------------------------------
-        EMPTY TRANSACTIONS
+        EMPTY
         ------------------------------------------------------
         */
 
@@ -1034,9 +1418,7 @@ async function loadTransactions() {
             list.innerHTML =
                 `
                 <div class="wallet-message">
-
                     No transactions found.
-
                 </div>
                 `;
 
@@ -1046,19 +1428,13 @@ async function loadTransactions() {
         }
 
 
-        /*
-        ------------------------------------------------------
-        CLEAR LOADING
-        ------------------------------------------------------
-        */
-
         list.innerHTML =
             "";
 
 
         /*
         ------------------------------------------------------
-        CREATE TRANSACTION ITEMS
+        CREATE ITEMS
         ------------------------------------------------------
         */
 
@@ -1082,17 +1458,27 @@ async function loadTransactions() {
                 const type =
                     formatTransactionType(
 
-                        transaction.transaction_type
+                        transaction.transaction_type ||
 
+                        transaction.type
+
+                    );
+
+
+                const amountValue =
+                    getTransactionAmount(
+                        transaction
                     );
 
 
                 const amount =
                     formatMoney(
 
-                        transaction.amount,
+                        amountValue,
 
-                        transaction.currency
+                        transaction.currency ||
+                        transaction.currency_code ||
+                        "INR"
 
                     );
 
@@ -1100,7 +1486,11 @@ async function loadTransactions() {
                 const date =
                     formatTransactionDate(
 
-                        transaction.created_at
+                        transaction.created_at ||
+
+                        transaction.createdAt ||
+
+                        transaction.date
 
                     );
 
@@ -1117,7 +1507,7 @@ async function loadTransactions() {
 
                 /*
                 ------------------------------------------------
-                SAFE TEXT INSERTION
+                LEFT
                 ------------------------------------------------
                 */
 
@@ -1187,6 +1577,12 @@ async function loadTransactions() {
                     dateElement
                 );
 
+
+                /*
+                ------------------------------------------------
+                RIGHT
+                ------------------------------------------------
+                */
 
                 const right =
                     document.createElement(
@@ -1282,11 +1678,9 @@ async function loadTransactions() {
 
 
 
-/*
-|--------------------------------------------------------------------------
-| PAGE LOAD
-|--------------------------------------------------------------------------
-*/
+/* =========================================================
+   PAGE LOAD
+========================================================= */
 
 document.addEventListener(
 
@@ -1295,22 +1689,17 @@ document.addEventListener(
     async function () {
 
 
-        /*
-        ------------------------------------------------------
-        LOAD BALANCE
-        ------------------------------------------------------
-        */
+        await Promise.allSettled(
 
-        await loadWallet();
+            [
 
+                loadWallet(),
 
-        /*
-        ------------------------------------------------------
-        LOAD TRANSACTIONS
-        ------------------------------------------------------
-        */
+                loadTransactions()
 
-        await loadTransactions();
+            ]
+
+        );
 
 
     }

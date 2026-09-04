@@ -1,33 +1,45 @@
 "use strict";
 
-require("dotenv").config();
+
+require(
+    "dotenv"
+)
+.config();
 
 
 const express =
-    require("express");
+    require(
+        "express"
+    );
 
 
 const helmet =
-    require("helmet");
+    require(
+        "helmet"
+    );
 
 
 const cors =
-    require("cors");
+    require(
+        "cors"
+    );
 
 
 const cookieParser =
-    require("cookie-parser");
+    require(
+        "cookie-parser"
+    );
 
-
-/*
-|--------------------------------------------------------------------------
-| APP
-|--------------------------------------------------------------------------
-*/
 
 const app =
     express();
 
+
+/*
+|--------------------------------------------------------------------------
+| PORT
+|--------------------------------------------------------------------------
+*/
 
 const PORT =
     Number(
@@ -40,7 +52,24 @@ const PORT =
 |--------------------------------------------------------------------------
 | ROUTES
 |--------------------------------------------------------------------------
+|
+| IMPORTANT:
+|
+| This server uses ONLY:
+|
+| ./src/routes/
+|
+| Do NOT mix:
+|
+| ./routes/
+|
+| with:
+|
+| ./src/routes/
+|
+|--------------------------------------------------------------------------
 */
+
 
 const authRoutes =
     require(
@@ -140,7 +169,7 @@ const adminKycRoutes =
 
 /*
 |--------------------------------------------------------------------------
-| SECURITY
+| BASIC SECURITY
 |--------------------------------------------------------------------------
 */
 
@@ -161,46 +190,25 @@ app.use(
 */
 
 const allowedOrigins =
-    [
+    String(
+        process.env.FRONTEND_ORIGIN ||
         "https://ashif1725.github.io"
-    ];
+    )
+    .split(
+        ","
+    )
+    .map(
+        function (
+            origin
+        ) {
 
+            return origin.trim();
 
-/*
-|--------------------------------------------------------------------------
-| ADD ENV FRONTEND ORIGIN
-|--------------------------------------------------------------------------
-*/
-
-if (
-    process.env.FRONTEND_ORIGIN
-) {
-
-    const frontendOrigin =
-        String(
-            process.env.FRONTEND_ORIGIN
-        )
-        .trim()
-        .replace(
-            /\/+$/,
-            ""
-        );
-
-
-    if (
-        frontendOrigin &&
-        !allowedOrigins.includes(
-            frontendOrigin
-        )
-    ) {
-
-        allowedOrigins.push(
-            frontendOrigin
-        );
-
-    }
-
-}
+        }
+    )
+    .filter(
+        Boolean
+    );
 
 
 app.use(
@@ -219,8 +227,7 @@ app.use(
 
                     /*
                     ----------------------------------------------------------
-                    Allow server-to-server requests
-                    and tools without Origin header
+                    Allow requests without Origin
                     ----------------------------------------------------------
                     */
 
@@ -228,93 +235,44 @@ app.use(
                         !origin
                     ) {
 
-                        callback(
+                        return callback(
                             null,
                             true
                         );
 
-                        return;
-
                     }
-
-
-                    const normalizedOrigin =
-                        String(
-                            origin
-                        )
-                        .replace(
-                            /\/+$/,
-                            ""
-                        );
 
 
                     if (
 
                         allowedOrigins.includes(
-                            normalizedOrigin
+                            origin
                         )
 
                     ) {
 
-                        callback(
+                        return callback(
                             null,
                             true
                         );
 
-                        return;
-
                     }
 
 
-                    console.warn(
-                        "CORS BLOCKED ORIGIN:",
-                        origin
-                    );
-
-
-                    callback(
+                    return callback(
 
                         new Error(
-                            "Origin not allowed by CORS."
+                            "CORS origin not allowed."
                         )
 
                     );
+
 
                 },
 
 
             credentials:
-                true,
-
-
-            methods:
-                [
-
-                    "GET",
-
-                    "POST",
-
-                    "PUT",
-
-                    "PATCH",
-
-                    "DELETE",
-
-                    "OPTIONS"
-
-                ],
-
-
-            allowedHeaders:
-                [
-
-                    "Content-Type",
-
-                    "Authorization",
-
-                    "Accept"
-
-                ]
+                true
 
         }
 
@@ -346,32 +304,13 @@ app.use(
 
 
 app.use(
-
-    express.urlencoded(
-
-        {
-
-            extended:
-                false,
-
-            limit:
-                "1mb"
-
-        }
-
-    )
-
-);
-
-
-app.use(
     cookieParser()
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ROOT
+| HEALTH
 |--------------------------------------------------------------------------
 */
 
@@ -405,12 +344,6 @@ app.get(
 
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| HEALTH
-|--------------------------------------------------------------------------
-*/
 
 app.get(
 
@@ -477,14 +410,6 @@ app.use(
 |--------------------------------------------------------------------------
 | WALLET
 |--------------------------------------------------------------------------
-|
-| IMPORTANT:
-|
-| This route is mounted ONLY ONCE.
-|
-| GET /api/wallet
-| GET /api/wallet/transactions
-|
 */
 
 app.use(
@@ -520,12 +445,6 @@ app.use(
 );
 
 
-/*
-|--------------------------------------------------------------------------
-| TRANSACTIONS
-|--------------------------------------------------------------------------
-*/
-
 app.use(
 
     "/api/transactions",
@@ -537,26 +456,8 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| PAYMENT METHODS
-|--------------------------------------------------------------------------
-*/
-
-app.use(
-
-    "/api/payment-methods",
-
-    paymentMethodRoutes
-
-);
-
-
-/*
-|--------------------------------------------------------------------------
 | DEPOSITS
 |--------------------------------------------------------------------------
-|
-| Mounted ONLY ONCE.
-|
 */
 
 app.use(
@@ -572,7 +473,22 @@ app.use(
 |--------------------------------------------------------------------------
 | ADMIN DEPOSITS
 |--------------------------------------------------------------------------
+|
+| Both admin deposit route modules may contain
+| different endpoints.
+|
+| They are mounted only once.
+|
 */
+
+app.use(
+
+    "/api/admin/deposits",
+
+    adminDepositRoutes
+
+);
+
 
 app.use(
 
@@ -583,11 +499,17 @@ app.use(
 );
 
 
+/*
+|--------------------------------------------------------------------------
+| PAYMENT METHODS
+|--------------------------------------------------------------------------
+*/
+
 app.use(
 
-    "/api/admin/deposits",
+    "/api/payment-methods",
 
-    adminDepositRoutes
+    paymentMethodRoutes
 
 );
 
@@ -621,12 +543,6 @@ app.use(
 
 );
 
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN WITHDRAWALS
-|--------------------------------------------------------------------------
-*/
 
 app.use(
 
@@ -678,13 +594,11 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| 404 API HANDLER
+| 404 HANDLER
 |--------------------------------------------------------------------------
 */
 
 app.use(
-
-    "/api",
 
     function (
         req,
@@ -701,11 +615,8 @@ app.use(
                 success:
                     false,
 
-                error:
-                    "API_ROUTE_NOT_FOUND",
-
                 message:
-                    "API route not found."
+                    "API endpoint not found."
 
             }
 
@@ -718,7 +629,7 @@ app.use(
 
 /*
 |--------------------------------------------------------------------------
-| GLOBAL ERROR HANDLER
+| ERROR HANDLER
 |--------------------------------------------------------------------------
 */
 
@@ -734,37 +645,17 @@ app.use(
 
         console.error(
 
-            "GLOBAL SERVER ERROR:",
+            "SERVER ERROR:",
 
             error
-
         );
 
 
-        if (
-            res.headersSent
-        ) {
-
-            return next(
-                error
-            );
-
-        }
-
-
         const status =
-
-            Number.isInteger(
-                error.status
-            )
-
-                ?
-
-                error.status
-
-                :
-
-                500;
+            Number(
+                error.status ||
+                500
+            );
 
 
         res.status(
@@ -777,16 +668,9 @@ app.use(
                 success:
                     false,
 
-                error:
-
-                    error.code ||
-
-                    "INTERNAL_SERVER_ERROR",
-
-
                 message:
 
-                    status >= 500
+                    status === 500
 
                         ?
 
@@ -794,13 +678,9 @@ app.use(
 
                         :
 
-                        (
+                        error.message ||
 
-                            error.message ||
-
-                            "Request failed."
-
-                        )
+                        "Request failed."
 
             }
 
@@ -825,106 +705,142 @@ app.listen(
 
 
         console.log(
+
             "========================================"
+
         );
 
 
         console.log(
+
             "SkillEarn Hub API started successfully"
+
         );
 
 
         console.log(
+
             "Port:",
+
             PORT
+
         );
 
 
         console.log(
+
             "Environment:",
 
             process.env.NODE_ENV ||
             "development"
+
         );
 
 
         console.log(
-            "Allowed frontend origins:"
-        );
 
+            "Allowed frontend origins:",
 
-        console.log(
             allowedOrigins
+
         );
 
 
         console.log(
+
             "========================================"
+
         );
 
 
         console.log(
+
             "API Root:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/`
+
         );
 
 
         console.log(
+
             "Health:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/api/health`
+
         );
 
 
         console.log(
+
             "Wallet:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/api/wallet`
+
         );
 
 
         console.log(
+
             "Wallet transactions:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/api/wallet/transactions`
+
         );
 
 
         console.log(
+
             "Admin users:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/api/admin/users`
+
         );
 
 
         console.log(
+
             "Admin pending deposits:"
+
         );
 
 
         console.log(
+
             `http://localhost:${PORT}/api/admin/deposits/pending`
+
         );
 
 
         console.log(
+
             "========================================"
+
         );
 
     }

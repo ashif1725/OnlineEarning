@@ -24,7 +24,11 @@ async function wallet(
     try {
 
         console.log(
-            "================================"
+            "===================================="
+        );
+
+        console.log(
+            "WALLET REQUEST RECEIVED"
         );
 
         console.log(
@@ -35,6 +39,10 @@ async function wallet(
         console.log(
             "WALLET REQUEST USER ID:",
             req.user?.id
+        );
+
+        console.log(
+            "===================================="
         );
 
 
@@ -49,8 +57,9 @@ async function wallet(
             data
         );
 
+
         console.log(
-            "================================"
+            "===================================="
         );
 
 
@@ -81,10 +90,7 @@ async function wallet(
                 false,
 
             message:
-                "Unable to load wallet",
-
-            error:
-                error.message
+                "Unable to load wallet"
 
         });
 
@@ -99,15 +105,23 @@ async function wallet(
 |--------------------------------------------------------------------------
 */
 
-async function send(req, res) {
+async function send(
+    req,
+    res
+) {
 
     try {
 
         const {
+
             receiverUserId,
+
             amount,
+
             description
-        } = req.body;
+
+        } =
+            req.body;
 
 
         const idempotencyKey =
@@ -117,8 +131,11 @@ async function send(req, res) {
 
 
         if (
+
             !receiverUserId ||
+
             !amount
+
         ) {
 
             return res.status(400).json({
@@ -281,6 +298,12 @@ async function transactions(
 
     try {
 
+        console.log(
+            "TRANSACTION REQUEST USER ID:",
+            req.user?.id
+        );
+
+
         const rows =
             await getTransactions(
 
@@ -326,6 +349,12 @@ async function transactions(
 
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| EXPORTS
+|--------------------------------------------------------------------------
+*/
 
 module.exports = {
 

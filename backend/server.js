@@ -105,20 +105,6 @@ const adminDepositRequestsRoutes =
 |--------------------------------------------------------------------------
 | ROUTE MODULE NORMALIZER
 |--------------------------------------------------------------------------
-|
-| Supports:
-|
-| module.exports = router;
-|
-| module.exports = {
-|     router
-| };
-|
-| module.exports = {
-|     default: router
-| };
-|
-|--------------------------------------------------------------------------
 */
 
 function getExpressRouter(
@@ -128,7 +114,7 @@ function getExpressRouter(
 
     /*
     ----------------------------------------------------------
-    Direct Router export
+    Direct Express Router export
     ----------------------------------------------------------
     */
 
@@ -144,7 +130,7 @@ function getExpressRouter(
 
     /*
     ----------------------------------------------------------
-    Object containing router
+    module.exports = { router }
     ----------------------------------------------------------
     */
 
@@ -164,7 +150,7 @@ function getExpressRouter(
 
     /*
     ----------------------------------------------------------
-    Default export containing router
+    module.exports = { default: router }
     ----------------------------------------------------------
     */
 
@@ -181,12 +167,6 @@ function getExpressRouter(
 
     }
 
-
-    /*
-    ----------------------------------------------------------
-    Invalid export
-    ----------------------------------------------------------
-    */
 
     console.error(
         "========================================"
@@ -457,7 +437,6 @@ function validateCorsOrigin(
     origin,
     callback
 ) {
-
 
     /*
     ---------------------------------------------------------
@@ -810,6 +789,14 @@ app.use(
 |--------------------------------------------------------------------------
 | WALLET ROUTES
 |--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| Wallet routes must be mounted ONLY ONCE.
+|
+| GET  /api/wallet
+| GET  /api/wallet/transactions
+| POST /api/wallet/send
+|
 */
 
 app.use(
@@ -907,8 +894,13 @@ app.use(
 
             message:
 
-                `API endpoint not found: ` +
-                `${req.method} ${req.originalUrl}`
+                "API endpoint not found: " +
+
+                req.method +
+
+                " " +
+
+                req.originalUrl
 
         });
 
@@ -1065,7 +1057,6 @@ app.listen(
     "0.0.0.0",
 
     function () {
-
 
         console.log(
             "========================================"

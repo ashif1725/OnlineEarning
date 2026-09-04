@@ -2,9 +2,13 @@
 
 
 const {
+
     getWallet,
+
     sendMoney,
+
     getTransactions
+
 } =
     require(
         "../services/wallet.service"
@@ -24,63 +28,36 @@ async function wallet(
 
     try {
 
-        console.log(
-            "================================"
-        );
+
+        /*
+        ----------------------------------------------------------
+        DEBUG:
+        AUTHENTICATED USER
+        ----------------------------------------------------------
+        */
 
         console.log(
-            "WALLET REQUEST RECEIVED"
-        );
-
-        console.log(
-            "AUTHENTICATED USER ID:",
-            req.user?.id || null
-        );
-
-        console.log(
-            "AUTHENTICATED USER EMAIL:",
-            req.user?.email || null
-        );
-
-        console.log(
-            "AUTHENTICATED PUBLIC USER ID:",
-            req.user?.public_user_id ||
-            req.user?.publicUserId ||
-            null
+            "========================================"
         );
 
 
-        if (
-            !req.user?.id
-        ) {
-
-            console.log(
-                "WALLET ERROR: AUTHENTICATED USER ID IS MISSING"
-            );
-
-            console.log(
-                "================================"
-            );
+        console.log(
+            "WALLET DEBUG USER ID:",
+            req.user?.id
+        );
 
 
-            return res.status(
-                401
-            )
-            .json({
+        console.log(
+            "WALLET DEBUG USER:",
+            req.user
+        );
 
-                success:
-                    false,
 
-                error:
-                    "AUTHENTICATION_REQUIRED",
-
-                message:
-                    "Authenticated user was not found."
-
-            });
-
-        }
-
+        /*
+        ----------------------------------------------------------
+        GET WALLET
+        ----------------------------------------------------------
+        */
 
         const data =
             await getWallet(
@@ -88,45 +65,55 @@ async function wallet(
             );
 
 
-        console.log(
-            "WALLET ID:",
-            data.wallet_id
-        );
+        /*
+        ----------------------------------------------------------
+        DEBUG:
+        WALLET DATA RETURNED BY SERVICE
+        ----------------------------------------------------------
+        */
 
         console.log(
-            "WALLET USER ID:",
-            data.user_id
-        );
-
-        console.log(
-            "WALLET AVAILABLE BALANCE:",
-            data.available_balance
-        );
-
-        console.log(
-            "WALLET PENDING BALANCE:",
-            data.pending_balance
-        );
-
-        console.log(
-            "WALLET CURRENCY:",
-            data.currency
-        );
-
-        console.log(
-            "WALLET DATABASE RESULT:",
+            "WALLET DEBUG DATA:",
             data
         );
 
+
         console.log(
-            "================================"
+            "WALLET DEBUG WALLET ID:",
+            data?.wallet_id
         );
 
 
-        return res.status(
-            200
-        )
-        .json({
+        console.log(
+            "WALLET DEBUG AVAILABLE BALANCE:",
+            data?.available_balance
+        );
+
+
+        console.log(
+            "WALLET DEBUG PENDING BALANCE:",
+            data?.pending_balance
+        );
+
+
+        console.log(
+            "WALLET DEBUG CURRENCY:",
+            data?.currency
+        );
+
+
+        console.log(
+            "========================================"
+        );
+
+
+        /*
+        ----------------------------------------------------------
+        RESPONSE
+        ----------------------------------------------------------
+        */
+
+        return res.status(200).json({
 
             success:
                 true,
@@ -141,91 +128,49 @@ async function wallet(
         error
     ) {
 
-        console.error(
-            "================================"
-        );
 
         console.error(
-            "WALLET ERROR CODE:",
-            error.code ||
-            null
+            "========================================"
         );
 
-        console.error(
-            "WALLET ERROR STATUS:",
-            error.status ||
-            null
-        );
-
-        console.error(
-            "WALLET ERROR MESSAGE:",
-            error.message
-        );
 
         console.error(
             "WALLET ERROR:",
             error
         );
 
+
         console.error(
-            "================================"
+            "WALLET ERROR MESSAGE:",
+            error?.message
         );
 
 
-        const status =
-            Number(
-                error.status
-            ) ||
-
-            (
-
-                error.code ===
-                "WALLET_NOT_FOUND"
-
-                    ?
-
-                    404
-
-                    :
-
-                    error.code ===
-                    "WALLET_BALANCE_NOT_FOUND"
-
-                        ?
-
-                        404
-
-                        :
-
-                        error.code ===
-                        "UNAUTHORIZED"
-
-                            ?
-
-                            401
-
-                            :
-
-                            500
-
-            );
+        console.error(
+            "WALLET ERROR CODE:",
+            error?.code
+        );
 
 
-        return res.status(
-            status
-        )
-        .json({
+        console.error(
+            "WALLET ERROR STACK:",
+            error?.stack
+        );
+
+
+        console.error(
+            "========================================"
+        );
+
+
+        return res.status(500).json({
 
             success:
                 false,
 
-            error:
-                error.code ||
-                "WALLET_LOAD_FAILED",
-
             message:
-                error.message ||
-                "Unable to load wallet."
+                error?.message ||
+                "Unable to load wallet"
 
         });
 
@@ -247,6 +192,7 @@ async function send(
 
     try {
 
+
         const {
 
             receiverUserId,
@@ -265,37 +211,44 @@ async function send(
             );
 
 
+        /*
+        ----------------------------------------------------------
+        VALIDATE REQUEST
+        ----------------------------------------------------------
+        */
+
         if (
 
-            !receiverUserId
-
-            ||
+            !receiverUserId ||
 
             amount ===
-            undefined
-
-            ||
+            undefined ||
 
             amount ===
-            null
+            null ||
+
+            amount === ""
 
         ) {
 
-            return res.status(
-                400
-            )
-            .json({
+            return res.status(400).json({
 
                 success:
                     false,
 
                 message:
-                    "Receiver and amount are required."
+                    "Receiver and amount are required"
 
             });
 
         }
 
+
+        /*
+        ----------------------------------------------------------
+        SEND MONEY
+        ----------------------------------------------------------
+        */
 
         const result =
             await sendMoney({
@@ -318,25 +271,28 @@ async function send(
             });
 
 
-        return res.status(
-            200
-        )
-        .json({
+        /*
+        ----------------------------------------------------------
+        SUCCESS
+        ----------------------------------------------------------
+        */
+
+        return res.status(200).json({
 
             success:
                 true,
 
             message:
 
-                result.duplicate
+                result?.duplicate
 
                     ?
 
-                    "Transaction already processed."
+                    "Transaction already processed"
 
                     :
 
-                    "Money sent successfully.",
+                    "Money sent successfully",
 
             transaction:
                 result
@@ -348,73 +304,215 @@ async function send(
         error
     ) {
 
+
         console.error(
             "SEND MONEY ERROR:",
             error
         );
 
 
-        const statusMap =
-            {
-
-                INSUFFICIENT_BALANCE:
-                    400,
-
-                SELF_TRANSFER:
-                    400,
-
-                INVALID_AMOUNT:
-                    400,
-
-                USER_REQUIRED:
-                    400,
-
-                CURRENCY_MISMATCH:
-                    400,
-
-                WALLET_NOT_FOUND:
-                    404,
-
-                RECEIVER_WALLET_NOT_FOUND:
-                    404,
-
-                WALLET_BALANCE_NOT_FOUND:
-                    404,
-
-                WALLET_NOT_ACTIVE:
-                    403,
-
-                RECEIVER_WALLET_NOT_ACTIVE:
-                    403
-
-            };
+        console.error(
+            "SEND MONEY ERROR CODE:",
+            error?.code
+        );
 
 
-        return res.status(
-            statusMap[
-                error.code
-            ]
+        /*
+        ----------------------------------------------------------
+        INSUFFICIENT BALANCE
+        ----------------------------------------------------------
+        */
 
-            ||
+        if (
 
-            error.status
+            error?.code ===
+            "INSUFFICIENT_BALANCE"
 
-            ||
+        ) {
 
-            500
-        )
-        .json({
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Insufficient wallet balance"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        SELF TRANSFER
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "SELF_TRANSFER"
+
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "You cannot send money to yourself"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        WALLET NOT ACTIVE
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "WALLET_NOT_ACTIVE"
+
+        ) {
+
+            return res.status(403).json({
+
+                success:
+                    false,
+
+                message:
+                    "Wallet is not active"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        INVALID AMOUNT
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "INVALID_AMOUNT"
+
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Invalid amount"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        RECEIVER WALLET NOT FOUND
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "RECEIVER_WALLET_NOT_FOUND"
+
+        ) {
+
+            return res.status(404).json({
+
+                success:
+                    false,
+
+                message:
+                    "Receiver wallet not found"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        SENDER WALLET NOT FOUND
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "WALLET_NOT_FOUND"
+
+        ) {
+
+            return res.status(404).json({
+
+                success:
+                    false,
+
+                message:
+                    "Wallet not found"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        CURRENCY MISMATCH
+        ----------------------------------------------------------
+        */
+
+        if (
+
+            error?.code ===
+            "CURRENCY_MISMATCH"
+
+        ) {
+
+            return res.status(400).json({
+
+                success:
+                    false,
+
+                message:
+                    "Wallet currencies do not match"
+
+            });
+
+        }
+
+
+        /*
+        ----------------------------------------------------------
+        FALLBACK
+        ----------------------------------------------------------
+        */
+
+        return res.status(500).json({
 
             success:
                 false,
 
-            error:
-                error.code ||
-                "TRANSFER_FAILED",
-
             message:
-                error.message ||
-                "Transfer failed."
+                error?.message ||
+                "Transfer failed"
 
         });
 
@@ -436,28 +534,24 @@ async function transactions(
 
     try {
 
-        if (
-            !req.user?.id
-        ) {
 
-            return res.status(
-                401
-            )
-            .json({
+        /*
+        ----------------------------------------------------------
+        DEBUG
+        ----------------------------------------------------------
+        */
 
-                success:
-                    false,
+        console.log(
+            "TRANSACTION DEBUG USER ID:",
+            req.user?.id
+        );
 
-                error:
-                    "AUTHENTICATION_REQUIRED",
 
-                message:
-                    "Authenticated user was not found."
-
-            });
-
-        }
-
+        /*
+        ----------------------------------------------------------
+        GET TRANSACTIONS
+        ----------------------------------------------------------
+        */
 
         const rows =
             await getTransactions(
@@ -469,16 +563,52 @@ async function transactions(
             );
 
 
-        return res.status(
-            200
-        )
-        .json({
+        /*
+        ----------------------------------------------------------
+        DEBUG
+        ----------------------------------------------------------
+        */
+
+        console.log(
+            "TRANSACTION DEBUG COUNT:",
+            Array.isArray(
+                rows
+            )
+
+                ?
+
+                rows.length
+
+                :
+
+                0
+        );
+
+
+        /*
+        ----------------------------------------------------------
+        RESPONSE
+        ----------------------------------------------------------
+        */
+
+        return res.status(200).json({
 
             success:
                 true,
 
             transactions:
-                rows
+
+                Array.isArray(
+                    rows
+                )
+
+                    ?
+
+                    rows
+
+                    :
+
+                    []
 
         });
 
@@ -487,28 +617,33 @@ async function transactions(
         error
     ) {
 
+
         console.error(
             "TRANSACTION HISTORY ERROR:",
             error
         );
 
 
-        return res.status(
-            error.status ||
-            500
-        )
-        .json({
+        console.error(
+            "TRANSACTION HISTORY ERROR MESSAGE:",
+            error?.message
+        );
+
+
+        console.error(
+            "TRANSACTION HISTORY ERROR CODE:",
+            error?.code
+        );
+
+
+        return res.status(500).json({
 
             success:
                 false,
 
-            error:
-                error.code ||
-                "TRANSACTION_HISTORY_FAILED",
-
             message:
-                error.message ||
-                "Unable to load transactions."
+                error?.message ||
+                "Unable to load transactions"
 
         });
 

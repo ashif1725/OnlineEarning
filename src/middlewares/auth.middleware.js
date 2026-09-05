@@ -15,12 +15,6 @@ function getTokenFromRequest(
     req
 ) {
 
-    /*
-    ---------------------------------------------------------
-    1. Authorization Header
-    ---------------------------------------------------------
-    */
-
     const authorization =
         String(
             req.headers.authorization || ""
@@ -29,8 +23,8 @@ function getTokenFromRequest(
 
 
     if (
-        authorization.startsWith(
-            "Bearer "
+        authorization.toLowerCase().startsWith(
+            "bearer "
         )
     ) {
 
@@ -42,7 +36,9 @@ function getTokenFromRequest(
                 .trim();
 
 
-        if (token) {
+        if (
+            token
+        ) {
 
             return token;
 
@@ -50,15 +46,6 @@ function getTokenFromRequest(
 
     }
 
-
-    /*
-    ---------------------------------------------------------
-    2. Cookies
-
-    Supports multiple possible cookie names so the middleware
-    remains compatible with the existing frontend/backend.
-    ---------------------------------------------------------
-    */
 
     const cookieToken =
 
@@ -70,6 +57,8 @@ function getTokenFromRequest(
 
         req.cookies?.skillearn_access_token ||
 
+        req.cookies?.skillearn_access_token ||
+
         null;
 
 
@@ -77,15 +66,137 @@ function getTokenFromRequest(
         cookieToken
     ) {
 
-        return String(
-            cookieToken
-        )
-        .trim();
+        const token =
+            String(
+                cookieToken
+            )
+            .trim();
+
+
+        if (
+            token
+        ) {
+
+            return token;
+
+        }
 
     }
 
 
     return null;
+
+}
+
+
+/* =========================================================
+   EXTRACT USER ID FROM JWT PAYLOAD
+========================================================= */
+
+function extractUserId(
+    decoded
+) {
+
+    if (
+        !decoded ||
+        typeof decoded !== "object"
+    ) {
+
+        return null;
+
+    }
+
+
+    const userId =
+
+        decoded.id ||
+
+        decoded.userId ||
+
+        decoded.user_id ||
+
+        decoded.sub ||
+
+        decoded.user?.id ||
+
+        decoded.user?.userId ||
+
+        decoded.user?.user_id ||
+
+        null;
+
+
+    if (
+        userId === null ||
+        userId === undefined
+    ) {
+
+        return null;
+
+    }
+
+
+    const normalizedUserId =
+        String(
+            userId
+        )
+        .trim();
+
+
+    if (
+        !normalizedUserId
+    ) {
+
+        return null;
+
+    }
+
+
+    return normalizedUserId;
+
+}
+
+
+/* =========================================================
+   BUILD AUTH USER
+========================================================= */
+
+function buildAuthUser(
+    decoded,
+    userId
+) {
+
+    const nestedUser =
+
+        decoded?.user &&
+
+        typeof decoded.user === "object"
+
+            ?
+
+            decoded.user
+
+            :
+
+            {};
+
+
+    return {
+
+        ...decoded,
+
+        ...nestedUser,
+
+        id:
+            userId,
+
+        userId:
+            userId,
+
+        user_id:
+            userId
+
+    };
 
 }
 
@@ -108,7 +219,9 @@ function requireAuth(
             );
 
 
-        if (!token) {
+        if (
+            !token
+        ) {
 
             return res.status(401).json({
 
@@ -130,7 +243,9 @@ function requireAuth(
             process.env.JWT_SECRET;
 
 
-        if (!secret) {
+        if (
+            !secret
+        ) {
 
             console.error(
                 "JWT_SECRET is missing from environment variables."
@@ -153,12 +268,6 @@ function requireAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Verify JWT
-        -----------------------------------------------------
-        */
-
         const decoded =
             jwt.verify(
                 token,
@@ -166,26 +275,15 @@ function requireAuth(
             );
 
 
-        /*
-        -----------------------------------------------------
-        Normalize authenticated user
-        -----------------------------------------------------
-        */
-
         const userId =
-
-            decoded.id ||
-
-            decoded.userId ||
-
-            decoded.user_id ||
-
-            decoded.sub ||
-
-            null;
+            extractUserId(
+                decoded
+            );
 
 
-        if (!userId) {
+        if (
+            !userId
+        ) {
 
             return res.status(401).json({
 
@@ -203,40 +301,24 @@ function requireAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Attach normalized user to request
-        -----------------------------------------------------
-        */
-
-        req.user = {
-
-            ...decoded,
-
-            id:
-                userId,
-
-            userId:
+        req.user =
+            buildAuthUser(
+                decoded,
                 userId
-
-        };
+            );
 
 
         return next();
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         console.error(
             "AUTH MIDDLEWARE ERROR:",
             error.message
         );
 
-
-        /*
-        -----------------------------------------------------
-        Token expired
-        -----------------------------------------------------
-        */
 
         if (
             error.name ===
@@ -259,12 +341,6 @@ function requireAuth(
         }
 
 
-        /*
-        -----------------------------------------------------
-        Invalid token
-        -----------------------------------------------------
-        */
-
         return res.status(401).json({
 
             success:
@@ -284,7 +360,7 @@ function requireAuth(
 
 
 /* =========================================================
-   OPTIONAL AUTH MIDDLEWARE
+   OPTIONAL AUTHENTICATION
 ========================================================= */
 
 function optionalAuth(
@@ -299,7 +375,9 @@ function optionalAuth(
         );
 
 
-    if (!token) {
+    if (
+        !token
+    ) {
 
         return next();
 
@@ -310,7 +388,9 @@ function optionalAuth(
         process.env.JWT_SECRET;
 
 
-    if (!secret) {
+    if (
+        !secret
+    ) {
 
         return next();
 
@@ -327,39 +407,31 @@ function optionalAuth(
 
 
         const userId =
-
-            decoded.id ||
-
-            decoded.userId ||
-
-            decoded.user_id ||
-
-            decoded.sub ||
-
-            null;
+            extractUserId(
+                decoded
+            );
 
 
-        if (userId) {
+        if (
+            userId
+        ) {
 
-            req.user = {
-
-                ...decoded,
-
-                id:
-                    userId,
-
-                userId:
+            req.user =
+                buildAuthUser(
+                    decoded,
                     userId
-
-            };
+                );
 
         }
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         /*
-        Invalid token is ignored in optional authentication.
-        Protected routes must use requireAuth.
+        Optional authentication:
+        invalid token does not block
+        the request.
         */
 
     }
@@ -388,3 +460,7 @@ module.exports.optionalAuth =
 
 module.exports.getTokenFromRequest =
     getTokenFromRequest;
+
+
+module.exports.extractUserId =
+    extractUserId;

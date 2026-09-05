@@ -9,13 +9,12 @@
 
 require(
     "dotenv"
-)
-.config();
+).config();
 
 
 /*
 |--------------------------------------------------------------------------
-| CORE
+| PACKAGES
 |--------------------------------------------------------------------------
 */
 
@@ -25,27 +24,21 @@ const express =
     );
 
 
-const cors =
-    require(
-        "cors"
-    );
-
-
 const helmet =
     require(
         "helmet"
     );
 
 
-/*
-|--------------------------------------------------------------------------
-| DATABASE
-|--------------------------------------------------------------------------
-*/
-
-const pool =
+const cors =
     require(
-        "./src/config/db"
+        "cors"
+    );
+
+
+const cookieParser =
+    require(
+        "cookie-parser"
     );
 
 
@@ -59,40 +52,326 @@ const app =
     express();
 
 
-/*
-|--------------------------------------------------------------------------
-| CONFIG
-|--------------------------------------------------------------------------
-*/
-
 const PORT =
     Number(
-        process.env.PORT
-    )
-    ||
-    10000;
-
-
-const NODE_ENV =
-    process.env.NODE_ENV
-    ||
-    "development";
+        process.env.PORT ||
+        10000
+    );
 
 
 /*
 |--------------------------------------------------------------------------
-| FRONTEND ORIGINS
+| ROUTES
 |--------------------------------------------------------------------------
 */
 
-const allowedOrigins =
+const authRoutes =
+    require(
+        "./src/routes/auth.routes"
+    );
+
+
+const walletRoutes =
+    require(
+        "./src/routes/wallet.routes"
+    );
+
+
+const depositRoutes =
+    require(
+        "./src/routes/deposit.routes"
+    );
+
+
+const withdrawalRoutes =
+    require(
+        "./src/routes/withdrawal.routes"
+    );
+
+
+const adminUsersRoutes =
+    require(
+        "./src/routes/admin-users.routes"
+    );
+
+
+const adminDepositRoutes =
+    require(
+        "./src/routes/admin-deposit.routes"
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE MODULE NORMALIZER
+|--------------------------------------------------------------------------
+|
+| Supports:
+|
+| module.exports = router
+| module.exports = { router }
+| module.exports = { default: router }
+|
+*/
+
+function getExpressRouter(
+    routeModule,
+    routeName
+) {
+
+    if (
+        typeof routeModule ===
+        "function"
+    ) {
+
+        return routeModule;
+
+    }
+
+
+    if (
+
+        routeModule &&
+
+        typeof routeModule.router ===
+        "function"
+
+    ) {
+
+        return routeModule.router;
+
+    }
+
+
+    if (
+
+        routeModule &&
+
+        typeof routeModule.default ===
+        "function"
+
+    ) {
+
+        return routeModule.default;
+
+    }
+
+
+    console.error(
+        "========================================"
+    );
+
+
+    console.error(
+        "INVALID ROUTE EXPORT"
+    );
+
+
+    console.error(
+        "Route:",
+        routeName
+    );
+
+
+    console.error(
+        "Type:",
+        typeof routeModule
+    );
+
+
+    console.error(
+        "========================================"
+    );
+
+
+    throw new TypeError(
+
+        "Invalid Express router export from " +
+        routeName
+
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| NORMALIZE ROUTES
+|--------------------------------------------------------------------------
+*/
+
+const normalizedAuthRoutes =
+    getExpressRouter(
+
+        authRoutes,
+
+        "./src/routes/auth.routes"
+
+    );
+
+
+const normalizedWalletRoutes =
+    getExpressRouter(
+
+        walletRoutes,
+
+        "./src/routes/wallet.routes"
+
+    );
+
+
+const normalizedDepositRoutes =
+    getExpressRouter(
+
+        depositRoutes,
+
+        "./src/routes/deposit.routes"
+
+    );
+
+
+const normalizedWithdrawalRoutes =
+    getExpressRouter(
+
+        withdrawalRoutes,
+
+        "./src/routes/withdrawal.routes"
+
+    );
+
+
+const normalizedAdminUsersRoutes =
+    getExpressRouter(
+
+        adminUsersRoutes,
+
+        "./src/routes/admin-users.routes"
+
+    );
+
+
+const normalizedAdminDepositRoutes =
+    getExpressRouter(
+
+        adminDepositRoutes,
+
+        "./src/routes/admin-deposit.routes"
+
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| BASIC SECURITY
+|--------------------------------------------------------------------------
+*/
+
+app.disable(
+    "x-powered-by"
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| TRUST PROXY
+|--------------------------------------------------------------------------
+|
+| Required for Render / reverse proxy deployments.
+|
+*/
+
+app.set(
+    "trust proxy",
+    1
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| SECURITY HEADERS
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+
+    helmet({
+
+        crossOriginResourcePolicy:
+            false
+
+    })
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ALLOWED FRONTEND ORIGINS
+|--------------------------------------------------------------------------
+*/
+
+const configuredOrigins =
+
     [
 
-        "https://ashif1725.github.io",
+        process.env.FRONTEND_ORIGIN,
+
+        ...String(
+
+            process.env.FRONTEND_ORIGINS ||
+            ""
+
+        )
+        .split(",")
+
+    ]
+
+    .map(
+
+        function (
+            origin
+        ) {
+
+            return String(
+
+                origin ||
+                ""
+
+            )
+
+            .trim()
+
+            .replace(
+                /\/+$/,
+                ""
+            );
+
+        }
+
+    )
+
+    .filter(
+        Boolean
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| DEVELOPMENT ORIGINS
+|--------------------------------------------------------------------------
+*/
+
+const developmentOrigins =
+
+    [
 
         "http://localhost:3000",
 
         "http://127.0.0.1:3000",
+
+        "http://localhost:5173",
+
+        "http://127.0.0.1:5173",
 
         "http://localhost:5500",
 
@@ -103,25 +382,138 @@ const allowedOrigins =
 
 /*
 |--------------------------------------------------------------------------
-| SECURITY
+| FINAL ALLOWED ORIGINS
 |--------------------------------------------------------------------------
 */
 
-app.use(
+const allowedOrigins =
 
-    helmet(
+    Array.from(
 
-        {
+        new Set(
 
-            crossOriginResourcePolicy:
+            [
 
-                false
+                ...configuredOrigins,
 
-        }
+                ...(
 
-    )
+                    process.env.NODE_ENV !==
+                    "production"
 
-);
+                        ?
+
+                        developmentOrigins
+
+                        :
+
+                        []
+
+                )
+
+            ]
+
+        )
+
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| CORS VALIDATION
+|--------------------------------------------------------------------------
+*/
+
+function validateCorsOrigin(
+    origin,
+    callback
+) {
+
+    /*
+    ----------------------------------------------------------
+    Allow server-to-server requests, Render health checks,
+    Postman and curl.
+    ----------------------------------------------------------
+    */
+
+    if (
+        !origin
+    ) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    const normalizedOrigin =
+
+        String(
+            origin
+        )
+
+        .trim()
+
+        .replace(
+            /\/+$/,
+            ""
+        );
+
+
+    if (
+
+        allowedOrigins.includes(
+            normalizedOrigin
+        )
+
+    ) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    /*
+    ----------------------------------------------------------
+    Development fallback
+    ----------------------------------------------------------
+    */
+
+    if (
+
+        process.env.NODE_ENV !==
+        "production"
+
+    ) {
+
+        return callback(
+            null,
+            true
+        );
+
+    }
+
+
+    console.warn(
+        "CORS BLOCKED:",
+        normalizedOrigin
+    );
+
+
+    return callback(
+
+        new Error(
+            "CORS origin is not allowed"
+        )
+
+    );
+
+}
 
 
 /*
@@ -132,167 +524,58 @@ app.use(
 
 app.use(
 
-    cors(
+    cors({
 
-        {
+        origin:
+            validateCorsOrigin,
 
-            origin:
+        credentials:
+            true,
 
-                function (
+        methods:
 
-                    origin,
+            [
 
-                    callback
+                "GET",
 
-                ) {
+                "POST",
 
+                "PUT",
 
-                    /*
-                    ----------------------------------------------------------
-                    Allow requests without Origin
-                    ----------------------------------------------------------
+                "PATCH",
 
-                    Useful for:
+                "DELETE",
 
-                    - Render health checks
-                    - Postman
-                    - Server-to-server requests
-                    ----------------------------------------------------------
-                    */
+                "OPTIONS"
 
-                    if (
+            ],
 
-                        !origin
+        allowedHeaders:
 
-                    ) {
+            [
 
-                        return callback(
+                "Content-Type",
 
-                            null,
+                "Authorization",
 
-                            true
+                "Accept",
 
-                        );
+                "Idempotency-Key"
 
-                    }
+            ],
 
+        exposedHeaders:
 
-                    /*
-                    ----------------------------------------------------------
-                    ALLOW EXACT ORIGIN
-                    ----------------------------------------------------------
-                    */
+            [
 
-                    if (
+                "Content-Type"
 
-                        allowedOrigins.includes(
-                            origin
-                        )
+            ],
 
-                    ) {
+        optionsSuccessStatus:
+            204
 
-                        return callback(
-
-                            null,
-
-                            true
-
-                        );
-
-                    }
-
-
-                    /*
-                    ----------------------------------------------------------
-                    ALLOW GITHUB PAGES
-                    ----------------------------------------------------------
-                    */
-
-                    if (
-
-                        origin.endsWith(
-                            ".github.io"
-                        )
-
-                    ) {
-
-                        return callback(
-
-                            null,
-
-                            true
-
-                        );
-
-                    }
-
-
-                    /*
-                    ----------------------------------------------------------
-                    REJECT
-                    ----------------------------------------------------------
-                    */
-
-                    console.warn(
-
-                        "CORS BLOCKED ORIGIN:",
-
-                        origin
-
-                    );
-
-
-                    return callback(
-
-                        new Error(
-                            "Origin not allowed by CORS."
-                        )
-
-                    );
-
-
-                },
-
-
-            credentials:
-
-                true,
-
-
-            methods:
-
-                [
-
-                    "GET",
-
-                    "POST",
-
-                    "PUT",
-
-                    "PATCH",
-
-                    "DELETE",
-
-                    "OPTIONS"
-
-                ],
-
-
-            allowedHeaders:
-
-                [
-
-                    "Content-Type",
-
-                    "Authorization",
-
-                    "Accept"
-
-                ]
-
-        }
-
-    )
+    })
 
 );
 
@@ -305,71 +588,110 @@ app.use(
 
 app.use(
 
-    express.json(
+    express.json({
 
-        {
+        limit:
+            "1mb"
 
-            limit:
-                "2mb"
-
-        }
-
-    )
+    })
 
 );
 
 
 app.use(
 
-    express.urlencoded(
+    express.urlencoded({
 
-        {
+        extended:
+            false,
 
-            extended:
-                true,
+        limit:
+            "1mb"
 
-            limit:
-                "2mb"
-
-        }
-
-    )
+    })
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| REQUEST LOG
+| COOKIE PARSER
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+    cookieParser()
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| REQUEST LOGGER
 |--------------------------------------------------------------------------
 */
 
 app.use(
 
     function (
-
         req,
-
         res,
-
         next
-
     ) {
 
+        if (
 
-        console.log(
+            process.env.NODE_ENV !==
+            "production"
 
-            new Date()
-                .toISOString(),
+        ) {
 
-            req.method,
+            console.log(
 
-            req.originalUrl
+                req.method,
+                req.originalUrl
 
-        );
+            );
+
+        }
 
 
-        next();
+        return next();
+
+    }
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ROOT
+|--------------------------------------------------------------------------
+*/
+
+app.get(
+
+    "/",
+
+    function (
+        req,
+        res
+    ) {
+
+        return res.status(
+            200
+        )
+        .json({
+
+            success:
+                true,
+
+            service:
+                "SkillEarn Hub API",
+
+            status:
+                "running"
+
+        });
 
     }
 
@@ -386,150 +708,35 @@ app.get(
 
     "/api/health",
 
-    async function (
-
-        req,
-
-        res
-
-    ) {
-
-
-        try {
-
-
-            const databaseResult =
-                await pool.query(
-
-                    "SELECT NOW() AS database_time"
-
-                );
-
-
-            return res.status(
-                200
-            )
-            .json(
-
-                {
-
-                    success:
-                        true,
-
-                    message:
-                        "SkillEarn Hub API is healthy.",
-
-                    environment:
-                        NODE_ENV,
-
-                    server_time:
-                        new Date()
-                            .toISOString(),
-
-                    database_time:
-
-                        databaseResult
-                            .rows[0]
-                            .database_time
-
-                }
-
-            );
-
-
-        } catch (
-            error
-        ) {
-
-
-            console.error(
-
-                "HEALTH CHECK DATABASE ERROR:",
-
-                error
-
-            );
-
-
-            return res.status(
-                503
-            )
-            .json(
-
-                {
-
-                    success:
-                        false,
-
-                    message:
-                        "API is running but database connection failed."
-
-                }
-
-            );
-
-
-        }
-
-    }
-
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| API ROOT
-|--------------------------------------------------------------------------
-*/
-
-app.get(
-
-    "/",
-
     function (
-
         req,
-
         res
-
     ) {
-
 
         return res.status(
             200
         )
-        .json(
+        .json({
 
-            {
+            success:
+                true,
 
-                success:
-                    true,
+            service:
+                "SkillEarn Hub API",
 
-                message:
-                    "SkillEarn Hub API is running."
+            status:
+                "healthy",
 
-            }
+            environment:
 
-        );
+                process.env.NODE_ENV ||
+                "development"
+
+        });
 
     }
 
 );
-
-
-/*
-|--------------------------------------------------------------------------
-| ROUTES
-|--------------------------------------------------------------------------
-|
-| IMPORTANT:
-|
-| Only ONE authoritative backend structure is used:
-|
-| backend/src/routes/
-|
-|--------------------------------------------------------------------------
-*/
 
 
 /*
@@ -538,17 +745,11 @@ app.get(
 |--------------------------------------------------------------------------
 */
 
-const authRoutes =
-    require(
-        "./src/routes/auth.routes"
-    );
-
-
 app.use(
 
     "/api/auth",
 
-    authRoutes
+    normalizedAuthRoutes
 
 );
 
@@ -557,122 +758,120 @@ app.use(
 |--------------------------------------------------------------------------
 | WALLET ROUTES
 |--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| Mounted exactly ONCE.
+|
+| GET  /api/wallet
+| GET  /api/wallet/transactions
+| POST /api/wallet/send
+|
 */
-
-const walletRoutes =
-    require(
-        "./src/routes/wallet.routes"
-    );
-
 
 app.use(
 
     "/api/wallet",
 
-    walletRoutes
+    normalizedWalletRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| DEPOSIT ROUTES
+| USER DEPOSIT ROUTES
 |--------------------------------------------------------------------------
 */
-
-const depositRoutes =
-    require(
-        "./src/routes/deposit.routes"
-    );
-
 
 app.use(
 
     "/api/deposits",
 
-    depositRoutes
+    normalizedDepositRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN USER ROUTES
+| USER WITHDRAWAL ROUTES
 |--------------------------------------------------------------------------
 */
 
-const adminUsersRoutes =
-    require(
-        "./src/routes/admin-users.routes"
-    );
+app.use(
 
+    "/api/withdrawals",
+
+    normalizedWithdrawalRoutes
+
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN USERS
+|--------------------------------------------------------------------------
+*/
 
 app.use(
 
     "/api/admin/users",
 
-    adminUsersRoutes
+    normalizedAdminUsersRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN DEPOSIT ROUTES
+| ADMIN DEPOSITS
 |--------------------------------------------------------------------------
 */
-
-const adminDepositRoutes =
-    require(
-        "./src/routes/admin-deposit.routes"
-    );
-
 
 app.use(
 
     "/api/admin/deposits",
 
-    adminDepositRoutes
+    normalizedAdminDepositRoutes
 
 );
 
 
 /*
 |--------------------------------------------------------------------------
-| 404 HANDLER
+| API 404
 |--------------------------------------------------------------------------
 */
 
 app.use(
 
     function (
-
         req,
-
         res
-
     ) {
-
 
         return res.status(
             404
         )
-        .json(
+        .json({
 
-            {
+            success:
+                false,
 
-                success:
-                    false,
+            error:
+                "NOT_FOUND",
 
-                message:
-                    "API route not found.",
+            message:
 
-                path:
-                    req.originalUrl
+                "API endpoint not found: " +
 
-            }
+                req.method +
 
-        );
+                " " +
+
+                req.originalUrl
+
+        });
 
     }
 
@@ -688,43 +887,27 @@ app.use(
 app.use(
 
     function (
-
-        error,
-
+        err,
         req,
-
         res,
-
         next
-
     ) {
 
-
         console.error(
-
-            "GLOBAL SERVER ERROR:",
-
-            {
-
-                message:
-                    error.message,
-
-                stack:
-
-                    NODE_ENV ===
-                    "production"
-
-                        ?
-
-                        undefined
-
-                        :
-
-                        error.stack
-
-            }
-
+            "UNHANDLED SERVER ERROR:",
+            err
         );
+
+
+        if (
+            res.headersSent
+        ) {
+
+            return next(
+                err
+            );
+
+        }
 
 
         /*
@@ -735,184 +918,95 @@ app.use(
 
         if (
 
-            error.message ===
-            "Origin not allowed by CORS."
+            err?.message ===
+            "CORS origin is not allowed"
 
         ) {
 
             return res.status(
                 403
             )
-            .json(
-
-                {
-
-                    success:
-                        false,
-
-                    message:
-                        error.message
-
-                }
-
-            );
-
-        }
-
-
-        /*
-        ------------------------------------------------------
-        INVALID JSON
-        ------------------------------------------------------
-        */
-
-        if (
-
-            error instanceof
-            SyntaxError
-
-            &&
-
-            error.status ===
-            400
-
-            &&
-
-            "body" in
-            error
-
-        ) {
-
-            return res.status(
-                400
-            )
-            .json(
-
-                {
-
-                    success:
-                        false,
-
-                    message:
-                        "Invalid JSON request body."
-
-                }
-
-            );
-
-        }
-
-
-        /*
-        ------------------------------------------------------
-        DATABASE UNIQUE ERROR
-        ------------------------------------------------------
-        */
-
-        if (
-
-            error.code ===
-            "23505"
-
-        ) {
-
-            return res.status(
-                409
-            )
-            .json(
-
-                {
-
-                    success:
-                        false,
-
-                    message:
-                        "A record with this information already exists."
-
-                }
-
-            );
-
-        }
-
-
-        /*
-        ------------------------------------------------------
-        FOREIGN KEY ERROR
-        ------------------------------------------------------
-        */
-
-        if (
-
-            error.code ===
-            "23503"
-
-        ) {
-
-            return res.status(
-                400
-            )
-            .json(
-
-                {
-
-                    success:
-                        false,
-
-                    message:
-                        "Invalid related record."
-
-                }
-
-            );
-
-        }
-
-
-        /*
-        ------------------------------------------------------
-        DEFAULT ERROR
-        ------------------------------------------------------
-        */
-
-        const statusCode =
-
-            Number(
-                error.status
-            )
-
-            ||
-
-            Number(
-                error.statusCode
-            )
-
-            ||
-
-            500;
-
-
-        return res.status(
-            statusCode
-        )
-        .json(
-
-            {
+            .json({
 
                 success:
                     false,
 
+                error:
+                    "CORS_NOT_ALLOWED",
+
                 message:
 
-                    error.message
+                    "This frontend origin is not allowed to access the API."
 
-                    ||
+            });
 
-                    "Internal server error."
+        }
 
-            }
 
-        );
+        const rawStatus =
+
+            Number(
+
+                err?.status ||
+
+                err?.statusCode ||
+
+                500
+
+            );
+
+
+        const statusCode =
+
+            rawStatus >= 400 &&
+
+            rawStatus < 600
+
+                ?
+
+                rawStatus
+
+                :
+
+                500;
+
+
+        return res
+
+            .status(
+                statusCode
+            )
+
+            .json({
+
+                success:
+                    false,
+
+                error:
+
+                    err?.code ||
+
+                    "INTERNAL_SERVER_ERROR",
+
+                message:
+
+                    statusCode < 500
+
+                        ?
+
+                        (
+
+                            err?.message ||
+
+                            "Request failed."
+
+                        )
+
+                        :
+
+                        "Internal server error."
+
+            });
 
     }
 
@@ -933,7 +1027,6 @@ app.listen(
 
     function () {
 
-
         console.log(
             "========================================"
         );
@@ -945,14 +1038,20 @@ app.listen(
 
 
         console.log(
-            "Port:",
-            PORT
+            `Port: ${PORT}`
         );
 
 
         console.log(
-            "Environment:",
-            NODE_ENV
+
+            `Environment: ${
+
+                process.env.NODE_ENV ||
+
+                "development"
+
+            }`
+
         );
 
 
@@ -962,7 +1061,21 @@ app.listen(
 
 
         console.log(
-            allowedOrigins
+
+            allowedOrigins.length > 0
+
+                ?
+
+                allowedOrigins
+
+                :
+
+                [
+
+                    "No frontend origin configured"
+
+                ]
+
         );
 
 
@@ -1038,63 +1151,3 @@ app.listen(
     }
 
 );
-
-
-/*
-|--------------------------------------------------------------------------
-| PROCESS ERROR HANDLERS
-|--------------------------------------------------------------------------
-*/
-
-process.on(
-
-    "unhandledRejection",
-
-    function (
-        reason
-    ) {
-
-
-        console.error(
-
-            "UNHANDLED PROMISE REJECTION:",
-
-            reason
-
-        );
-
-    }
-
-);
-
-
-process.on(
-
-    "uncaughtException",
-
-    function (
-        error
-    ) {
-
-
-        console.error(
-
-            "UNCAUGHT EXCEPTION:",
-
-            error
-
-        );
-
-    }
-
-);
-
-
-/*
-|--------------------------------------------------------------------------
-| EXPORT
-|--------------------------------------------------------------------------
-*/
-
-module.exports =
-    app;

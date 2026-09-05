@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Add Money — SkillEarn Hub
+    </title>
+
+
+    <!-- ==================================================
+         DASHBOARD CSS
+    =================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="../assets/css/dashboard.css"
+    >
+
+
+    <style>
+
+        /* ==================================================
+           PAGE
+        =================================================== */
+
+        .deposit-container {
+
+            max-width:
+                850px;
+
+            margin:
+                0 auto;
+
+        }
+
+
+        /* ==================================================
+           PAYMENT CARD
+        =================================================== */
+
+        .payment-card {
+
+            margin-top:
+                24px;
+
+            padding:
+                28px;
+
+            border-radius:
+                18px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.05
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+
+        }
+
+
+        .payment-card-header {
+
+            display:
+                flex;
+
+            align-items:
+                flex-start;
+
+            justify-content:
+                space-between;
+
+            gap:
+                20px;
+
+            margin-bottom:
+                25px;
+
+        }
+
+
+        .payment-card-title {
+
+            margin:
+                0;
+
+            font-size:
+                22px;
+
+        }
+
+
+        .payment-card-description {
+
+            margin:
+                8px 0 0;
+
+            opacity:
+                0.7;
+
+            line-height:
+                1.6;
+
+        }
+
+
+        /* ==================================================
+           LOADING
+        =================================================== */
+
+        .payment-loading {
+
+            padding:
+                35px 20px;
+
+            text-align:
+                center;
+
+            opacity:
+                0.75;
+
+        }
+
+
+        /* ==================================================
+           PAYMENT DETAILS
+        =================================================== */
+
+        .payment-details {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap:
+                24px;
+
+            align-items:
+                start;
+
+        }
+
+
+        /* ==================================================
+           QR
+        =================================================== */
+
+        .qr-section {
+
+            text-align:
+                center;
+
+            padding:
+                20px;
+
+            border-radius:
+                16px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.04
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.06
+                );
+
+        }
+
+
+        .qr-title {
+
+            margin:
+                0 0 16px;
+
+            font-size:
+                15px;
+
+            font-weight:
+                700;
+
+        }
+
+
+        .qr-image {
+
+            width:
+                220px;
+
+            max-width:
+                100%;
+
+            min-height:
+                220px;
+
+            object-fit:
+                contain;
+
+            padding:
+                10px;
+
+            background:
+                #ffffff;
+
+            border-radius:
+                14px;
+
+        }
+
+
+        .qr-placeholder {
+
+            width:
+                220px;
+
+            height:
+                220px;
+
+            max-width:
+                100%;
+
+            margin:
+                0 auto;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+
+            padding:
+                20px;
+
+            border-radius:
+                14px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.06
+                );
+
+            opacity:
+                0.7;
+
+        }
+
+
+        /* ==================================================
+           UPI
+        =================================================== */
+
+        .upi-section {
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            gap:
+                14px;
+
+        }
+
+
+        .payment-label {
+
+            font-size:
+                12px;
+
+            font-weight:
+                700;
+
+            letter-spacing:
+                1px;
+
+            opacity:
+                0.6;
+
+            text-transform:
+                uppercase;
+
+        }
+
+
+        .upi-box {
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            gap:
+                12px;
+
+            padding:
+                15px;
+
+            border-radius:
+                12px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.06
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+
+        }
+
+
+        .upi-id {
+
+            font-size:
+                16px;
+
+            font-weight:
+                700;
+
+            word-break:
+                break-all;
+
+        }
+
+
+        .copy-button {
+
+            border:
+                none;
+
+            cursor:
+                pointer;
+
+            padding:
+                9px 13px;
+
+            border-radius:
+                9px;
+
+            font-size:
+                13px;
+
+        }
+
+
+        .payment-note {
+
+            padding:
+                15px;
+
+            border-radius:
+                12px;
+
+            line-height:
+                1.6;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.04
+                );
+
+            opacity:
+                0.8;
+
+        }
+
+
+        /* ==================================================
+           FORM
+        =================================================== */
+
+        .deposit-form-card {
+
+            margin-top:
+                28px;
+
+            padding:
+                28px;
+
+            border-radius:
+                18px;
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.05
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.08
+                );
+
+        }
+
+
+        .form-title {
+
+            margin:
+                0 0 8px;
+
+            font-size:
+                22px;
+
+        }
+
+
+        .form-description {
+
+            margin:
+                0 0 25px;
+
+            opacity:
+                0.7;
+
+            line-height:
+                1.6;
+
+        }
+
+
+        .form-grid {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap:
+                18px;
+
+        }
+
+
+        .form-group {
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+            gap:
+                8px;
+
+        }
+
+
+        .form-group.full-width {
+
+            grid-column:
+                1 / -1;
+
+        }
+
+
+        .form-label {
+
+            font-size:
+                13px;
+
+            font-weight:
+                700;
+
+        }
+
+
+        .form-input {
+
+            width:
+                100%;
+
+            box-sizing:
+                border-box;
+
+            padding:
+                14px 15px;
+
+            border-radius:
+                10px;
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.12
+                );
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.05
+                );
+
+            color:
+                inherit;
+
+            outline:
+                none;
+
+            font-size:
+                15px;
+
+        }
+
+
+        .form-input:focus {
+
+            border-color:
+                rgba(
+                    120,
+                    100,
+                    255,
+                    0.8
+                );
+
+        }
+
+
+        .form-help {
+
+            font-size:
+                12px;
+
+            opacity:
+                0.6;
+
+            line-height:
+                1.5;
+
+        }
+
+
+        /* ==================================================
+           MESSAGE
+        =================================================== */
+
+        .deposit-message {
+
+            display:
+                none;
+
+            margin-top:
+                20px;
+
+            padding:
+                15px;
+
+            border-radius:
+                12px;
+
+            line-height:
+                1.6;
+
+            background:
+                rgba(
+                    255,
+                    80,
+                    80,
+                    0.12
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    80,
+                    80,
+                    0.25
+                );
+
+        }
+
+
+        .deposit-message.show {
+
+            display:
+                block;
+
+        }
+
+
+        .deposit-message.success {
+
+            background:
+                rgba(
+                    50,
+                    200,
+                    120,
+                    0.12
+                );
+
+            border-color:
+                rgba(
+                    50,
+                    200,
+                    120,
+                    0.3
+                );
+
+        }
+
+
+        /* ==================================================
+           SUBMIT
+        =================================================== */
+
+        .deposit-submit {
+
+            width:
+                100%;
+
+            margin-top:
+                24px;
+
+            padding:
+                15px;
+
+            border:
+                none;
+
+            border-radius:
+                11px;
+
+            cursor:
+                pointer;
+
+            font-size:
+                16px;
+
+            font-weight:
+                700;
+
+        }
+
+
+        .deposit-submit:disabled {
+
+            opacity:
+                0.6;
+
+            cursor:
+                not-allowed;
+
+        }
+
+
+        /* ==================================================
+           STATUS INFO
+        =================================================== */
+
+        .status-info {
+
+            margin-top:
+                28px;
+
+            padding:
+                20px;
+
+            border-radius:
+                15px;
+
+            background:
+                rgba(
+                    255,
+                    190,
+                    50,
+                    0.08
+                );
+
+            border:
+                1px solid
+                rgba(
+                    255,
+                    190,
+                    50,
+                    0.15
+                );
+
+        }
+
+
+        .status-info h3 {
+
+            margin:
+                0 0 8px;
+
+            font-size:
+                16px;
+
+        }
+
+
+        .status-info p {
+
+            margin:
+                0;
+
+            line-height:
+                1.6;
+
+            opacity:
+                0.75;
+
+        }
+
+
+        /* ==================================================
+           MOBILE
+        =================================================== */
+
+        @media (
+            max-width: 700px
+        ) {
+
+            .payment-details {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .form-grid {
+
+                grid-template-columns:
+                    1fr;
+
+            }
+
+
+            .form-group.full-width {
+
+                grid-column:
+                    auto;
+
+            }
+
+
+            .payment-card,
+            .deposit-form-card {
+
+                padding:
+                    20px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- ======================================================
+     HEADER
+====================================================== -->
+
+<header class="dashboard-header">
+
+    <div class="header-inner">
+
+
+        <a
+            href="dashboard.html"
+            class="brand"
+        >
+
+            <span class="brand-icon">
+                S
+            </span>
+
+
+            <span class="brand-name">
+                SkillEarn
+            </span>
+
+        </a>
+
+
+        <button
+            class="logout-button"
+            data-action="logout"
+        >
+            Logout
+        </button>
+
+
+    </div>
+
+</header>
+
+
+
+<!-- ======================================================
+     MAIN
+====================================================== -->
+
+<main class="dashboard-main">
+
+
+    <div class="deposit-container">
+
+
+        <!-- ==============================================
+             HERO
+        =============================================== -->
+
+        <section class="hero-card">
+
+
+            <p class="eyebrow">
+                WALLET
+            </p>
+
+
+            <h1>
+                Add Money
+            </h1>
+
+
+            <p class="hero-description">
+
+                Make a payment using the QR code or UPI ID,
+                then submit your transaction details for
+                verification.
+
+            </p>
+
+
+        </section>
+
+
+
+        <!-- ==============================================
+             PAYMENT INFORMATION
+        =============================================== -->
+
+        <section class="payment-card">
+
+
+            <div class="payment-card-header">
+
+
+                <div>
+
+                    <h2 class="payment-card-title">
+                        Payment Details
+                    </h2>
+
+
+                    <p class="payment-card-description">
+
+                        Scan the QR code or pay using the UPI ID below.
+
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    id="refreshPaymentSettings"
+                    class="copy-button"
+                >
+                    Refresh
+                </button>
+
+
+            </div>
+
+
+
+            <div
+                id="paymentLoading"
+                class="payment-loading"
+            >
+
+                Loading payment details...
+
+            </div>
+
+
+
+            <div
+                id="paymentContent"
+                class="payment-details"
+                style="display: none;"
+            >
+
+
+                <!-- QR -->
+
+                <div class="qr-section">
+
+
+                    <p class="qr-title">
+                        SCAN QR CODE
+                    </p>
+
+
+                    <img
+                        id="paymentQrImage"
+                        class="qr-image"
+                        alt="Payment QR Code"
+                        style="display: none;"
+                    >
+
+
+                    <div
+                        id="qrPlaceholder"
+                        class="qr-placeholder"
+                    >
+
+                        QR Code not available
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- UPI -->
+
+                <div class="upi-section">
+
+
+                    <div>
+
+                        <div class="payment-label">
+                            UPI ID
+                        </div>
+
+
+                        <div class="upi-box">
+
+                            <span
+                                id="upiId"
+                                class="upi-id"
+                            >
+                                Loading...
+                            </span>
+
+
+                            <button
+                                type="button"
+                                id="copyUpiButton"
+                                class="copy-button"
+                            >
+                                Copy
+                            </button>
+
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div>
+
+                        <div class="payment-label">
+                            Account Name
+                        </div>
+
+
+                        <div class="upi-box">
+
+                            <span
+                                id="paymentAccountName"
+                            >
+                                --
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div
+                        id="paymentInstructions"
+                        class="payment-note"
+                    >
+
+                        Please complete the payment and enter
+                        the correct UTR / Transaction ID below.
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- ==============================================
+             DEPOSIT FORM
+        =============================================== -->
+
+        <section class="deposit-form-card">
+
+
+            <h2 class="form-title">
+                Submit Deposit Request
+            </h2>
+
+
+            <p class="form-description">
+
+                After making payment, enter the exact amount and
+                UTR / Transaction ID. Your request will remain
+                pending until approved by the administrator.
+
+            </p>
+
+
+
+            <form id="depositForm">
+
+
+                <div class="form-grid">
+
+
+                    <!-- AMOUNT -->
+
+                    <div class="form-group">
+
+
+                        <label
+                            for="depositAmount"
+                            class="form-label"
+                        >
+                            Deposit Amount (₹)
+                        </label>
+
+
+                        <input
+
+                            id="depositAmount"
+
+                            class="form-input"
+
+                            type="number"
+
+                            min="1"
+
+                            step="0.01"
+
+                            inputmode="decimal"
+
+                            placeholder="Enter amount"
+
+                            required
+
+                        >
+
+
+                        <div class="form-help">
+
+                            Enter the exact amount you paid.
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- PAYMENT METHOD -->
+
+                    <div class="form-group">
+
+
+                        <label
+                            for="paymentMethod"
+                            class="form-label"
+                        >
+                            Payment Method
+                        </label>
+
+
+                        <select
+                            id="paymentMethod"
+                            class="form-input"
+                            required
+                        >
+
+                            <option value="UPI">
+                                UPI
+                            </option>
+
+
+                            <option value="BANK_TRANSFER">
+                                Bank Transfer
+                            </option>
+
+
+                            <option value="OTHER">
+                                Other
+                            </option>
+
+
+                        </select>
+
+
+                        <div class="form-help">
+
+                            Select the method used for payment.
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- UTR -->
+
+                    <div
+                        class="form-group full-width"
+                    >
+
+
+                        <label
+                            for="depositUtr"
+                            class="form-label"
+                        >
+                            UTR / Transaction ID *
+                        </label>
+
+
+                        <input
+
+                            id="depositUtr"
+
+                            class="form-input"
+
+                            type="text"
+
+                            maxlength="100"
+
+                            autocomplete="off"
+
+                            placeholder="Enter your UTR or transaction reference"
+
+                            required
+
+                        >
+
+
+                        <div class="form-help">
+
+                            UTR / Transaction ID is compulsory.
+                            Please enter the exact reference from
+                            your payment application.
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- NOTE -->
+
+                    <div
+                        class="form-group full-width"
+                    >
+
+
+                        <label
+                            for="depositNote"
+                            class="form-label"
+                        >
+                            Note (Optional)
+                        </label>
+
+
+                        <textarea
+
+                            id="depositNote"
+
+                            class="form-input"
+
+                            rows="4"
+
+                            maxlength="500"
+
+                            placeholder="Add any payment note if required"
+
+                        ></textarea>
+
+
+                    </div>
+
+
+                </div>
+
+
+
+                <!-- MESSAGE -->
+
+                <div
+                    id="depositMessage"
+                    class="deposit-message"
+                ></div>
+
+
+
+                <!-- SUBMIT -->
+
+                <button
+
+                    type="submit"
+
+                    id="depositSubmitButton"
+
+                    class="deposit-submit"
+
+                >
+
+                    Submit Deposit Request
+
+                </button>
+
+
+            </form>
+
+
+        </section>
+
+
+
+        <!-- ==============================================
+             STATUS
+        =============================================== -->
+
+        <section class="status-info">
+
+
+            <h3>
+                ⏳ Deposit Verification
+            </h3>
+
+
+            <p>
+
+                Your deposit is not automatically added to your
+                wallet. The administrator will verify the payment
+                details and UTR first. After approval, the amount
+                will be credited securely by the backend.
+
+            </p>
+
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+
+<!-- ======================================================
+     CONFIG
+====================================================== -->
+
+<script src="../assets/js/config.js"></script>
+
+
+
+<!-- ======================================================
+     AUTH
+====================================================== -->
+
+<script src="../assets/js/auth.js"></script>
+
+
+
+<!-- ======================================================
+     DEPOSIT JAVASCRIPT
+====================================================== -->
+
+<script>
+
+"use strict";
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let paymentSettings = null;
+
+let submittingDeposit = false;
+
+
+/* =========================================================
+   ELEMENT
+========================================================= */
+
+function getElement(id) {
+
+    return document.getElementById(
+        id
+    );
+
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showDepositMessage(
+    message,
+    success = false
+) {
+
+    const element =
+        getElement(
+            "depositMessage"
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.textContent =
+        message ||
+        "";
+
+
+    element.classList.remove(
+        "show",
+        "success"
+    );
+
+
+    if (!message) {
+
+        return;
+
+    }
+
+
+    element.classList.add(
+        "show"
+    );
+
+
+    if (success) {
+
+        element.classList.add(
+            "success"
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   EXTRACT PAYMENT SETTINGS
+========================================================= */
+
+function extractPaymentSettings(
+    data
+) {
+
+    if (!data) {
+
+        return null;
+
+    }
+
+
+    return (
+
+        data.paymentSettings ||
+
+        data.payment_settings ||
+
+        data.settings ||
+
+        data.data ||
+
+        data
+
+    );
+
+}
+
+
+/* =========================================================
+   GET VALUE
+========================================================= */
+
+function getFirstValue(
+    object,
+    keys
+) {
+
+    if (!object) {
+
+        return "";
+
+    }
+
+
+    for (
+        const key of keys
+    ) {
+
+        const value =
+            object[key];
+
+
+        if (
+
+            value !== undefined &&
+
+            value !== null &&
+
+            String(value).trim() !== ""
+
+        ) {
+
+            return String(
+                value
+            ).trim();
+
+        }
+
+    }
+
+
+    return "";
+
+}
+
+
+/* =========================================================
+   LOAD PAYMENT SETTINGS
+========================================================= */
+
+async function loadPaymentSettings() {
+
+
+    const loading =
+        getElement(
+            "paymentLoading"
+        );
+
+
+    const content =
+        getElement(
+            "paymentContent"
+        );
+
+
+    const upiElement =
+        getElement(
+            "upiId"
+        );
+
+
+    const accountNameElement =
+        getElement(
+            "paymentAccountName"
+        );
+
+
+    const qrImage =
+        getElement(
+            "paymentQrImage"
+        );
+
+
+    const qrPlaceholder =
+        getElement(
+            "qrPlaceholder"
+        );
+
+
+    const instructions =
+        getElement(
+            "paymentInstructions"
+        );
+
+
+    try {
+
+
+        loading.style.display =
+            "block";
+
+
+        loading.textContent =
+            "Loading latest payment details...";
+
+
+        content.style.display =
+            "none";
+
+
+        /*
+        =====================================================
+        PRIMARY API ENDPOINT
+        =====================================================
+
+        Backend should provide public payment settings here:
+
+        GET /api/payment-settings/public
+
+        Recommended response:
+
+        {
+            success: true,
+            settings: {
+                upi_id: "...",
+                account_name: "...",
+                qr_code_url: "...",
+                instructions: "..."
+            }
+        }
+
+        =====================================================
+        */
+
+        let responseData;
+
+
+        try {
+
+            responseData =
+                await window.apiRequest(
+                    "/api/payment-settings/public"
+                );
+
+        } catch (firstError) {
+
+
+            /*
+            -------------------------------------------------
+            BACKUP ENDPOINT
+            -------------------------------------------------
+            */
+
+            responseData =
+                await window.apiRequest(
+                    "/api/payment-settings"
+                );
+
+        }
+
+
+        const settings =
+            extractPaymentSettings(
+                responseData
+            );
+
+
+        if (!settings) {
+
+            throw new Error(
+                "Payment settings are not available."
+            );
+
+        }
+
+
+        paymentSettings =
+            settings;
+
+
+        /*
+        -----------------------------------------------------
+        UPI ID
+        -----------------------------------------------------
+        */
+
+        const upiId =
+            getFirstValue(
+
+                settings,
+
+                [
+
+                    "upi_id",
+
+                    "upiId",
+
+                    "upi",
+
+                    "payment_upi"
+
+                ]
+
+            );
+
+
+        /*
+        -----------------------------------------------------
+        ACCOUNT NAME
+        -----------------------------------------------------
+        */
+
+        const accountName =
+            getFirstValue(
+
+                settings,
+
+                [
+
+                    "account_name",
+
+                    "accountName",
+
+                    "merchant_name",
+
+                    "merchantName",
+
+                    "name"
+
+                ]
+
+            );
+
+
+        /*
+        -----------------------------------------------------
+        QR URL
+        -----------------------------------------------------
+        */
+
+        const qrUrl =
+            getFirstValue(
+
+                settings,
+
+                [
+
+                    "qr_code_url",
+
+                    "qrCodeUrl",
+
+                    "qr_url",
+
+                    "qrUrl",
+
+                    "payment_qr_url"
+
+                ]
+
+            );
+
+
+        /*
+        -----------------------------------------------------
+        INSTRUCTIONS
+        -----------------------------------------------------
+        */
+
+        const paymentInstructions =
+            getFirstValue(
+
+                settings,
+
+                [
+
+                    "instructions",
+
+                    "payment_instructions",
+
+                    "paymentInstructions",
+
+                    "deposit_instructions"
+
+                ]
+
+            );
+
+
+        /*
+        -----------------------------------------------------
+        UPDATE UPI
+        -----------------------------------------------------
+        */
+
+        upiElement.textContent =
+
+            upiId ||
+
+            "UPI ID not configured";
+
+
+        /*
+        -----------------------------------------------------
+        ACCOUNT NAME
+        -----------------------------------------------------
+        */
+
+        accountNameElement.textContent =
+
+            accountName ||
+
+            "Not configured";
+
+
+        /*
+        -----------------------------------------------------
+        QR
+        -----------------------------------------------------
+        */
+
+        if (qrUrl) {
+
+
+            qrImage.onload =
+                function () {
+
+                    qrImage.style.display =
+                        "block";
+
+
+                    qrPlaceholder.style.display =
+                        "none";
+
+                };
+
+
+            qrImage.onerror =
+                function () {
+
+                    qrImage.style.display =
+                        "none";
+
+
+                    qrPlaceholder.style.display =
+                        "flex";
+
+
+                    qrPlaceholder.textContent =
+                        "QR Code could not be loaded";
+
+                };
+
+
+            qrImage.src =
+                qrUrl;
+
+        }
+
+        else {
+
+
+            qrImage.style.display =
+                "none";
+
+
+            qrPlaceholder.style.display =
+                "flex";
+
+
+            qrPlaceholder.textContent =
+                "QR Code not configured";
+
+        }
+
+
+        /*
+        -----------------------------------------------------
+        INSTRUCTIONS
+        -----------------------------------------------------
+        */
+
+        instructions.textContent =
+
+            paymentInstructions ||
+
+            "Please complete the payment using the UPI ID or QR code. Then enter the correct UTR / Transaction ID below.";
+
+
+        loading.style.display =
+            "none";
+
+
+        content.style.display =
+            "grid";
+
+
+    } catch (error) {
+
+
+        console.error(
+            "PAYMENT SETTINGS ERROR:",
+            error
+        );
+
+
+        loading.textContent =
+            error?.message ||
+
+            "Unable to load payment details.";
+
+
+        content.style.display =
+            "none";
+
+    }
+
+}
+
+
+/* =========================================================
+   COPY UPI
+========================================================= */
+
+async function copyUpiId() {
+
+
+    const upiElement =
+        getElement(
+            "upiId"
+        );
+
+
+    const button =
+        getElement(
+            "copyUpiButton"
+        );
+
+
+    const upiId =
+        String(
+            upiElement?.textContent ||
+            ""
+        ).trim();
+
+
+    if (
+
+        !upiId ||
+
+        upiId ===
+        "UPI ID not configured"
+
+    ) {
+
+        showDepositMessage(
+            "UPI ID is not available."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+
+        await navigator
+            .clipboard
+            .writeText(
+                upiId
+            );
+
+
+        const originalText =
+            button.textContent;
+
+
+        button.textContent =
+            "Copied";
+
+
+        setTimeout(
+
+            function () {
+
+                button.textContent =
+                    originalText;
+
+            },
+
+            1500
+
+        );
+
+
+    } catch (error) {
+
+
+        console.error(
+            "COPY UPI ERROR:",
+            error
+        );
+
+
+        showDepositMessage(
+            "Unable to copy UPI ID."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   VALIDATE DEPOSIT
+========================================================= */
+
+function validateDeposit(
+    amount,
+    utr
+) {
+
+
+    const numericAmount =
+        Number(
+            amount
+        );
+
+
+    if (
+
+        !Number.isFinite(
+            numericAmount
+        )
+
+        ||
+
+        numericAmount <= 0
+
+    ) {
+
+        throw new Error(
+            "Please enter a valid deposit amount."
+        );
+
+    }
+
+
+    if (
+
+        numericAmount >
+        10000000
+
+    ) {
+
+        throw new Error(
+            "Please enter a valid deposit amount."
+        );
+
+    }
+
+
+    const cleanUtr =
+        String(
+            utr ||
+            ""
+        )
+        .trim();
+
+
+    if (!cleanUtr) {
+
+        throw new Error(
+            "UTR / Transaction ID is compulsory."
+        );
+
+    }
+
+
+    if (
+        cleanUtr.length < 4
+    ) {
+
+        throw new Error(
+            "Please enter a valid UTR / Transaction ID."
+        );
+
+    }
+
+
+    return {
+
+        amount:
+            numericAmount,
+
+        utr:
+            cleanUtr
+
+    };
+
+}
+
+
+/* =========================================================
+   SUBMIT DEPOSIT
+========================================================= */
+
+async function submitDeposit(
+    event
+) {
+
+
+    event.preventDefault();
+
+
+    if (
+        submittingDeposit
+    ) {
+
+        return;
+
+    }
+
+
+    showDepositMessage(
+        ""
+    );
+
+
+    const button =
+        getElement(
+            "depositSubmitButton"
+        );
+
+
+    const amount =
+        getElement(
+            "depositAmount"
+        )?.value;
+
+
+    const paymentMethod =
+        getElement(
+            "paymentMethod"
+        )?.value;
+
+
+    const utr =
+        getElement(
+            "depositUtr"
+        )?.value;
+
+
+    const note =
+        getElement(
+            "depositNote"
+        )?.value;
+
+
+    let validated;
+
+
+    try {
+
+        validated =
+            validateDeposit(
+                amount,
+                utr
+            );
+
+    } catch (error) {
+
+
+        showDepositMessage(
+            error.message
+        );
+
+        return;
+
+    }
+
+
+    submittingDeposit =
+        true;
+
+
+    button.disabled =
+        true;
+
+
+    const originalText =
+        button.textContent;
+
+
+    button.textContent =
+        "Submitting deposit...";
+
+
+    try {
+
+
+        /*
+        =====================================================
+        DEPOSIT API
+
+        POST /api/deposits
+
+        Backend expected fields:
+
+        {
+            amount,
+            payment_method,
+            utr,
+            note
+        }
+
+        =====================================================
+        */
+
+        const result =
+            await window.apiRequest(
+
+                "/api/deposits",
+
+                {
+
+                    method:
+                        "POST",
+
+                    body: {
+
+                        amount:
+                            validated.amount,
+
+
+                        payment_method:
+                            paymentMethod ||
+                            "UPI",
+
+
+                        utr:
+                            validated.utr,
+
+
+                        transaction_id:
+                            validated.utr,
+
+
+                        note:
+                            String(
+                                note ||
+                                ""
+                            ).trim()
+
+                    }
+
+                }
+
+            );
+
+
+        console.log(
+            "DEPOSIT RESPONSE:",
+            result
+        );
+
+
+        if (
+
+            result?.success === false
+
+        ) {
+
+            throw new Error(
+
+                result?.message ||
+
+                "Deposit request could not be submitted."
+
+            );
+
+        }
+
+
+        showDepositMessage(
+
+            result?.message ||
+
+            "Deposit request submitted successfully. Your payment is now pending admin verification.",
+
+            true
+
+        );
+
+
+        getElement(
+            "depositForm"
+        ).reset();
+
+
+    } catch (error) {
+
+
+        console.error(
+            "DEPOSIT ERROR:",
+            error
+        );
+
+
+        showDepositMessage(
+
+            error?.message ||
+
+            "Unable to submit deposit request."
+
+        );
+
+
+    } finally {
+
+
+        submittingDeposit =
+            false;
+
+
+        button.disabled =
+            false;
+
+
+        button.textContent =
+            originalText;
+
+    }
+
+}
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+document.addEventListener(
+
+    "DOMContentLoaded",
+
+    function () {
+
+
+        /*
+        -----------------------------------------------------
+        LOAD PAYMENT SETTINGS
+        -----------------------------------------------------
+        */
+
+        loadPaymentSettings();
+
+
+        /*
+        -----------------------------------------------------
+        COPY UPI
+        -----------------------------------------------------
+        */
+
+        getElement(
+            "copyUpiButton"
+        )
+        ?.addEventListener(
+
+            "click",
+
+            copyUpiId
+
+        );
+
+
+        /*
+        -----------------------------------------------------
+        REFRESH PAYMENT SETTINGS
+        -----------------------------------------------------
+        */
+
+        getElement(
+            "refreshPaymentSettings"
+        )
+        ?.addEventListener(
+
+            "click",
+
+            function () {
+
+                loadPaymentSettings();
+
+            }
+
+        );
+
+
+        /*
+        -----------------------------------------------------
+        DEPOSIT FORM
+        -----------------------------------------------------
+        */
+
+        getElement(
+            "depositForm"
+        )
+        ?.addEventListener(
+
+            "submit",
+
+            submitDeposit
+
+        );
+
+
+    }
+
+);
+
+</script>
+
+
+</body>
+
+</html>

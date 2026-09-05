@@ -16,9 +16,16 @@ const SKILLEARN_CONFIG = {
         TIMEOUT:
             30000,
 
+        /*
+        -----------------------------------------------------
+        JWT is sent through Authorization header.
+
+        Do not depend on cross-origin cookies.
+        -----------------------------------------------------
+        */
 
         CREDENTIALS:
-            "include"
+            "omit"
 
     },
 
@@ -38,20 +45,21 @@ const SKILLEARN_CONFIG = {
 
 
 /* =========================================================
-   GLOBAL API URL
+   API BASE URL
 ========================================================= */
 
 window.API_URL =
-    SKILLEARN_CONFIG
-        .API_BASE_URL
-        .replace(
-            /\/+$/,
-            ""
-        );
+    String(
+        SKILLEARN_CONFIG.API_BASE_URL
+    )
+    .replace(
+        /\/+$/,
+        ""
+    );
 
 
 /* =========================================================
-   API URL
+   BUILD API URL
 ========================================================= */
 
 function apiUrl(
@@ -67,6 +75,7 @@ function apiUrl(
             endpoint ||
             ""
         )
+        .trim()
         .replace(
             /^\/+/,
             ""
@@ -92,14 +101,14 @@ function apiUrl(
 
 
 /* =========================================================
-   TOKEN
+   GET TOKEN
 ========================================================= */
 
 function getAuthToken() {
 
     try {
 
-        return (
+        const token =
 
             localStorage.getItem(
                 SKILLEARN_CONFIG
@@ -117,17 +126,37 @@ function getAuthToken() {
 
             localStorage.getItem(
                 "token"
-            )
+            );
 
-            ||
 
-            null
+        if (
+            !token
+        ) {
 
-        );
+            return null;
+
+        }
+
+
+        return String(
+            token
+        )
+        .trim()
+
+        ||
+
+        null;
+
 
     } catch (
         error
     ) {
+
+        console.error(
+            "TOKEN READ ERROR:",
+            error
+        );
+
 
         return null;
 
@@ -135,6 +164,10 @@ function getAuthToken() {
 
 }
 
+
+/* =========================================================
+   SAVE TOKEN
+========================================================= */
 
 function setAuthToken(
     token
@@ -146,9 +179,7 @@ function setAuthToken(
             !token
         ) {
 
-            removeAuthToken();
-
-            return;
+            return false;
 
         }
 
@@ -156,12 +187,22 @@ function setAuthToken(
         const value =
             String(
                 token
-            );
+            )
+            .trim();
+
+
+        if (
+            !value
+        ) {
+
+            return false;
+
+        }
 
 
         /*
         -----------------------------------------------------
-        Main token key
+        Primary token
         -----------------------------------------------------
         */
 
@@ -179,26 +220,22 @@ function setAuthToken(
         /*
         -----------------------------------------------------
         Compatibility keys
-        Admin dashboard old/new code दोनों के लिए
         -----------------------------------------------------
         */
 
         localStorage.setItem(
-
             "skilllearn_token",
-
             value
-
         );
 
 
         localStorage.setItem(
-
             "token",
-
             value
-
         );
+
+
+        return true;
 
 
     } catch (
@@ -206,17 +243,21 @@ function setAuthToken(
     ) {
 
         console.error(
-
             "TOKEN SAVE ERROR:",
-
             error
-
         );
+
+
+        return false;
 
     }
 
 }
 
+
+/* =========================================================
+   REMOVE TOKEN
+========================================================= */
 
 function removeAuthToken() {
 
@@ -246,11 +287,8 @@ function removeAuthToken() {
     ) {
 
         console.warn(
-
             "TOKEN REMOVE ERROR:",
-
             error
-
         );
 
     }
@@ -259,7 +297,7 @@ function removeAuthToken() {
 
 
 /* =========================================================
-   USER STORAGE
+   GET SAVED USER
 ========================================================= */
 
 function getSavedUser() {
@@ -292,16 +330,38 @@ function getSavedUser() {
         }
 
 
-        return JSON.parse(
-            value
-        );
+        const user =
+            JSON.parse(
+                value
+            );
+
+
+        if (
+
+            !user ||
+
+            typeof user !==
+            "object"
+
+        ) {
+
+            return null;
+
+        }
+
+
+        return user;
 
 
     } catch (
         error
     ) {
 
-        removeSavedUser();
+        console.warn(
+            "USER READ ERROR:",
+            error
+        );
+
 
         return null;
 
@@ -310,6 +370,10 @@ function getSavedUser() {
 }
 
 
+/* =========================================================
+   SAVE USER
+========================================================= */
+
 function setSavedUser(
     user
 ) {
@@ -317,12 +381,15 @@ function setSavedUser(
     try {
 
         if (
-            !user
+
+            !user ||
+
+            typeof user !==
+            "object"
+
         ) {
 
-            removeSavedUser();
-
-            return;
+            return false;
 
         }
 
@@ -332,12 +399,6 @@ function setSavedUser(
                 user
             );
 
-
-        /*
-        -----------------------------------------------------
-        Main user key
-        -----------------------------------------------------
-        */
 
         localStorage.setItem(
 
@@ -350,12 +411,6 @@ function setSavedUser(
         );
 
 
-        /*
-        -----------------------------------------------------
-        Compatibility key for admin dashboard
-        -----------------------------------------------------
-        */
-
         localStorage.setItem(
 
             "skilllearn_user",
@@ -365,22 +420,29 @@ function setSavedUser(
         );
 
 
+        return true;
+
+
     } catch (
         error
     ) {
 
         console.error(
-
             "USER SAVE ERROR:",
-
             error
-
         );
+
+
+        return false;
 
     }
 
 }
 
+
+/* =========================================================
+   REMOVE SAVED USER
+========================================================= */
 
 function removeSavedUser() {
 
@@ -405,11 +467,8 @@ function removeSavedUser() {
     ) {
 
         console.warn(
-
             "USER REMOVE ERROR:",
-
             error
-
         );
 
     }
@@ -434,17 +493,13 @@ function clearAuthData() {
             "skillEarnUser"
         );
 
-
     } catch (
         error
     ) {
 
         console.warn(
-
             "SESSION CLEAR ERROR:",
-
             error
-
         );
 
     }
@@ -469,6 +524,12 @@ function getApiHeaders() {
     const token =
         getAuthToken();
 
+
+    /*
+    ---------------------------------------------------------
+    JWT AUTHORIZATION HEADER
+    ---------------------------------------------------------
+    */
 
     if (
         token
@@ -495,7 +556,8 @@ function extractToken(
 ) {
 
     if (
-        !data
+        !data ||
+        typeof data !== "object"
     ) {
 
         return null;
@@ -503,7 +565,7 @@ function extractToken(
     }
 
 
-    return (
+    const token =
 
         data.token ||
 
@@ -511,15 +573,36 @@ function extractToken(
 
         data.access_token ||
 
+        data.jwt ||
+
         data.data?.token ||
 
         data.data?.accessToken ||
 
         data.data?.access_token ||
 
-        null
+        data.data?.jwt ||
 
-    );
+        null;
+
+
+    if (
+        !token
+    ) {
+
+        return null;
+
+    }
+
+
+    return String(
+        token
+    )
+    .trim()
+
+    ||
+
+    null;
 
 }
 
@@ -533,7 +616,8 @@ function extractUser(
 ) {
 
     if (
-        !data
+        !data ||
+        typeof data !== "object"
     ) {
 
         return null;
@@ -541,35 +625,34 @@ function extractUser(
     }
 
 
+    const user =
+
+        data.user ||
+
+        data.data?.user ||
+
+        data.data?.profile ||
+
+        data.profile ||
+
+        null;
+
+
     if (
 
-        data.user &&
+        !user ||
 
-        typeof data.user ===
+        typeof user !==
         "object"
 
     ) {
 
-        return data.user;
+        return null;
 
     }
 
 
-    if (
-
-        data.data?.user &&
-
-        typeof data.data.user ===
-        "object"
-
-    ) {
-
-        return data.data.user;
-
-    }
-
-
-    return null;
+    return user;
 
 }
 
@@ -585,7 +668,6 @@ async function apiRequest(
     options = {}
 
 ) {
-
 
     const url =
         apiUrl(
@@ -606,6 +688,12 @@ async function apiRequest(
 
             },
 
+            Number(
+                options.timeout
+            )
+
+            ||
+
             SKILLEARN_CONFIG
                 .REQUEST
                 .TIMEOUT
@@ -617,10 +705,18 @@ async function apiRequest(
 
         method:
 
-            options.method ||
+            String(
+                options.method ||
+                "GET"
+            )
+            .toUpperCase(),
 
-            "GET",
 
+        /*
+        -----------------------------------------------------
+        Do not depend on Render cross-origin cookies.
+        -----------------------------------------------------
+        */
 
         credentials:
 
@@ -647,7 +743,6 @@ async function apiRequest(
 
 
         signal:
-
             controller.signal
 
     };
@@ -655,7 +750,7 @@ async function apiRequest(
 
     /*
     ---------------------------------------------------------
-    BODY
+    REQUEST BODY
     ---------------------------------------------------------
     */
 
@@ -698,10 +793,20 @@ async function apiRequest(
 
         else {
 
-            requestOptions.headers[
-                "Content-Type"
-            ] =
-                "application/json";
+            if (
+
+                !requestOptions.headers[
+                    "Content-Type"
+                ]
+
+            ) {
+
+                requestOptions.headers[
+                    "Content-Type"
+                ] =
+                    "application/json";
+
+            }
 
 
             requestOptions.body =
@@ -750,6 +855,16 @@ async function apiRequest(
         }
 
 
+        console.error(
+            "API CONNECTION ERROR:",
+            {
+                endpoint,
+                url,
+                error
+            }
+        );
+
+
         throw new Error(
 
             "Unable to connect to the server."
@@ -771,11 +886,18 @@ async function apiRequest(
 
 
     const contentType =
-        response.headers.get(
-            "content-type"
+        String(
+
+            response.headers.get(
+                "content-type"
+            )
+
+            ||
+
+            ""
+
         )
-        ||
-        "";
+        .toLowerCase();
 
 
     try {
@@ -795,20 +917,20 @@ async function apiRequest(
 
         else {
 
-            const text =
+            const responseText =
                 await response.text();
 
 
             data =
 
-                text
+                responseText
 
                     ?
 
                     {
 
                         message:
-                            text
+                            responseText
 
                     }
 
@@ -823,6 +945,12 @@ async function apiRequest(
         error
     ) {
 
+        console.warn(
+            "API RESPONSE PARSE ERROR:",
+            error
+        );
+
+
         data =
             null;
 
@@ -831,7 +959,31 @@ async function apiRequest(
 
     /*
     ---------------------------------------------------------
-    ERROR RESPONSE
+    DEBUG LOG
+    ---------------------------------------------------------
+    */
+
+    console.log(
+        "API RESPONSE:",
+        {
+
+            endpoint,
+
+            status:
+                response.status,
+
+            ok:
+                response.ok,
+
+            data
+
+        }
+    );
+
+
+    /*
+    ---------------------------------------------------------
+    HTTP ERROR
     ---------------------------------------------------------
     */
 
@@ -844,6 +996,8 @@ async function apiRequest(
             data?.message ||
 
             data?.error ||
+
+            data?.details ||
 
             `Request failed (${response.status})`;
 
@@ -862,6 +1016,19 @@ async function apiRequest(
             data;
 
 
+        /*
+        -----------------------------------------------------
+        IMPORTANT
+
+        DO NOT CLEAR AUTH AUTOMATICALLY HERE.
+
+        A temporary server issue, wallet error,
+        database error, CORS issue or timeout must NOT
+        automatically log the user out.
+        -----------------------------------------------------
+        */
+
+
         throw apiError;
 
     }
@@ -869,7 +1036,7 @@ async function apiRequest(
 
     /*
     ---------------------------------------------------------
-    SAVE LOGIN TOKEN
+    SAVE TOKEN IF RESPONSE CONTAINS NEW TOKEN
     ---------------------------------------------------------
     */
 
@@ -892,7 +1059,7 @@ async function apiRequest(
 
     /*
     ---------------------------------------------------------
-    SAVE LOGIN USER
+    SAVE USER IF RESPONSE CONTAINS USER
     ---------------------------------------------------------
     */
 
@@ -919,7 +1086,24 @@ async function apiRequest(
 
 
 /* =========================================================
-   EXPORTS
+   AUTH STATUS
+========================================================= */
+
+function isAuthenticated() {
+
+    const token =
+        getAuthToken();
+
+
+    return Boolean(
+        token
+    );
+
+}
+
+
+/* =========================================================
+   PUBLIC EXPORTS
 ========================================================= */
 
 window.SKILLEARN_CONFIG =
@@ -981,3 +1165,7 @@ window.extractToken =
 
 window.extractUser =
     extractUser;
+
+
+window.isAuthenticated =
+    isAuthenticated;
